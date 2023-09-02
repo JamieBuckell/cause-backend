@@ -1,0 +1,37 @@
+Resources:
+    EmailFailureTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ses-failure-topic-${self:provider.stage}
+    EmailFailureQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: "EmailFailureQueue-${self:provider.stage}"
+    EmailFailureQueueSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        TopicArn: !Ref EmailFailureTopic
+        Endpoint: !GetAtt
+          - EmailFailureQueue
+          - Arn
+        Protocol: sqs
+        RawMessageDelivery: 'true'
+
+    SQSSNSPolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        PolicyDocument:
+          Version: "2012-10-17"
+          Id: "PushEmailFailureToSQSPolicy"
+          Statement:
+            - Sid: "allow-sns-to-send-message-to-sqs"
+              Effect: Allow
+              Principal: '*'
+              Action:
+                - 'sqs:SendMessage'
+              Resource: !GetAtt 'EmailFailureQueue.Arn'
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !Ref 'EmailFailureTopic'
+        Queues:
+          - !Ref EmailFailureQueue

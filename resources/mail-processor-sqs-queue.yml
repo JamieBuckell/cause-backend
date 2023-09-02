@@ -1,0 +1,6 @@
+Resources:
+  MailProcessorQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:provider.environment.MAIL_PROCESSOR_QUEUE}
+      VisibilityTimeout: 720

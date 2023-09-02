@@ -1,0 +1,90 @@
+Resources:
+  NominatorsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${self:provider.environment.NOMINATORS_TABLE}
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      AttributeDefinitions:
+        - AttributeName: requestId
+          AttributeType: S
+        - AttributeName: campaignId
+          AttributeType: S
+        - AttributeName: emailAddress
+          AttributeType: S
+        - AttributeName: userInitials
+          AttributeType: S
+        - AttributeName: organisationId
+          AttributeType: S
+        - AttributeName: isAdmin
+          AttributeType: B
+      KeySchema:
+        - AttributeName: requestId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: nominatorRequest
+          KeySchema:
+            - AttributeName: emailAddress
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        - IndexName: nominatorOrganisationRequest
+          KeySchema:
+            - AttributeName: emailAddress
+              KeyType: HASH
+            - AttributeName: organisationId
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        - IndexName: referenceSearch
+          KeySchema:
+            - AttributeName: userInitials
+              KeyType: HASH
+            - AttributeName: organisationId
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        - IndexName: adminsRequest
+          KeySchema:
+            - AttributeName: organisationId
+              KeyType: HASH
+            - AttributeName: isAdmin
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        - IndexName: nominatorRequestCampaign
+          KeySchema:
+            - AttributeName: campaignId
+              KeyType: HASH
+            - AttributeName: emailAddress
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        - IndexName: nominatorOrganisationRequestCampaign
+          KeySchema:
+            - AttributeName: campaignId
+              KeyType: HASH
+            - AttributeName: organisationId
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+      BillingMode: PROVISIONED

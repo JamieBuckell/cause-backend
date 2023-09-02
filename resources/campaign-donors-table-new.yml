@@ -1,0 +1,49 @@
+Resources:
+  CampaignDonorsTableNew:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${self:provider.environment.CAMPAIGN_DONORS_TABLE}
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      AttributeDefinitions:
+        - AttributeName: requestId
+          AttributeType: S
+        - AttributeName: campaignId
+          AttributeType: S
+        - AttributeName: donorId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: requestId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: donorRequest
+          KeySchema:
+            - AttributeName: donorId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        - IndexName: campaignRequest
+          KeySchema:
+            - AttributeName: campaignId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        - IndexName: campaignDonorRequest
+          KeySchema:
+            - AttributeName: campaignId
+              KeyType: HASH
+            - AttributeName: donorId
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+      BillingMode: PROVISIONED

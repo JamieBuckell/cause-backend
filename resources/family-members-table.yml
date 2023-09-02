@@ -1,0 +1,71 @@
+Resources:
+  FamilyMembersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${self:provider.environment.FAMILY_MEMBERS_TABLE}
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      AttributeDefinitions:
+        - AttributeName: requestId
+          AttributeType: S
+        - AttributeName: familyId
+          AttributeType: S
+        - AttributeName: nominatorId
+          AttributeType: S
+        - AttributeName: organisationId
+          AttributeType: S
+        - AttributeName: allocatedTo
+          AttributeType: S
+      KeySchema:
+        - AttributeName: requestId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: familyRequest
+          KeySchema:
+            - AttributeName: familyId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        - IndexName: nominatorRequest
+          KeySchema:
+            - AttributeName: nominatorId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        - IndexName: familyNominatorRequest
+          KeySchema:
+            - AttributeName: familyId
+              KeyType: HASH
+            - AttributeName: nominatorId
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        - IndexName: organisationFamilyRequest
+          KeySchema:
+            - AttributeName: organisationId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        - IndexName: donorFamilyRequest
+          KeySchema:
+            - AttributeName: allocatedTo
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+      BillingMode: PROVISIONED

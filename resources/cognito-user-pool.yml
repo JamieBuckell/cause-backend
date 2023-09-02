@@ -1,0 +1,55 @@
+Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: CAUSEF-Admin
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: true
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+      AutoVerifiedAttributes: ["email"]
+      
+  AdminGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties: 
+      Description: Full CauseF Admins - Can access everything
+      GroupName: Admin
+      Precedence: 1
+      UserPoolId: { Ref: UserPool }
+      
+  TeamLeadGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties: 
+      Description: Team leader for nominating organisations, can approve nominators
+      GroupName: TeamLead
+      Precedence: 2
+      UserPoolId: { Ref: UserPool }
+      
+  NominatorGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties: 
+      Description: User can nominate families
+      GroupName: Nominator
+      Precedence: 3
+      UserPoolId: { Ref: UserPool }
+
+  UserClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: CAUSEF Admin
+      GenerateSecret: false
+      UserPoolId: { Ref: UserPool }
+      RefreshTokenValidity: 30
+      AccessTokenValidity: 60
+      IdTokenValidity: 60
+      TokenValidityUnits: 
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: days 
+      ExplicitAuthFlows:
+        - "ALLOW_CUSTOM_AUTH"
+        - "ALLOW_REFRESH_TOKEN_AUTH"
+        - "ALLOW_USER_SRP_AUTH"

@@ -1,0 +1,15 @@
+service: axios-layer
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: eu-west-2
+  profile: jamiebuckell
+
+layers:
+  Axios:
+    path: nodejs
+    description: Includes the axios node_module package
+    compatibleRuntimes:
+      - nodejs14.x
+      - nodejs16.x

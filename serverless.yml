@@ -1,0 +1,840 @@
+service: causef-api
+
+useDotenv: true
+frameworkVersion: '3'
+
+plugins:
+  - serverless-domain-manager
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  userPools:
+    dev: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd"
+    live: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq"
+  domains:
+    live: api.cause-foundation.org.uk
+    dev: causeapi.bouchelle.co.uk
+  customDomain:
+    domainName: ${self:custom.domains.${self:custom.stage}}
+    certificateName: "cause-foundation.org.uk"
+    basePath: ${self:provider.stage}
+    stage: ${self:provider.stage}
+    createRoute53Record: true
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  profile: jamiebuckell
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'eu-west-2'}
+  lambdaHashingVersion: 20201221
+  environment:
+    AWS_ACCOUNT_ID: 988218197909
+    AWS_ACCOUNT_REGION: ${self:provider.region}
+    WEBSITE_URL: "https://www.cause-foundation.org.uk"
+    APP_URL: "https://portal.cause-foundation.org.uk"
+    ORGANISATIONS_TABLE: cause-organisations-${self:provider.stage}
+    NOMINATORS_TABLE: cause-nominators-${self:provider.stage}
+    ORG_ADMINS_TABLE: cause-organisation-admins-${self:provider.stage}
+    FAMILIES_TABLE: cause-families-${self:provider.stage}
+    FAMILY_MEMBERS_TABLE: cause-family-members-${self:provider.stage}
+    DONORS_TABLE: cause-donors-${self:provider.stage}
+    CAMPAIGNS_TABLE: cause-campaigns-${self:provider.stage}
+    CAMPAIGN_DONORS_TABLE: cause-campaign-donors-${self:provider.stage}
+    CAMPAIGN_DONORS_TABLE_OLD: cause-campaign-donors-OLD-${self:provider.stage}
+    EMAILS_TABLE: cause-campaign-emails-${self:provider.stage}
+    EMAILS_SUBSCRIBERS_TABLE: cause-campaign-emails-subscribers-${self:provider.stage}
+    MASTER_TABLE: cause-portal-master-${self:provider.stage}
+    MAILER_QUEUE: cause-campaign-mailer-queue-${self:provider.stage}
+    MAIL_PROCESSOR_QUEUE: cause-campaign-mail-processor-queue-${self:provider.stage}
+    SUBSCRIBER_UPDATE_QUEUE: cause-campaign-subscriber-update-queue-${self:provider.stage}
+    PLEDGE_DETAIL_QUEUE: cause-campaign-send-pledge-detail-queue-${self:provider.stage}
+    TIMEZONE: "Europe/London"
+    DATE_FORMAT: "YYYY-MM-DD HH:mm:ss"
+    FROM_ADDRESS: "hampers@cause-foundation.org.uk"
+    INTERNAL_ADDRESS: "hampers@cause-foundation.org.uk"
+    INTERNAL_ADDRESS_DOMAIN: "@cause-foundation.org.uk"
+    HASHING_SALT: "46d6a84b07ce2e"
+    USER_POOL: "eu-west-2_AwNh0tGjz"
+    USER_POOL_V2: "eu-west-2_ueeqpE5iq"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:BatchWriteItem
+      Resource: 
+        - "Fn::GetAtt": [ MasterTable, Arn ]
+        - { "Fn::Join": [ "/", [ 
+          { "Fn::GetAtt": ["MasterTable", "Arn" ] }, "index", "GSI1PKRequest" 
+        ]]}
+        - { "Fn::Join": [ "/", [ 
+          { "Fn::GetAtt": ["MasterTable", "Arn" ] }, "index", "GSI1SKRequest" 
+        ]]}
+    - Effect: 'Allow'
+      Action:
+        - "ses:SendEmail"
+        - "ses:SendTemplatedEmail"
+        - "ses:SendRawEmail"
+      Resource:
+        - arn:aws:ses:eu-west-1:988218197909:identity/jamiebuckell.co.uk
+        - arn:aws:ses:eu-west-1:988218197909:identity/cause-foundation.org.uk
+        - arn:aws:ses:eu-west-1:988218197909:configuration-set/cause-failure-configuration
+    - Effect: Allow
+      Action: 
+        - "ses:GetTemplate"
+      Resource: 
+        - "*"
+    - Effect: Allow
+      Action: 
+        - "s3:PutObject"
+      Resource: 
+        - !Sub 
+          - "arn:aws:s3:::causef.jamiebuckell.co.uk/*"
+          - BucketArn: arn:aws:s3:::causef.jamiebuckell.co.uk
+        - arn:aws:s3:::causef.jamiebuckell.co.uk
+    - Effect: 'Allow'
+      Action:
+        - cognito-idp:AdminGetUser
+        - cognito-idp:AdminCreateUser
+        - cognito-idp:AdminDeleteUser
+        - cognito-idp:AdminAddUserToGroup
+        - cognito-idp:AdminSetUserPassword
+        - cognito-idp:ListUsersInGroup
+        - cognito-idp:ListUsers
+      Resource:
+        - arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_AwNh0tGjz
+    - Effect: 'Allow'
+      Action:
+        - cognito-idp:AdminGetUser
+        - cognito-idp:AdminCreateUser
+        - cognito-idp:AdminDeleteUser
+        - cognito-idp:AdminAddUserToGroup
+        - cognito-idp:AdminSetUserPassword
+        - cognito-idp:ListUsersInGroup
+        - cognito-idp:ListUsers
+      Resource:
+        - arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq
+    - Effect: 'Allow'
+      Action:
+        - sqs:SendMessage
+      Resource:
+        - "Fn::GetAtt": [ SendPledgeDetailQueue, Arn ]
+    - Effect: 'Allow'
+      Action:
+        - lambda:InvokeFunction
+      Resource:
+        - arn:aws:lambda:eu-west-2:988218197909:function:pdf-live-downloadPdf
+package:
+  individually: true
+  exclude:
+      - '**/*'
+  include:
+      - lambdas/common/**
+      - lambdas/endpoints/**
+functions:
+  nominatorsEmailAdmin:
+    handler: lambdas/endpoints/nominators/emailAdmin.handler
+    events:
+        - http:
+            method: post
+            path: nominators/email-admin/{adminId}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   adminId: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  nominatorPasswordReset:
+    handler: lambdas/endpoints/nominators/passwordReset.handler
+    events:
+        - http:
+            method: post
+            path: nominators/reset-password/{nominatorId}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   nominatorId: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  nominatorRegister:
+    handler: lambdas/endpoints/nominators/register.handler
+    events:
+        - http:
+            method: post
+            path: nominators-register
+            cors: true
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+  nominatorList:
+    handler: lambdas/endpoints/nominators/list.handler
+    events:
+        - http:
+            method: get
+            path: nominators/list/{organisationId}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   organisationId: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+        - http:
+            method: get
+            path: nominators/list
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  nominatorGetByRequest:
+    handler: lambdas/endpoints/nominators/nominatorGetByRequest.handler
+    events:
+        - http:
+            method: get
+            path: nominators/get-by-request/{requestId}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   requestId: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  nominatorUpdate:
+    handler: lambdas/endpoints/nominators/update.handler
+    events:
+        - http:
+            method: post
+            path: nominators/update
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  nominatorApprove:
+    handler: lambdas/endpoints/nominators/approve.handler
+    events:
+        - http:
+            method: post
+            path: nominators/approve/{nominatorId}/{organisationId}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   nominatorId: true
+                   organisationId: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+
+  familyCreate:
+    handler: lambdas/endpoints/families/create.handler
+    events:
+        - http:
+            method: post
+            path: families/create
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:uuid:1
+  familyUpdate:
+    handler: lambdas/endpoints/families/update.handler
+    events:
+        - http:
+            method: post
+            path: families/update
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:uuid:1
+  familySplit:
+    handler: lambdas/endpoints/families/split.handler
+    events: 
+        - http:
+            method: post
+            path: families/split
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:uuid:1
+  familyDelete:
+    handler: lambdas/endpoints/families/delete.handler
+    events:
+        - http:
+            method: post
+            path: families/delete/{familyId}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   familyId: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  familyList:
+    handler: lambdas/endpoints/families/list.handler
+    events:
+        - http:
+            method: get
+            path: families/list
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  familyGetByRequest:
+    handler: lambdas/endpoints/families/getByRequest.handler
+    events:
+        - http:
+            method: get
+            path: families/get-by-request/{familyId}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   familyId: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  familyGetByOrganisation:
+    handler: lambdas/endpoints/families/getByOrganisation.handler
+    events:
+        - http:
+            method: get
+            path: families/organisation/{organisationId}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   organisationId: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  familyAllocate:
+    handler: lambdas/endpoints/families/allocate.handler
+    events:
+        - http:
+            method: post
+            path: families/allocate
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+        - http:
+            method: post
+            path: families/allocate/remove
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  familyEmailAssignment:
+    handler: lambdas/endpoints/families/emailAssignment.handler
+    events:
+        - http:
+            method: post
+            path: families/email-assignment
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+
+  getMe:
+    handler: lambdas/endpoints/users/getMe.handler
+    events:
+        - http:
+            method: get
+            path: users/me
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  getAdminUsers:
+    handler: lambdas/endpoints/users/getAdmins.handler
+    events:
+        - http:
+            method: get
+            path: users/admin/list
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  createAdminUser:
+    handler: lambdas/endpoints/users/createAdmin.handler
+    events:
+        - http:
+            method: post
+            path: users/admin/create
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  deleteUser:
+    handler: lambdas/endpoints/users/deleteUser.handler
+    events:
+        - http:
+            method: post
+            path: users/delete/{organisationId}/{emailAddress}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   organisationId: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  resetPassword:
+    handler: lambdas/endpoints/users/resetPassword.handler
+    events:
+        - http:
+            method: post
+            path: users/reset-password/{emailAddress}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   emailAddress: true
+  resetPasswordCommit:
+    handler: lambdas/endpoints/users/resetPasswordCommit.handler
+    events:
+        - http:
+            method: post
+            path: users/reset-password-commit/{emailAddress}/{verificationHash}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   emailAddress: true
+                   verificationHash: true
+  gdprMailer:
+    handler: lambdas/endpoints/donors/gdprMailer.handler
+    events:
+        - http:
+            method: get
+            path: donors/gdprMailer
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+  subscriptionCreate:
+    handler: lambdas/endpoints/subscribers/register.handler
+    events:
+        - http:
+            method: post
+            path: subscriber/create
+            cors: true
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:uuid:1
+  subscriptionDelete:
+    handler: lambdas/endpoints/subscribers/delete.handler
+    events:
+        - http:
+            method: post
+            path: subscriber/delete/{subscriberId}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   subscriberId: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+  subscriptionVerification:
+    handler: lambdas/endpoints/donors/verification.handler
+    events:
+        - http:
+            method: get
+            path: subscription/verify/{emailAddress}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   emailAddress: true
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+  confirmPledge:
+    handler: lambdas/endpoints/donors/confirmPledge.handler
+    events:
+        - http:
+            method: post
+            path: donor/confirm-pledge/{emailAddress}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   emailAddress: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn:
+                Fn::GetAtt:
+                  - UserPool
+                  - Arn
+        - http:
+            method: get
+            path: donor/confirm-pledge/{emailAddress}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   emailAddress: true
+  changePledge:
+    handler: lambdas/endpoints/donors/changePledge.handler
+    events:
+        - http:
+            method: post
+            path: donor/change-pledge/{emailAddress}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   emailAddress: true
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+  sendPledgeDetail:
+    handler: lambdas/endpoints/donors/sendPledgeDetail.handler
+    reservedConcurrency: 10
+    events:
+      - sqs:
+          batchSize: 50
+          maximumBatchingWindow: 1
+          arn:
+            Fn::GetAtt:
+              - SendPledgeDetailQueue
+              - Arn
+  dashboardOverview:
+    handler: lambdas/endpoints/dashboard/overview.handler
+    events:
+        - http:
+            method: get
+            path: dashboard/overview/{campaignId}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   campaignId: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+
+  donorsList:
+    handler: lambdas/endpoints/donors/list.handler
+    events:
+        - http:
+            method: get
+            path: donors/list
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  donorsListByCampaign:
+    handler: lambdas/endpoints/donors/listByCampaign.handler
+    events:
+        - http:
+            method: get
+            path: donors/campaign/list/{campaignId}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   campaignId: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  donorView:
+    handler: lambdas/endpoints/donors/view.handler
+    events:
+        - http:
+            method: get
+            path: donor/view/{requestId}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   requestId: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  donorRegister:
+    handler: lambdas/endpoints/donors/register.handler
+    events:
+        - http:
+            method: post
+            path: donor-register
+            cors: true
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:uuid:1
+  donorsEmailUpdate:
+    handler: lambdas/endpoints/donors/emailUpdate.handler
+    events:
+        - http:
+            method: post
+            path: donors/email-update
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+  donorsResendVerification:
+    handler: lambdas/endpoints/donors/resendVerification.handler
+    events:
+        - http:
+            method: post
+            path: donors/resend-verification
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+  donorsPledgeUpdate:
+    handler: lambdas/endpoints/donors/pledgeUpdate.handler
+    events:
+        - http:
+            method: post
+            path: donors/update-pledge
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+  donorDelete:
+    handler: lambdas/endpoints/donors/delete.handler
+    events:
+        - http:
+            method: post
+            path: donor/delete
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  donorDeletePledge:
+    handler: lambdas/endpoints/donors/deletePledge.handler
+    events:
+        - http:
+            method: post
+            path: donor/delete-pledge
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  donorDownloadFile:
+    handler: lambdas/endpoints/donors/downloadFile.handler
+    timeout: 30
+    events:
+        - http:
+            method: post
+            path: donors/download-file
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  
+  importOrgs:
+    handler: lambdas/endpoints/organisations/import.handler
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:uuid:1
+  migrateUser:
+    handler: lambdas/endpoints/users/migrateData.handler
+    events:
+        - http:
+            method: post
+            path: user/migrate-data
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizer
+              type: COGNITO_USER_POOLS
+              arn:
+                Fn::GetAtt:
+                  - UserPool
+                  - Arn
+        - http:
+            method: post
+            path: user/migrate-data-manual
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  fixReferences:
+    handler: lambdas/endpoints/users/fixReferences.handler
+    events:
+        - http:
+            method: post
+            path: users/fix-family-references
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    timeout: 30
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  fixRoles:
+    handler: lambdas/endpoints/users/fixRoles.handler
+    timeout: 300
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  #setPassword:
+  #  handler: lambdas/endpoints/users/setPassword.handler
+  #  timeout: 300
+  updateOrgCounts:
+    handler: lambdas/endpoints/organisations/updateCounts.handler
+    timeout: 300
+    events:
+      - schedule: cron(55 07 * * ? *)
+      - schedule: cron(55 09 * * ? *)
+      - schedule: cron(55 11 * * ? *)
+      - schedule: cron(55 13 * * ? *)
+      - schedule: cron(55 15 * * ? *)
+      - schedule: cron(55 17 * * ? *)
+  notifications:
+    handler: lambdas/endpoints/communication/notifications.handler
+    timeout: 300
+    events:
+      - schedule: cron(05 07-19 * * ? *)
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  restoreData:
+    handler: lambdas/endpoints/fixes/restoreData.handler
+    timeout: 300
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:uuid:1
+#  fixAllocationTotals:
+#    handler: lambdas/endpoints/fixes/donorAllocatedTotal.handler
+#    timeout: 300
+#  fixSuperfluousNotes:
+#    handler: lambdas/endpoints/fixes/superfluousNotes.handler
+#    timeout: 300
+  migrateToMaster:
+    handler: lambdas/endpoints/fixes/masterMigration.handler
+    timeout: 900
+resources:
+  # DynamoDB
+  - ${file(resources/master-table.yml)}
+  - ${file(resources/cognito-user-pool.yml)}
+  - ${file(resources/cognito-user-pool-migrate.yml)}
+  - ${file(resources/send-pledge-sqs-queue.yml)}
