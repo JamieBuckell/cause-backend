@@ -1,0 +1,211 @@
+service: causef-api-v2-users
+
+useDotenv: true
+frameworkVersion: '3'
+
+plugins:
+  - serverless-domain-manager
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  userPools:
+    dev: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd"
+    live: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq"
+  domains:
+    live: api.cause-foundation.org.uk
+    dev: causeapi.bouchelle.co.uk
+  customDomain:
+    domainName: ${self:custom.domains.${self:custom.stage}}
+    basePath: users
+    stage: ${self:provider.stage}
+    createRoute53Record: true
+provider:
+  name: aws
+  runtime: nodejs14.x
+  profile: jamiebuckell
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'eu-west-2'}
+  apiGateway:
+    description: Microservice for organisation specific processes
+  environment: ${file(../resources/.env.${self:custom.stage}.yml):}
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - "ses:SendEmail"
+        - "ses:SendTemplatedEmail"
+        - "ses:SendRawEmail"
+      Resource:
+        - arn:aws:ses:eu-west-1:988218197909:identity/jamiebuckell.co.uk
+        - arn:aws:ses:eu-west-1:988218197909:identity/cause-foundation.org.uk
+        - arn:aws:ses:eu-west-1:988218197909:configuration-set/cause-failure-configuration
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:BatchWriteItem
+      Resource:
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/"
+            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/"
+            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+            - "/index/GSI2"
+    - Effect: 'Allow'
+      Action:
+        - cognito-idp:AdminGetUser
+        - cognito-idp:AdminCreateUser
+        - cognito-idp:AdminDeleteUser
+        - cognito-idp:AdminAddUserToGroup
+        - cognito-idp:AdminSetUserPassword
+        - cognito-idp:ListUsersInGroup
+        - cognito-idp:ListUsers
+      Resource:
+        - Fn::Join:
+          - ""
+          - - "arn:aws:cognito-idp:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":userpool/"
+            - ${self:provider.environment.USER_POOL}
+    - Effect: Allow
+      Action:
+        - sqs:sendmessage
+      Resource:
+        - Fn::Join:
+          - ""
+          - - "arn:aws:sqs:"
+            - ${self:provider.region}
+            - ":"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":"
+            - ${self:provider.environment.FIX_DONOR_REFERENCES_QUEUE}
+package:
+  individually: true
+  exclude:
+      - '**/*'
+  include:
+      - ../common/**
+      - endpoints/**
+functions:
+  delete:
+    handler: endpoints/delete.handler
+    events:
+        - http:
+            method: post
+            path: delete/{organisationId}/{emailAddress}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   organisationId: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+        - http:
+            method: post
+            path: delete/{organisationId}/{emailAddress}/{userType}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   organisationId: true
+                   userType: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  resetPassword:
+    handler: endpoints/resetPassword.handler
+    events:
+        - http:
+            method: post
+            path: reset-password/{emailAddress}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   emailAddress: true
+  resetPasswordCommit:
+    handler: endpoints/resetPasswordCommit.handler
+    events:
+        - http:
+            method: post
+            path: reset-password-commit/{emailAddress}/{verificationHash}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   emailAddress: true
+                   verificationHash: true
+  list:
+    handler: endpoints/list.handler
+    events:
+        - http:
+            method: get
+            path: list/{userType}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   userType: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  create:
+    handler: endpoints/create.handler
+    events:
+        - http:
+            method: post
+            path: create/{userType}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   userType: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  fixReferences:
+    handler: endpoints/fixReferences.handler
+    events:
+        - http:
+            method: post
+            path: fix-family-references
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  doFixReferences:
+    handler: endpoints/doFixReferences.handler
+    timeout: 300
+    reservedConcurrency: 10
+    events:
+      - sqs:
+          batchSize: 50
+          maximumBatchingWindow: 1
+          arn:
+            Fn::GetAtt:
+              - FixDonorReferences
+              - Arn
+resources:
+  - ${file(../resources/fix-donor-references.yml)}
+  - ${file(../resources/api-gateway-responses.yml)}

@@ -1,0 +1,158 @@
+service: causef-api-v2-subscribers
+
+useDotenv: true
+frameworkVersion: '3'
+
+plugins:
+  - serverless-domain-manager
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  userPools:
+    dev: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd"
+    live: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq"
+  domains:
+    live: api.cause-foundation.org.uk
+    dev: causeapi.bouchelle.co.uk
+  customDomain:
+    domainName: ${self:custom.domains.${self:custom.stage}}
+    basePath: subscription
+    stage: ${self:provider.stage}
+    createRoute53Record: true
+provider:
+  name: aws
+  runtime: nodejs14.x
+  profile: jamiebuckell
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'eu-west-2'}
+  apiGateway:
+    description: Microservice for subscriber specific processes
+  environment: ${file(../resources/.env.${self:custom.stage}.yml):}
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - "ses:SendEmail"
+        - "ses:SendTemplatedEmail"
+        - "ses:SendRawEmail"
+      Resource:
+        - arn:aws:ses:eu-west-1:988218197909:identity/jamiebuckell.co.uk
+        - arn:aws:ses:eu-west-1:988218197909:identity/cause-foundation.org.uk
+        - arn:aws:ses:eu-west-1:988218197909:configuration-set/cause-failure-configuration
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:BatchWriteItem
+      Resource:
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/"
+            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/"
+            - ${self:provider.environment.SUBSCRIBERS_TABLE}
+package:
+  individually: true
+  exclude:
+      - '**/*'
+  include:
+      - ../common/**
+      - endpoints/**
+functions:
+  subscribe:
+    handler: endpoints/subscribe.handler
+    events:
+        - http:
+            method: post
+            path: subscribe
+            cors: true
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:uuid:1
+  verification:
+    handler: endpoints/verification.handler
+    events:
+        - http:
+            method: get
+            path: verify/{emailAddress}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   emailAddress: true
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+  list:
+    handler: endpoints/list.handler
+    events:
+        - http:
+            method: get
+            path: list
+            cors: true
+            integration: lambda-proxy
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+  check:
+    handler: endpoints/check.handler
+    events:
+        - http:
+            method: get
+            path: check/{emailAddress}/{hash}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   emailAddress: true
+                   hash: true
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+  unsubscribe:
+    handler: endpoints/unsubscribe.handler
+    events:
+        - http:
+            method: get
+            path: unsubscribe/{emailAddress}/{hash}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   emailAddress: true
+                   hash: true
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+  resubscribe:
+    handler: endpoints/resubscribe.handler
+    events:
+        - http:
+            method: get
+            path: resubscribe/{emailAddress}/{hash}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   emailAddress: true
+                   hash: true
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+resources:
+  - ${file(../resources/subscribers-table.yml)}
+  - ${file(../resources/api-gateway-responses.yml)}

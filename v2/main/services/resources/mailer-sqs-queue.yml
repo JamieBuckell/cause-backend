@@ -1,0 +1,8 @@
+Resources:
+  MailerQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:provider.environment.MAILER_QUEUE}
+      VisibilityTimeout: 300
+      FifoQueue: true
+      ContentBasedDeduplication: true

@@ -1,0 +1,124 @@
+{
+    {
+        "PK": {
+          "S": "CH1"
+        },
+        "SK": {
+          "S": "A"
+        },
+        "campaignDetails": {
+          "M": {
+            "campaignEnd": {
+              "S": "2023-01-01T00:00:00.000Z"
+            },
+            "campaignStart": {
+              "S": "2022-09-02T00:00:00.000Z"
+            },
+            "registrationClosed": {
+              "S": "2022-12-25T00:00:00.000Z"
+            },
+            "registrationOpen": {
+              "S": "2022-09-02T00:00:00.000Z"
+            }
+          }
+        },
+        "campaignName": {
+          "S": "Christmas Hamper Campaign 2022"
+        },
+        "type": {
+          "S": "campaign"
+        }
+      },
+
+{
+  "PK": {
+    "S": "CH2"
+  },
+  "SK": {
+    "S": "A"
+  },
+  "campaignDetails": {
+    "M": {
+      "campaignEnd": {
+        "S": "2024-01-01T00:00:00.000Z"
+      },
+      "campaignStart": {
+        "S": "2023-09-02T00:00:00.000Z"
+      },
+      "registrationClosed": {
+        "S": "2023-12-25T00:00:00.000Z"
+      },
+      "registrationOpen": {
+        "S": "2023-09-02T00:00:00.000Z"
+      }
+    }
+  },
+  "campaignName": {
+    "S": "Christmas Hamper Campaign 2023"
+  },
+  "type": {
+    "S": "campaign"
+  }
+},
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{
+    {
+        "PK": {
+          "S": "email@jamiebuckell.co.uk"
+        },
+        "SK": {
+          "S": "H#7ebb6d4d-2d23-454d-88a5-8cf46c466d74"
+        },
+        "company": {
+          "S": "None"
+        },
+        "dateAdded": {
+          "S": "2023-09-02 23:14:53"
+        },
+        "dateSubscribed": {
+          "S": "2023-09-03 00:24:39"
+        },
+        "dateVerified": {
+          "S": "2023-09-03 00:16:11"
+        },
+        "firstName": {
+          "S": "Jamie"
+        },
+        "howHeard": {
+          "S": "tv"
+        },
+        "lastName": {
+          "S": "Buckell"
+        },
+        "subscribed": {
+          "BOOL": false
+        },
+        "telephone": {
+          "S": "0706123456"
+        },
+        "verified": {
+          "BOOL": true
+        }
+      }
+}

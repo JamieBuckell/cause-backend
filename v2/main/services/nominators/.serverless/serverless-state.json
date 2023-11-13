@@ -1,0 +1,2280 @@
+{
+  "service": {
+    "service": "causef-api-v2-nominators",
+    "serviceObject": {
+      "name": "causef-api-v2-nominators"
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "nodejs14.x",
+      "profile": "jamiebuckell",
+      "stage": "dev",
+      "region": "eu-west-2",
+      "apiGateway": {
+        "description": "Microservice for organisation specific processes"
+      },
+      "environment": {
+        "AWS_ACCOUNT_ID": "988218197909",
+        "AWS_ACCOUNT_REGION": "eu-west-2",
+        "WEBSITE_URL": "https://www.cause-foundation.org.uk",
+        "APP_URL": "http://localhost:4000",
+        "MAIN_DYNAMO_TABLE": "cause-portal-v2-dev",
+        "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-dev",
+        "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-dev",
+        "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-dev",
+        "FEEDBACK_TABLE": "cause-portal-v2-feedback-dev",
+        "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-dev",
+        "MAILER_QUEUE": "cause-portal-v2-mailer-queue-dev.fifo",
+        "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-dev",
+        "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-dev",
+        "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-dev",
+        "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-dev",
+        "TIMEZONE": "Europe/London",
+        "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
+        "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
+        "INTERNAL_ADDRESS": "email@jamiebuckell.co.uk",
+        "HASHING_SALT": "46d6a84b07ce2e",
+        "HASHING_PREFIX": "H#",
+        "USER_POOL": "eu-west-2_Tq53Gr5Pd"
+      },
+      "iamRoleStatements": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ses:SendEmail",
+            "ses:SendTemplatedEmail",
+            "ses:SendRawEmail"
+          ],
+          "Resource": [
+            "arn:aws:ses:eu-west-1:988218197909:identity/jamiebuckell.co.uk",
+            "arn:aws:ses:eu-west-1:988218197909:identity/cause-foundation.org.uk",
+            "arn:aws:ses:eu-west-1:988218197909:configuration-set/cause-failure-configuration"
+          ]
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "dynamodb:DescribeTable",
+            "dynamodb:Query",
+            "dynamodb:Scan",
+            "dynamodb:GetItem",
+            "dynamodb:PutItem",
+            "dynamodb:UpdateItem",
+            "dynamodb:DeleteItem",
+            "dynamodb:BatchWriteItem"
+          ],
+          "Resource": [
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:aws:dynamodb:eu-west-2:",
+                  988218197909,
+                  ":table/",
+                  "cause-portal-v2-dev"
+                ]
+              ]
+            },
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:aws:dynamodb:eu-west-2:",
+                  988218197909,
+                  ":table/",
+                  "cause-portal-v2-dev",
+                  "/index/GSI2"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "cognito-idp:AdminGetUser",
+            "cognito-idp:AdminCreateUser",
+            "cognito-idp:AdminDeleteUser",
+            "cognito-idp:AdminAddUserToGroup",
+            "cognito-idp:AdminSetUserPassword",
+            "cognito-idp:ListUsersInGroup",
+            "cognito-idp:ListUsers"
+          ],
+          "Resource": [
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:aws:cognito-idp:eu-west-2:",
+                  988218197909,
+                  ":userpool/",
+                  "eu-west-2_Tq53Gr5Pd"
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "versionFunctions": true,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "ServerlessDeploymentBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+              "Bucket": {
+                "Ref": "ServerlessDeploymentBucket"
+              },
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Action": "s3:*",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            },
+                            "/*"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            }
+                          ]
+                        ]
+                      }
+                    ],
+                    "Condition": {
+                      "Bool": {
+                        "aws:SecureTransport": false
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "CreateLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/causef-api-v2-nominators-dev-create"
+            }
+          },
+          "RegisterLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/causef-api-v2-nominators-dev-register"
+            }
+          },
+          "SendWelcomeLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/causef-api-v2-nominators-dev-sendWelcome"
+            }
+          },
+          "ApproveLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/causef-api-v2-nominators-dev-approve"
+            }
+          },
+          "ResetPasswordLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/causef-api-v2-nominators-dev-resetPassword"
+            }
+          },
+          "UpdateLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/causef-api-v2-nominators-dev-update"
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "causef-api-v2-nominators",
+                        "dev",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream",
+                          "logs:CreateLogGroup",
+                          "logs:TagResource"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/causef-api-v2-nominators-dev*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/causef-api-v2-nominators-dev*:*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iamRoleStatements\"][0]"
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iamRoleStatements\"][1]"
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iamRoleStatements\"][2]"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "causef-api-v2-nominators",
+                    "dev",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          },
+          "CreateLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/causef-api-v2-nominators/dev/1699906136012-2023-11-13T20:08:56.012Z/create.zip"
+              },
+              "Handler": "endpoints/create.handler",
+              "Runtime": "nodejs14.x",
+              "FunctionName": "causef-api-v2-nominators-dev-create",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "AWS_ACCOUNT_ID": "988218197909",
+                  "AWS_ACCOUNT_REGION": "eu-west-2",
+                  "WEBSITE_URL": "https://www.cause-foundation.org.uk",
+                  "APP_URL": "http://localhost:4000",
+                  "MAIN_DYNAMO_TABLE": "cause-portal-v2-dev",
+                  "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-dev",
+                  "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-dev",
+                  "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-dev",
+                  "FEEDBACK_TABLE": "cause-portal-v2-feedback-dev",
+                  "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-dev",
+                  "MAILER_QUEUE": "cause-portal-v2-mailer-queue-dev.fifo",
+                  "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-dev",
+                  "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-dev",
+                  "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-dev",
+                  "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-dev",
+                  "TIMEZONE": "Europe/London",
+                  "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
+                  "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
+                  "INTERNAL_ADDRESS": "email@jamiebuckell.co.uk",
+                  "HASHING_SALT": "46d6a84b07ce2e",
+                  "HASHING_PREFIX": "H#",
+                  "USER_POOL": "eu-west-2_Tq53Gr5Pd"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                "arn:aws:lambda:eu-west-2:988218197909:layer:moment:1",
+                "arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2"
+              ]
+            },
+            "DependsOn": [
+              "CreateLogGroup"
+            ]
+          },
+          "RegisterLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/causef-api-v2-nominators/dev/1699906136012-2023-11-13T20:08:56.012Z/register.zip"
+              },
+              "Handler": "endpoints/create.handler",
+              "Runtime": "nodejs14.x",
+              "FunctionName": "causef-api-v2-nominators-dev-register",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "AWS_ACCOUNT_ID": "988218197909",
+                  "AWS_ACCOUNT_REGION": "eu-west-2",
+                  "WEBSITE_URL": "https://www.cause-foundation.org.uk",
+                  "APP_URL": "http://localhost:4000",
+                  "MAIN_DYNAMO_TABLE": "cause-portal-v2-dev",
+                  "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-dev",
+                  "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-dev",
+                  "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-dev",
+                  "FEEDBACK_TABLE": "cause-portal-v2-feedback-dev",
+                  "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-dev",
+                  "MAILER_QUEUE": "cause-portal-v2-mailer-queue-dev.fifo",
+                  "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-dev",
+                  "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-dev",
+                  "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-dev",
+                  "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-dev",
+                  "TIMEZONE": "Europe/London",
+                  "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
+                  "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
+                  "INTERNAL_ADDRESS": "email@jamiebuckell.co.uk",
+                  "HASHING_SALT": "46d6a84b07ce2e",
+                  "HASHING_PREFIX": "H#",
+                  "USER_POOL": "eu-west-2_Tq53Gr5Pd"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                "arn:aws:lambda:eu-west-2:988218197909:layer:moment:1",
+                "arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2"
+              ]
+            },
+            "DependsOn": [
+              "RegisterLogGroup"
+            ]
+          },
+          "SendWelcomeLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/causef-api-v2-nominators/dev/1699906136012-2023-11-13T20:08:56.012Z/sendWelcome.zip"
+              },
+              "Handler": "endpoints/sendWelcome.handler",
+              "Runtime": "nodejs14.x",
+              "FunctionName": "causef-api-v2-nominators-dev-sendWelcome",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "AWS_ACCOUNT_ID": "988218197909",
+                  "AWS_ACCOUNT_REGION": "eu-west-2",
+                  "WEBSITE_URL": "https://www.cause-foundation.org.uk",
+                  "APP_URL": "http://localhost:4000",
+                  "MAIN_DYNAMO_TABLE": "cause-portal-v2-dev",
+                  "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-dev",
+                  "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-dev",
+                  "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-dev",
+                  "FEEDBACK_TABLE": "cause-portal-v2-feedback-dev",
+                  "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-dev",
+                  "MAILER_QUEUE": "cause-portal-v2-mailer-queue-dev.fifo",
+                  "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-dev",
+                  "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-dev",
+                  "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-dev",
+                  "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-dev",
+                  "TIMEZONE": "Europe/London",
+                  "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
+                  "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
+                  "INTERNAL_ADDRESS": "email@jamiebuckell.co.uk",
+                  "HASHING_SALT": "46d6a84b07ce2e",
+                  "HASHING_PREFIX": "H#",
+                  "USER_POOL": "eu-west-2_Tq53Gr5Pd"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                "arn:aws:lambda:eu-west-2:988218197909:layer:moment:1"
+              ]
+            },
+            "DependsOn": [
+              "SendWelcomeLogGroup"
+            ]
+          },
+          "ApproveLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/causef-api-v2-nominators/dev/1699906136012-2023-11-13T20:08:56.012Z/approve.zip"
+              },
+              "Handler": "endpoints/approve.handler",
+              "Runtime": "nodejs14.x",
+              "FunctionName": "causef-api-v2-nominators-dev-approve",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "AWS_ACCOUNT_ID": "988218197909",
+                  "AWS_ACCOUNT_REGION": "eu-west-2",
+                  "WEBSITE_URL": "https://www.cause-foundation.org.uk",
+                  "APP_URL": "http://localhost:4000",
+                  "MAIN_DYNAMO_TABLE": "cause-portal-v2-dev",
+                  "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-dev",
+                  "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-dev",
+                  "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-dev",
+                  "FEEDBACK_TABLE": "cause-portal-v2-feedback-dev",
+                  "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-dev",
+                  "MAILER_QUEUE": "cause-portal-v2-mailer-queue-dev.fifo",
+                  "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-dev",
+                  "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-dev",
+                  "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-dev",
+                  "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-dev",
+                  "TIMEZONE": "Europe/London",
+                  "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
+                  "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
+                  "INTERNAL_ADDRESS": "email@jamiebuckell.co.uk",
+                  "HASHING_SALT": "46d6a84b07ce2e",
+                  "HASHING_PREFIX": "H#",
+                  "USER_POOL": "eu-west-2_Tq53Gr5Pd"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                "arn:aws:lambda:eu-west-2:988218197909:layer:moment:1"
+              ]
+            },
+            "DependsOn": [
+              "ApproveLogGroup"
+            ]
+          },
+          "ResetPasswordLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/causef-api-v2-nominators/dev/1699906136012-2023-11-13T20:08:56.012Z/resetPassword.zip"
+              },
+              "Handler": "endpoints/resetPassword.handler",
+              "Runtime": "nodejs14.x",
+              "FunctionName": "causef-api-v2-nominators-dev-resetPassword",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "AWS_ACCOUNT_ID": "988218197909",
+                  "AWS_ACCOUNT_REGION": "eu-west-2",
+                  "WEBSITE_URL": "https://www.cause-foundation.org.uk",
+                  "APP_URL": "http://localhost:4000",
+                  "MAIN_DYNAMO_TABLE": "cause-portal-v2-dev",
+                  "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-dev",
+                  "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-dev",
+                  "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-dev",
+                  "FEEDBACK_TABLE": "cause-portal-v2-feedback-dev",
+                  "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-dev",
+                  "MAILER_QUEUE": "cause-portal-v2-mailer-queue-dev.fifo",
+                  "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-dev",
+                  "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-dev",
+                  "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-dev",
+                  "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-dev",
+                  "TIMEZONE": "Europe/London",
+                  "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
+                  "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
+                  "INTERNAL_ADDRESS": "email@jamiebuckell.co.uk",
+                  "HASHING_SALT": "46d6a84b07ce2e",
+                  "HASHING_PREFIX": "H#",
+                  "USER_POOL": "eu-west-2_Tq53Gr5Pd"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "ResetPasswordLogGroup"
+            ]
+          },
+          "UpdateLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/causef-api-v2-nominators/dev/1699906136012-2023-11-13T20:08:56.012Z/update.zip"
+              },
+              "Handler": "endpoints/update.handler",
+              "Runtime": "nodejs14.x",
+              "FunctionName": "causef-api-v2-nominators-dev-update",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "AWS_ACCOUNT_ID": "988218197909",
+                  "AWS_ACCOUNT_REGION": "eu-west-2",
+                  "WEBSITE_URL": "https://www.cause-foundation.org.uk",
+                  "APP_URL": "http://localhost:4000",
+                  "MAIN_DYNAMO_TABLE": "cause-portal-v2-dev",
+                  "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-dev",
+                  "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-dev",
+                  "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-dev",
+                  "FEEDBACK_TABLE": "cause-portal-v2-feedback-dev",
+                  "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-dev",
+                  "MAILER_QUEUE": "cause-portal-v2-mailer-queue-dev.fifo",
+                  "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-dev",
+                  "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-dev",
+                  "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-dev",
+                  "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-dev",
+                  "TIMEZONE": "Europe/London",
+                  "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
+                  "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
+                  "INTERNAL_ADDRESS": "email@jamiebuckell.co.uk",
+                  "HASHING_SALT": "46d6a84b07ce2e",
+                  "HASHING_PREFIX": "H#",
+                  "USER_POOL": "eu-west-2_Tq53Gr5Pd"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                "arn:aws:lambda:eu-west-2:988218197909:layer:moment:1"
+              ]
+            },
+            "DependsOn": [
+              "UpdateLogGroup"
+            ]
+          },
+          "CreateLambdaVersionffweclf02QnZd5RHtiKryky5SxiAOkAqGbl8yji3w": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "CreateLambdaFunction"
+              },
+              "CodeSha256": "69dmF3BGpg94aV8sHaE8a5e2WhgBsfL8809vwxS53nI="
+            }
+          },
+          "RegisterLambdaVersionuwjYv20G3EMPdXWuS2ckemD2emr6UJNW5MoDIjOtpzY": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "RegisterLambdaFunction"
+              },
+              "CodeSha256": "69dmF3BGpg94aV8sHaE8a5e2WhgBsfL8809vwxS53nI="
+            }
+          },
+          "SendWelcomeLambdaVersionJ6URuxGBF4FBybP9Z4FHuoikrQhduNuNh0nTaqSKNo": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SendWelcomeLambdaFunction"
+              },
+              "CodeSha256": "69dmF3BGpg94aV8sHaE8a5e2WhgBsfL8809vwxS53nI="
+            }
+          },
+          "ApproveLambdaVersionuJhjiq7ot6wcb6j5v4JFkxuKijZI0OwMdFrbexFTaoA": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "ApproveLambdaFunction"
+              },
+              "CodeSha256": "69dmF3BGpg94aV8sHaE8a5e2WhgBsfL8809vwxS53nI="
+            }
+          },
+          "ResetPasswordLambdaVersionWQVl36wYfaW8kcpOVzwjdsRatE6tZRTdWknmActz5o": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "ResetPasswordLambdaFunction"
+              },
+              "CodeSha256": "69dmF3BGpg94aV8sHaE8a5e2WhgBsfL8809vwxS53nI="
+            }
+          },
+          "UpdateLambdaVersionEB0gBZjyHpWynvDnK111ho4PwRKXcEfWnswhCYwnCi8": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "UpdateLambdaFunction"
+              },
+              "CodeSha256": "69dmF3BGpg94aV8sHaE8a5e2WhgBsfL8809vwxS53nI="
+            }
+          },
+          "ApiGatewayRestApi": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+              "Name": "causef-api-v2-nominators-dev",
+              "EndpointConfiguration": {
+                "Types": [
+                  "EDGE"
+                ]
+              },
+              "Policy": "",
+              "Description": "Microservice for organisation specific processes"
+            }
+          },
+          "ApiGatewayResourceCreate": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Fn::GetAtt": [
+                  "ApiGatewayRestApi",
+                  "RootResourceId"
+                ]
+              },
+              "PathPart": "create",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceRegister": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Fn::GetAtt": [
+                  "ApiGatewayRestApi",
+                  "RootResourceId"
+                ]
+              },
+              "PathPart": "register",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceSendDashwelcome": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Fn::GetAtt": [
+                  "ApiGatewayRestApi",
+                  "RootResourceId"
+                ]
+              },
+              "PathPart": "send-welcome",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceSendDashwelcomeUseridVar": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceSendDashwelcome"
+              },
+              "PathPart": "{userId}",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceApprove": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Fn::GetAtt": [
+                  "ApiGatewayRestApi",
+                  "RootResourceId"
+                ]
+              },
+              "PathPart": "approve",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceApproveNominatoridVar": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceApprove"
+              },
+              "PathPart": "{nominatorId}",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceApproveNominatoridVarOrganisationidVar": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceApproveNominatoridVar"
+              },
+              "PathPart": "{organisationId}",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceResetDashpassword": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Fn::GetAtt": [
+                  "ApiGatewayRestApi",
+                  "RootResourceId"
+                ]
+              },
+              "PathPart": "reset-password",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceResetDashpasswordNominatoridVar": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceResetDashpassword"
+              },
+              "PathPart": "{nominatorId}",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceUpdate": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Fn::GetAtt": [
+                  "ApiGatewayRestApi",
+                  "RootResourceId"
+                ]
+              },
+              "PathPart": "update",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodCreateOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": ""
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceCreate"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodRegisterOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": ""
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceRegister"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodSendDashwelcomeUseridVarOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": ""
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceSendDashwelcomeUseridVar"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodApproveNominatoridVarOrganisationidVarOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": ""
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceApproveNominatoridVarOrganisationidVar"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodResetDashpasswordNominatoridVarOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": ""
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceResetDashpasswordNominatoridVar"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodUpdateOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": ""
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceUpdate"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodCreatePost": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "POST",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceCreate"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "COGNITO_USER_POOLS",
+              "AuthorizerId": {
+                "Ref": "PrivateAuthorizerV2ApiGatewayAuthorizer"
+              },
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "CreateLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            },
+            "DependsOn": [
+              "PrivateAuthorizerV2ApiGatewayAuthorizer"
+            ]
+          },
+          "ApiGatewayMethodRegisterPost": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "POST",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceRegister"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "RegisterLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            },
+            "DependsOn": [
+              "RegisterLambdaPermissionApiGateway"
+            ]
+          },
+          "ApiGatewayMethodSendDashwelcomeUseridVarPost": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "POST",
+              "RequestParameters": {
+                "method.request.path.userId": true
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceSendDashwelcomeUseridVar"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "COGNITO_USER_POOLS",
+              "AuthorizerId": {
+                "Ref": "PrivateAuthorizerV2ApiGatewayAuthorizer"
+              },
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "SendWelcomeLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": [],
+              "RequestValidatorId": {
+                "Ref": "ApiGatewayCausefapiv2nominatorsRequestValidator"
+              }
+            },
+            "DependsOn": [
+              "PrivateAuthorizerV2ApiGatewayAuthorizer"
+            ]
+          },
+          "ApiGatewayMethodApproveNominatoridVarOrganisationidVarPost": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "POST",
+              "RequestParameters": {
+                "method.request.path.nominatorId": true,
+                "method.request.path.organisationId": true
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceApproveNominatoridVarOrganisationidVar"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "COGNITO_USER_POOLS",
+              "AuthorizerId": {
+                "Ref": "PrivateAuthorizerV2ApiGatewayAuthorizer"
+              },
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "ApproveLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": [],
+              "RequestValidatorId": {
+                "Ref": "ApiGatewayCausefapiv2nominatorsRequestValidator"
+              }
+            },
+            "DependsOn": [
+              "PrivateAuthorizerV2ApiGatewayAuthorizer"
+            ]
+          },
+          "ApiGatewayMethodResetDashpasswordNominatoridVarPost": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "POST",
+              "RequestParameters": {
+                "method.request.path.nominatorId": true
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceResetDashpasswordNominatoridVar"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "COGNITO_USER_POOLS",
+              "AuthorizerId": {
+                "Ref": "PrivateAuthorizerV2ApiGatewayAuthorizer"
+              },
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "ResetPasswordLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": [],
+              "RequestValidatorId": {
+                "Ref": "ApiGatewayCausefapiv2nominatorsRequestValidator"
+              }
+            },
+            "DependsOn": [
+              "PrivateAuthorizerV2ApiGatewayAuthorizer"
+            ]
+          },
+          "ApiGatewayMethodUpdatePost": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "POST",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceUpdate"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "COGNITO_USER_POOLS",
+              "AuthorizerId": {
+                "Ref": "PrivateAuthorizerV2ApiGatewayAuthorizer"
+              },
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "UpdateLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            },
+            "DependsOn": [
+              "PrivateAuthorizerV2ApiGatewayAuthorizer"
+            ]
+          },
+          "ApiGatewayCausefapiv2nominatorsRequestValidator": {
+            "Type": "AWS::ApiGateway::RequestValidator",
+            "Properties": {
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ValidateRequestBody": true,
+              "ValidateRequestParameters": true,
+              "Name": "causef-api-v2-nominators-dev | Validate request body and querystring parameters"
+            }
+          },
+          "PrivateAuthorizerV2ApiGatewayAuthorizer": {
+            "Type": "AWS::ApiGateway::Authorizer",
+            "Properties": {
+              "AuthorizerResultTtlInSeconds": 300,
+              "IdentitySource": "method.request.header.Authorization",
+              "Name": "PrivateAuthorizerV2",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "Type": "COGNITO_USER_POOLS",
+              "ProviderARNs": [
+                "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd"
+              ]
+            }
+          },
+          "ApiGatewayDeployment1699906134589": {
+            "Type": "AWS::ApiGateway::Deployment",
+            "Properties": {
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "StageName": "dev",
+              "Description": "Microservice for organisation specific processes"
+            },
+            "DependsOn": [
+              "ApiGatewayMethodCreateOptions",
+              "ApiGatewayMethodRegisterOptions",
+              "ApiGatewayMethodSendDashwelcomeUseridVarOptions",
+              "ApiGatewayMethodApproveNominatoridVarOrganisationidVarOptions",
+              "ApiGatewayMethodResetDashpasswordNominatoridVarOptions",
+              "ApiGatewayMethodUpdateOptions",
+              "ApiGatewayMethodCreatePost",
+              "ApiGatewayMethodRegisterPost",
+              "ApiGatewayMethodSendDashwelcomeUseridVarPost",
+              "ApiGatewayMethodApproveNominatoridVarOrganisationidVarPost",
+              "ApiGatewayMethodResetDashpasswordNominatoridVarPost",
+              "ApiGatewayMethodUpdatePost"
+            ]
+          },
+          "CreateLambdaPermissionApiGateway": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "CreateLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "ApiGatewayRestApi"
+                    },
+                    "/*/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "RegisterLambdaPermissionApiGateway": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "RegisterLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "ApiGatewayRestApi"
+                    },
+                    "/*/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "SendWelcomeLambdaPermissionApiGateway": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "SendWelcomeLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "ApiGatewayRestApi"
+                    },
+                    "/*/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "ApproveLambdaPermissionApiGateway": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "ApproveLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "ApiGatewayRestApi"
+                    },
+                    "/*/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "ResetPasswordLambdaPermissionApiGateway": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "ResetPasswordLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "ApiGatewayRestApi"
+                    },
+                    "/*/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "UpdateLambdaPermissionApiGateway": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "UpdateLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "ApiGatewayRestApi"
+                    },
+                    "/*/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "GatewayResponseDefault4XX": {
+            "Type": "AWS::ApiGateway::GatewayResponse",
+            "Properties": {
+              "ResponseParameters": {
+                "gatewayresponse.header.Access-Control-Allow-Origin": "'*'",
+                "gatewayresponse.header.Access-Control-Allow-Headers": "'*'"
+              },
+              "ResponseType": "DEFAULT_4XX",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            },
+            "Export": {
+              "Name": "sls-causef-api-v2-nominators-dev-ServerlessDeploymentBucketName"
+            }
+          },
+          "CreateLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "CreateLambdaVersionffweclf02QnZd5RHtiKryky5SxiAOkAqGbl8yji3w"
+            },
+            "Export": {
+              "Name": "sls-causef-api-v2-nominators-dev-CreateLambdaFunctionQualifiedArn"
+            }
+          },
+          "RegisterLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "RegisterLambdaVersionuwjYv20G3EMPdXWuS2ckemD2emr6UJNW5MoDIjOtpzY"
+            },
+            "Export": {
+              "Name": "sls-causef-api-v2-nominators-dev-RegisterLambdaFunctionQualifiedArn"
+            }
+          },
+          "SendWelcomeLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SendWelcomeLambdaVersionJ6URuxGBF4FBybP9Z4FHuoikrQhduNuNh0nTaqSKNo"
+            },
+            "Export": {
+              "Name": "sls-causef-api-v2-nominators-dev-SendWelcomeLambdaFunctionQualifiedArn"
+            }
+          },
+          "ApproveLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "ApproveLambdaVersionuJhjiq7ot6wcb6j5v4JFkxuKijZI0OwMdFrbexFTaoA"
+            },
+            "Export": {
+              "Name": "sls-causef-api-v2-nominators-dev-ApproveLambdaFunctionQualifiedArn"
+            }
+          },
+          "ResetPasswordLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "ResetPasswordLambdaVersionWQVl36wYfaW8kcpOVzwjdsRatE6tZRTdWknmActz5o"
+            },
+            "Export": {
+              "Name": "sls-causef-api-v2-nominators-dev-ResetPasswordLambdaFunctionQualifiedArn"
+            }
+          },
+          "UpdateLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "UpdateLambdaVersionEB0gBZjyHpWynvDnK111ho4PwRKXcEfWnswhCYwnCi8"
+            },
+            "Export": {
+              "Name": "sls-causef-api-v2-nominators-dev-UpdateLambdaFunctionQualifiedArn"
+            }
+          },
+          "ServiceEndpoint": {
+            "Description": "URL of the service endpoint",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  "https://",
+                  {
+                    "Ref": "ApiGatewayRestApi"
+                  },
+                  ".execute-api.",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ".",
+                  {
+                    "Ref": "AWS::URLSuffix"
+                  },
+                  "/dev"
+                ]
+              ]
+            },
+            "Export": {
+              "Name": "sls-causef-api-v2-nominators-dev-ServiceEndpoint"
+            }
+          }
+        }
+      },
+      "coreCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "ServerlessDeploymentBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+              "Bucket": {
+                "Ref": "ServerlessDeploymentBucket"
+              },
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Action": "s3:*",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            },
+                            "/*"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            }
+                          ]
+                        ]
+                      }
+                    ],
+                    "Condition": {
+                      "Bool": {
+                        "aws:SecureTransport": false
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            }
+          }
+        }
+      },
+      "vpc": {}
+    },
+    "custom": {
+      "stage": "dev",
+      "userPools": {
+        "dev": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd",
+        "live": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq"
+      },
+      "domains": {
+        "live": "api.cause-foundation.org.uk",
+        "dev": "causeapi.bouchelle.co.uk"
+      },
+      "customDomain": {
+        "domainName": "causeapi.bouchelle.co.uk",
+        "basePath": "nominators",
+        "stage": "dev",
+        "createRoute53Record": true
+      }
+    },
+    "plugins": [
+      "serverless-domain-manager"
+    ],
+    "pluginsData": {},
+    "functions": {
+      "create": {
+        "handler": "endpoints/create.handler",
+        "events": [
+          {
+            "http": {
+              "method": "post",
+              "path": "create",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "POST"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "allowCredentials": false
+              },
+              "integration": "AWS_PROXY",
+              "authorizer": {
+                "type": "COGNITO_USER_POOLS",
+                "name": "PrivateAuthorizerV2",
+                "arn": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd",
+                "managedExternally": false,
+                "resultTtlInSeconds": 300,
+                "identitySource": "method.request.header.Authorization",
+                "claims": []
+              }
+            }
+          }
+        ],
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"CreateLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "name": "causef-api-v2-nominators-dev-create",
+        "package": {
+          "artifact": "/Users/jamiebuckell/Documents/Projects/CAUSE/backend/main/services/nominators/.serverless/create.zip"
+        },
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs14.x",
+        "vpc": {},
+        "versionLogicalId": "CreateLambdaVersionffweclf02QnZd5RHtiKryky5SxiAOkAqGbl8yji3w"
+      },
+      "register": {
+        "handler": "endpoints/create.handler",
+        "events": [
+          {
+            "http": {
+              "method": "post",
+              "path": "register",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "POST"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "allowCredentials": false
+              },
+              "integration": "AWS_PROXY"
+            }
+          }
+        ],
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"RegisterLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "name": "causef-api-v2-nominators-dev-register",
+        "package": {
+          "artifact": "/Users/jamiebuckell/Documents/Projects/CAUSE/backend/main/services/nominators/.serverless/register.zip"
+        },
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs14.x",
+        "vpc": {},
+        "versionLogicalId": "RegisterLambdaVersionuwjYv20G3EMPdXWuS2ckemD2emr6UJNW5MoDIjOtpzY"
+      },
+      "sendWelcome": {
+        "handler": "endpoints/sendWelcome.handler",
+        "events": [
+          {
+            "http": {
+              "method": "post",
+              "path": "send-welcome/{userId}",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "POST"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "allowCredentials": false
+              },
+              "request": {
+                "parameters": {
+                  "method.request.path.userId": true
+                }
+              },
+              "integration": "AWS_PROXY",
+              "authorizer": {
+                "type": "COGNITO_USER_POOLS",
+                "name": "PrivateAuthorizerV2",
+                "arn": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd",
+                "managedExternally": false,
+                "resultTtlInSeconds": 300,
+                "identitySource": "method.request.header.Authorization",
+                "claims": []
+              }
+            }
+          }
+        ],
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SendWelcomeLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "name": "causef-api-v2-nominators-dev-sendWelcome",
+        "package": {
+          "artifact": "/Users/jamiebuckell/Documents/Projects/CAUSE/backend/main/services/nominators/.serverless/sendWelcome.zip"
+        },
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs14.x",
+        "vpc": {},
+        "versionLogicalId": "SendWelcomeLambdaVersionJ6URuxGBF4FBybP9Z4FHuoikrQhduNuNh0nTaqSKNo"
+      },
+      "approve": {
+        "handler": "endpoints/approve.handler",
+        "events": [
+          {
+            "http": {
+              "method": "post",
+              "path": "approve/{nominatorId}/{organisationId}",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "POST"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "allowCredentials": false
+              },
+              "request": {
+                "parameters": {
+                  "method.request.path.nominatorId": true,
+                  "method.request.path.organisationId": true
+                }
+              },
+              "integration": "AWS_PROXY",
+              "authorizer": {
+                "type": "COGNITO_USER_POOLS",
+                "name": "PrivateAuthorizerV2",
+                "arn": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd",
+                "managedExternally": false,
+                "resultTtlInSeconds": 300,
+                "identitySource": "method.request.header.Authorization",
+                "claims": []
+              }
+            }
+          }
+        ],
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"ApproveLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "name": "causef-api-v2-nominators-dev-approve",
+        "package": {
+          "artifact": "/Users/jamiebuckell/Documents/Projects/CAUSE/backend/main/services/nominators/.serverless/approve.zip"
+        },
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs14.x",
+        "vpc": {},
+        "versionLogicalId": "ApproveLambdaVersionuJhjiq7ot6wcb6j5v4JFkxuKijZI0OwMdFrbexFTaoA"
+      },
+      "resetPassword": {
+        "handler": "endpoints/resetPassword.handler",
+        "events": [
+          {
+            "http": {
+              "method": "post",
+              "path": "reset-password/{nominatorId}",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "POST"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "allowCredentials": false
+              },
+              "request": {
+                "parameters": {
+                  "method.request.path.nominatorId": true
+                }
+              },
+              "integration": "AWS_PROXY",
+              "authorizer": {
+                "type": "COGNITO_USER_POOLS",
+                "name": "PrivateAuthorizerV2",
+                "arn": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd",
+                "managedExternally": false,
+                "resultTtlInSeconds": 300,
+                "identitySource": "method.request.header.Authorization",
+                "claims": []
+              }
+            }
+          }
+        ],
+        "name": "causef-api-v2-nominators-dev-resetPassword",
+        "package": {
+          "artifact": "/Users/jamiebuckell/Documents/Projects/CAUSE/backend/main/services/nominators/.serverless/resetPassword.zip"
+        },
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs14.x",
+        "vpc": {},
+        "versionLogicalId": "ResetPasswordLambdaVersionWQVl36wYfaW8kcpOVzwjdsRatE6tZRTdWknmActz5o"
+      },
+      "update": {
+        "handler": "endpoints/update.handler",
+        "events": [
+          {
+            "http": {
+              "method": "post",
+              "path": "update",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "POST"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "allowCredentials": false
+              },
+              "integration": "AWS_PROXY",
+              "authorizer": {
+                "type": "COGNITO_USER_POOLS",
+                "name": "PrivateAuthorizerV2",
+                "arn": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd",
+                "managedExternally": false,
+                "resultTtlInSeconds": 300,
+                "identitySource": "method.request.header.Authorization",
+                "claims": []
+              }
+            }
+          }
+        ],
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"UpdateLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "name": "causef-api-v2-nominators-dev-update",
+        "package": {
+          "artifact": "/Users/jamiebuckell/Documents/Projects/CAUSE/backend/main/services/nominators/.serverless/update.zip"
+        },
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs14.x",
+        "vpc": {},
+        "versionLogicalId": "UpdateLambdaVersionEB0gBZjyHpWynvDnK111ho4PwRKXcEfWnswhCYwnCi8"
+      }
+    },
+    "resources": {
+      "Resources": {
+        "ApiGatewayRestApi": {
+          "Type": "AWS::ApiGateway::RestApi",
+          "Properties": {
+            "Name": "causef-api-v2-nominators-dev"
+          }
+        },
+        "GatewayResponseDefault4XX": {
+          "Type": "AWS::ApiGateway::GatewayResponse",
+          "Properties": {
+            "ResponseParameters": {
+              "gatewayresponse.header.Access-Control-Allow-Origin": "'*'",
+              "gatewayresponse.header.Access-Control-Allow-Headers": "'*'"
+            },
+            "ResponseType": "DEFAULT_4XX",
+            "RestApiId": {
+              "Ref": "ApiGatewayRestApi"
+            }
+          }
+        }
+      },
+      "Outputs": {}
+    },
+    "configValidationMode": "warn",
+    "serviceFilename": "serverless.yml",
+    "initialServerlessConfig": {
+      "service": "causef-api-v2-nominators",
+      "useDotenv": true,
+      "frameworkVersion": "3",
+      "plugins": {
+        "$ref": "$[\"service\"][\"plugins\"]"
+      },
+      "custom": {
+        "$ref": "$[\"service\"][\"custom\"]"
+      },
+      "provider": {
+        "$ref": "$[\"service\"][\"provider\"]"
+      },
+      "package": {
+        "individually": true,
+        "exclude": [
+          "**/*"
+        ],
+        "include": [
+          "../common/**",
+          "endpoints/**"
+        ],
+        "artifactsS3KeyDirname": "serverless/causef-api-v2-nominators/dev/code-artifacts",
+        "artifactDirectoryName": "serverless/causef-api-v2-nominators/dev/1699906136012-2023-11-13T20:08:56.012Z"
+      },
+      "functions": {
+        "$ref": "$[\"service\"][\"functions\"]"
+      },
+      "resources": {
+        "$ref": "$[\"service\"][\"resources\"]"
+      }
+    },
+    "layers": {},
+    "isDashboardMonitoringPreconfigured": false
+  },
+  "package": {
+    "individually": true,
+    "artifactDirectoryName": "serverless/causef-api-v2-nominators/dev/1699906136012-2023-11-13T20:08:56.012Z",
+    "artifact": ""
+  }
+}

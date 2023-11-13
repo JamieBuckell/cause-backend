@@ -1,0 +1,41 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": ["next", "plugin:prettier/recommended"],
+  "overrides": [],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "plugins": ["react", "@typescript-eslint", "prettier"],
+  "rules": {
+    "prettier/prettier": [
+      "error",
+      {
+        "singleQuote": true,
+        "avoidEscape": true
+      }
+    ],
+    "indent": ["error", 2],
+    "quotes": ["error", "single", { "avoidEscape": true }],
+    "jsx-quotes": ["error", "prefer-double"],
+    "no-console": "error", // Prevent console log statements
+    "no-debugger": "error", // Prevent debugger statements
+    "no-alert": "error", // Prevent alert statements
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": ["error"],
+    "react/no-unescaped-entities": 0,
+    "react/react-in-jsx-scope": "off", // React > 17 so don't need to import React for JSX
+    "react-hooks/exhaustive-deps": "off",
+    "import/no-anonymous-default-export": 0,
+    "react/no-children-prop": 0
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  }
+}

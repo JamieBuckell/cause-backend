@@ -1,0 +1,6 @@
+Resources:
+  MailerCompleteQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:provider.environment.MAIL_COMPLETE_QUEUE}
+      VisibilityTimeout: 120

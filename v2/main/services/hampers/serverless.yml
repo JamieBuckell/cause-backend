@@ -1,0 +1,158 @@
+service: causef-api-v2-hampers
+
+useDotenv: true
+frameworkVersion: '3'
+
+plugins:
+  - serverless-domain-manager
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  userPools:
+    dev: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd"
+    live: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq"
+  domains:
+    live: api.cause-foundation.org.uk
+    dev: causeapi.bouchelle.co.uk
+  customDomain:
+    domainName: ${self:custom.domains.${self:custom.stage}}
+    basePath: hampers
+    stage: ${self:provider.stage}
+    createRoute53Record: true
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  profile: jamiebuckell
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'eu-west-2'}
+  apiGateway:
+    description: Microservice for hamper specific processes
+  environment: ${file(../resources/.env.${self:custom.stage}.yml):}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:BatchWriteItem
+      Resource:
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/"
+            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/"
+            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+            - "/index/GSI1"
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/"
+            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+            - "/index/GSI2"
+    - Effect: 'Allow'
+      Action:
+        - lambda:InvokeFunction
+      Resource:
+        - arn:aws:lambda:eu-west-2:988218197909:function:pdf-live-downloadPdf
+package:
+  individually: true
+  exclude:
+      - '**/*'
+  include:
+      - ../common/**
+      - endpoints/**
+functions:
+  check:
+    handler: endpoints/check.handler
+    events:
+        - http:
+            method: post
+            path: check
+            cors: true
+  receive:
+    handler: endpoints/receive.handler
+    events:
+        - http:
+            method: post
+            path: receive
+            cors: true
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  markDirect:
+    handler: endpoints/markDirect.handler
+    events:
+        - http:
+            method: post
+            path: mark-direct
+            cors: true
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  screen:
+    handler: endpoints/screen.handler
+    events:
+        - http:
+            method: get
+            path: screen/{campaignId}
+            cors: true
+            request: 
+              parameters: 
+                paths: 
+                  campaignId: true
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  overview:
+    handler: endpoints/overview.handler
+    events:
+        - http:
+            method: get
+            path: get-overview/{hamperRef}
+            cors: true
+            request: 
+              parameters: 
+                 paths: 
+                   hamperRef: true
+  undeliveredHampers:
+    handler: endpoints/undelivered.handler
+    events:
+        - http:
+            method: get
+            path: undelivered
+            cors: true
+            response:
+              statusCodes:
+                400:
+                  pattern: '.*"error".*'
+                  template: $input.path('$.errorMessage')
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+  undeliveredDonors:
+    handler: endpoints/undeliveredDonors.handler
+    events:
+        - http:
+            method: get
+            path: undelivered-donors
+            cors: true
+            response:
+              statusCodes:
+                400:
+                  pattern: '.*"error".*'
+                  template: $input.path('$.errorMessage')
+            authorizer:
+              name: PrivateAuthorizerV2
+              type: COGNITO_USER_POOLS
+              arn: ${self:custom.userPools.${self:custom.stage}}
+resources:
+  - ${file(../resources/api-gateway-responses.yml)}

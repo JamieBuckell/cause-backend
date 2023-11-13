@@ -1,0 +1,6 @@
+Resources:
+  SubscriberUpdateQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:provider.environment.SUBSCRIBER_UPDATE_QUEUE}
+      VisibilityTimeout: 60

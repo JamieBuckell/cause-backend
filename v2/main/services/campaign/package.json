@@ -1,0 +1,23 @@
+{
+  "name": "causef-api-backend-hampers",
+  "version": "1.0.0",
+  "description": "API calls and services for the CAUSE Foundation portal",
+  "main": "handler.js",
+  "dependencies": {
+    "crypto": "^1.0.1"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.1494.0",
+    "moment": "^2.29.1",
+    "moment-timezone": "^0.5.34",
+    "serverless-domain-manager": "^7.1.2",
+    "stripe": "^8.199.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "runAll": "cd ../campaign && serverless deploy --stage=live && cd ../comms && serverless deploy --stage=live && cd ../donors && serverless deploy --stage=live && cd ../families && serverless deploy --stage=live && cd ../nominators && serverless deploy --stage=live && cd ../organisations && serverless deploy --stage=live && cd ../subscription && serverless deploy --stage=live && cd ../users && serverless deploy --stage=live",
+    "runAll-dev": "cd ../campaign && serverless deploy --stage=dev && cd ../comms && serverless deploy --stage=dev && cd ../donors && serverless deploy --stage=dev && cd ../families && serverless deploy --stage=dev && cd ../nominators && serverless deploy --stage=dev && cd ../organisations && serverless deploy --stage=dev && cd ../subscription && serverless deploy --stage=dev && cd ../users && serverless deploy --stage=dev"
+  },
+  "author": "Jamie Buckell",
+  "license": "ISC"
+}

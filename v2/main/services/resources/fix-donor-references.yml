@@ -1,0 +1,6 @@
+Resources:
+  FixDonorReferences:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:provider.environment.FIX_DONOR_REFERENCES_QUEUE}
+      VisibilityTimeout: 300

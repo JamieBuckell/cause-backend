@@ -1,0 +1,197 @@
+service: causef-api-v2-dataMigration
+
+useDotenv: true
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  userPools:
+    dev: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd"
+    live: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq"
+provider:
+  name: aws
+  runtime: nodejs14.x
+  profile: jamiebuckell
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'eu-west-2'}
+  environment: ${file(../resources/.env.${self:custom.stage}.yml):}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:BatchWriteItem
+      Resource:
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/"
+            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/"
+            - ${self:provider.environment.SUBSCRIBERS_TABLE}
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/cause-portal-v2-live-restored-18Oct"
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/cause-portal-v2-live-restored-19Oct"
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+      Resource:
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/cause-donors-live"
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/cause-campaign-donors-new-live"
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/cause-organisations-live-restored"
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/cause-nominators-live"
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/cause-families-live"
+        - Fn::Join:
+          - ""
+          - - "arn:aws:dynamodb:eu-west-2:"
+            - ${self:provider.environment.AWS_ACCOUNT_ID}
+            - ":table/cause-family-members-live"
+package:
+  individually: true
+  exclude:
+      - '**/*'
+  include:
+      - ../common/**
+      - endpoints/**
+functions:
+  donors:
+    handler: endpoints/donors.handler
+    timeout: 300
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+  subscribersFix:
+    handler: endpoints/subscribersFix.handler
+    timeout: 300
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+  organisations:
+    handler: endpoints/organisations.handler
+    timeout: 300
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+  nominators:
+    handler: endpoints/nominators.handler
+    timeout: 300
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+  fixSKs:
+    handler: endpoints/fixSKs.handler
+    timeout: 300
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+  fixDonorSKs:
+    handler: endpoints/fixDonorSKs.handler
+    timeout: 300
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+  fixFamilySKs:
+    handler: endpoints/fixFamilySKs.handler
+    timeout: 300
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+  removeDeletedFamilies:
+    handler: endpoints/removeDeletedFamilies.handler
+    timeout: 300
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+  fixDonorCognitoIDs:
+    handler: endpoints/fixDonorCognitoIDs.handler
+    timeout: 300
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+  fixFamilyUnitCounts:
+    handler: endpoints/fixFamilyUnitCounts.handler
+    timeout: 300
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+  families:
+    handler: endpoints/families.handler
+    timeout: 300
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+  addFamilyRequestIds:
+    handler: endpoints/addFamilyRequestIds.handler
+    timeout: 300
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+  donorAllocations:
+    handler: endpoints/donorAllocations.handler
+    timeout: 300
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+  deletedFamilies:
+    handler: endpoints/deletedFamilies.handler
+    timeout: 300
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+resources:
+  - ${file(../resources/api-gateway-responses.yml)}
+      
