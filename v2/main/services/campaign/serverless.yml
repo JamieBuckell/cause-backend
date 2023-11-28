@@ -1,7 +1,7 @@
 service: causef-api-v2-campaigns
 
 useDotenv: true
-frameworkVersion: '3'
+frameworkVersion: "3"
 
 plugins:
   - serverless-domain-manager
@@ -38,99 +38,116 @@ provider:
         - dynamodb:BatchWriteItem
       Resource:
         - Fn::Join:
-          - ""
-          - - "arn:aws:dynamodb:eu-west-2:"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":table/"
-            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+            - ""
+            - - "arn:aws:dynamodb:eu-west-2:"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
         - Fn::Join:
-          - ""
-          - - "arn:aws:dynamodb:eu-west-2:"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":table/"
-            - ${self:provider.environment.SUBSCRIBERS_TABLE}
+            - ""
+            - - "arn:aws:dynamodb:eu-west-2:"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+              - "/index/GSI2"
+        - Fn::Join:
+            - ""
+            - - "arn:aws:dynamodb:eu-west-2:"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.SUBSCRIBERS_TABLE}
 package:
   individually: true
   exclude:
-      - '**/*'
+    - "**/*"
   include:
-      - ../common/**
-      - endpoints/**
+    - ../common/**
+    - endpoints/**
 functions:
   create:
     handler: endpoints/create.handler
     events:
-        - http:
-            method: post
-            path: create
-            cors: true
-            integration: lambda-proxy
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: post
+          path: create
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
       - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
   list:
     handler: endpoints/list.handler
     events:
-        - http:
-            method: get
-            path: list
-            cors: true
-            integration: lambda-proxy
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: get
+          path: list
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
   getById:
     handler: endpoints/getById.handler
     events:
-        - http:
-            method: get
-            path: get-by-id/{campaignId}
-            cors: true
-            request: 
-              parameters: 
-                 paths: 
-                   campaignId: true
-            integration: lambda-proxy
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: get
+          path: get-by-id/{campaignId}
+          cors: true
+          request:
+            parameters:
+              paths:
+                campaignId: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
   update:
     handler: endpoints/update.handler
     events:
-        - http:
-            method: post
-            path: update
-            cors: true
-            integration: lambda-proxy
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: post
+          path: update
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
       - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
   delete:
     handler: endpoints/delete.handler
     events:
-        - http:
-            method: post
-            path: delete/{campaignId}
-            cors: true
-            request: 
-              parameters: 
-                paths: 
-                  campaignId: true
-            integration: lambda-proxy
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: post
+          path: delete/{campaignId}
+          cors: true
+          request:
+            parameters:
+              paths:
+                campaignId: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  verify:
+    handler: endpoints/verify.handler
+    events:
+      - http:
+          method: get
+          path: verify
+          cors: true
+          integration: lambda-proxy
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
 resources:

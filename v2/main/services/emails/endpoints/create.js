@@ -51,6 +51,7 @@ exports.handler = async (event, context, cb) => {
       .replace(escapeRegEx, "");
 
     const campaignSK = `A`;
+    const campaignGSI2PK = "campaign";
     const campaignGSI2SK = `SK#${campaignSK}`;
 
     const timezone = process.env.TIMEZONE;
@@ -71,6 +72,7 @@ exports.handler = async (event, context, cb) => {
         registrationOpen: parsed?.dates?.registrationOpen ?? "",
       },
       campaignName: validCampaignName,
+      GSI2PK: campaignGSI2PK,
       GSI2SK: campaignGSI2SK,
       type: "campaign",
       status: "active",

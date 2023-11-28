@@ -10,7 +10,12 @@ exports.handler = async (event, context, cb) => {
     const { emailAddress } = event.pathParameters;
     let { v, campaignId } = event.queryStringParameters;
 
+    const isAdmin = Functions.hasPermission(event, 'Admin');
+
     console.log("Verification attempt for", emailAddress);
+    if (isAdmin) {
+      console.log("User is Admin...", event);
+    }
 
     if (!campaignId || campaignId === "undefined") {
       campaignId = "CH2"; // Default it to CH2 for now
@@ -76,7 +81,7 @@ exports.handler = async (event, context, cb) => {
             hashedpassword: v,
           });
 
-          if (hashCompare) {
+          if (hashCompare || isAdmin) {
             hashVerified = true;
             const timezone = process.env.TIMEZONE;
             const dateFormat = process.env.DATE_FORMAT;

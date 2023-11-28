@@ -49,12 +49,11 @@ exports.handler = async (event, context, cb) => {
       });
     }
 
-    await Dynamo.delete({ PK: donor.PK, SK: donor.SK }, mainTableName).catch(
-      (err) => {
-        console.log("error in donors dynamo delete", err);
-        return Responses._400({ messages: err });
-      }
-    );
+    donor.status = "deleted";
+    await Dynamo.write(donor, mainTableName).catch((err) => {
+      console.log("error in dynamo write (deleted)", err);
+      return Responses._400({ messages: err });
+    });
 
     //Todo: Unallocate families
     //Todo: Unallocate family members

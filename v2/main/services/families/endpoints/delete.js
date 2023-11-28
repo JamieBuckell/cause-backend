@@ -46,11 +46,9 @@ exports.handler = async (event, context, cb) => {
     if (familyData.length) {
       const familyToDelete = familyData[0];
 
-      await Dynamo.delete(
-        { PK: familyToDelete?.PK, SK: familyToDelete?.SK },
-        mainTableName
-      ).catch((err) => {
-        console.log("error in dynamo query", err);
+      familyToDelete.status = "deleted";
+      await Dynamo.write(familyToDelete, mainTableName).catch((err) => {
+        console.log("error in dynamo write (deleted)", err);
         return Responses._400({ messages: err });
       });
 

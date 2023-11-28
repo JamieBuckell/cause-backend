@@ -74,37 +74,37 @@
     "SubscribeLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "LogGroupName": "/aws/lambda/causef-api-v2-subscribers-dev-subscribe"
+        "LogGroupName": "/aws/lambda/causef-api-v2-subscribers-live-subscribe"
       }
     },
     "VerificationLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "LogGroupName": "/aws/lambda/causef-api-v2-subscribers-dev-verification"
+        "LogGroupName": "/aws/lambda/causef-api-v2-subscribers-live-verification"
       }
     },
     "ListLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "LogGroupName": "/aws/lambda/causef-api-v2-subscribers-dev-list"
+        "LogGroupName": "/aws/lambda/causef-api-v2-subscribers-live-list"
       }
     },
     "CheckLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "LogGroupName": "/aws/lambda/causef-api-v2-subscribers-dev-check"
+        "LogGroupName": "/aws/lambda/causef-api-v2-subscribers-live-check"
       }
     },
     "UnsubscribeLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "LogGroupName": "/aws/lambda/causef-api-v2-subscribers-dev-unsubscribe"
+        "LogGroupName": "/aws/lambda/causef-api-v2-subscribers-live-unsubscribe"
       }
     },
     "ResubscribeLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "LogGroupName": "/aws/lambda/causef-api-v2-subscribers-dev-resubscribe"
+        "LogGroupName": "/aws/lambda/causef-api-v2-subscribers-live-resubscribe"
       }
     },
     "IamRoleLambdaExecution": {
@@ -133,7 +133,7 @@
                 "-",
                 [
                   "causef-api-v2-subscribers",
-                  "dev",
+                  "live",
                   "lambda"
                 ]
               ]
@@ -150,7 +150,7 @@
                   ],
                   "Resource": [
                     {
-                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/causef-api-v2-subscribers-dev*:*"
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/causef-api-v2-subscribers-live*:*"
                     }
                   ]
                 },
@@ -161,7 +161,7 @@
                   ],
                   "Resource": [
                     {
-                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/causef-api-v2-subscribers-dev*:*:*"
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/causef-api-v2-subscribers-live*:*:*"
                     }
                   ]
                 },
@@ -198,7 +198,7 @@
                           "arn:aws:dynamodb:eu-west-2:",
                           988218197909,
                           ":table/",
-                          "cause-portal-v2-dev"
+                          "cause-portal-v2-live"
                         ]
                       ]
                     },
@@ -209,7 +209,7 @@
                           "arn:aws:dynamodb:eu-west-2:",
                           988218197909,
                           ":table/",
-                          "cause-portal-v2-subscribers-dev"
+                          "cause-portal-v2-subscribers-live"
                         ]
                       ]
                     }
@@ -225,7 +225,7 @@
             "-",
             [
               "causef-api-v2-subscribers",
-              "dev",
+              "live",
               {
                 "Ref": "AWS::Region"
               },
@@ -242,11 +242,11 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-subscribers/dev/1699906168725-2023-11-13T20:09:28.725Z/subscribe.zip"
+          "S3Key": "serverless/causef-api-v2-subscribers/live/1700174456075-2023-11-16T22:40:56.075Z/subscribe.zip"
         },
         "Handler": "endpoints/subscribe.handler",
         "Runtime": "nodejs14.x",
-        "FunctionName": "causef-api-v2-subscribers-dev-subscribe",
+        "FunctionName": "causef-api-v2-subscribers-live-subscribe",
         "MemorySize": 1024,
         "Timeout": 6,
         "Environment": {
@@ -254,25 +254,25 @@
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
-            "APP_URL": "http://localhost:4000",
-            "MAIN_DYNAMO_TABLE": "cause-portal-v2-dev",
-            "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-dev",
-            "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-dev",
-            "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-dev",
-            "FEEDBACK_TABLE": "cause-portal-v2-feedback-dev",
-            "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-dev",
-            "MAILER_QUEUE": "cause-portal-v2-mailer-queue-dev.fifo",
-            "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-dev",
-            "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-dev",
-            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-dev",
-            "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-dev",
+            "APP_URL": "https://portal.cause-foundation.org.uk",
+            "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
+            "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-live",
+            "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-live",
+            "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-live",
+            "FEEDBACK_TABLE": "cause-portal-v2-feedback-live",
+            "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-live",
+            "MAILER_QUEUE": "cause-portal-v2-mailer-queue-live.fifo",
+            "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-live",
+            "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-live",
+            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-live",
+            "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-live",
             "TIMEZONE": "Europe/London",
             "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
             "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
-            "INTERNAL_ADDRESS": "email@jamiebuckell.co.uk",
+            "INTERNAL_ADDRESS": "hampers@cause-foundation.org.uk",
             "HASHING_SALT": "46d6a84b07ce2e",
             "HASHING_PREFIX": "H#",
-            "USER_POOL": "eu-west-2_Tq53Gr5Pd"
+            "USER_POOL": "eu-west-2_ueeqpE5iq"
           }
         },
         "Role": {
@@ -298,11 +298,11 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-subscribers/dev/1699906168725-2023-11-13T20:09:28.725Z/verification.zip"
+          "S3Key": "serverless/causef-api-v2-subscribers/live/1700174456075-2023-11-16T22:40:56.075Z/verification.zip"
         },
         "Handler": "endpoints/verification.handler",
         "Runtime": "nodejs14.x",
-        "FunctionName": "causef-api-v2-subscribers-dev-verification",
+        "FunctionName": "causef-api-v2-subscribers-live-verification",
         "MemorySize": 1024,
         "Timeout": 6,
         "Environment": {
@@ -310,25 +310,25 @@
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
-            "APP_URL": "http://localhost:4000",
-            "MAIN_DYNAMO_TABLE": "cause-portal-v2-dev",
-            "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-dev",
-            "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-dev",
-            "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-dev",
-            "FEEDBACK_TABLE": "cause-portal-v2-feedback-dev",
-            "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-dev",
-            "MAILER_QUEUE": "cause-portal-v2-mailer-queue-dev.fifo",
-            "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-dev",
-            "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-dev",
-            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-dev",
-            "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-dev",
+            "APP_URL": "https://portal.cause-foundation.org.uk",
+            "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
+            "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-live",
+            "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-live",
+            "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-live",
+            "FEEDBACK_TABLE": "cause-portal-v2-feedback-live",
+            "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-live",
+            "MAILER_QUEUE": "cause-portal-v2-mailer-queue-live.fifo",
+            "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-live",
+            "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-live",
+            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-live",
+            "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-live",
             "TIMEZONE": "Europe/London",
             "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
             "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
-            "INTERNAL_ADDRESS": "email@jamiebuckell.co.uk",
+            "INTERNAL_ADDRESS": "hampers@cause-foundation.org.uk",
             "HASHING_SALT": "46d6a84b07ce2e",
             "HASHING_PREFIX": "H#",
-            "USER_POOL": "eu-west-2_Tq53Gr5Pd"
+            "USER_POOL": "eu-west-2_ueeqpE5iq"
           }
         },
         "Role": {
@@ -353,11 +353,11 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-subscribers/dev/1699906168725-2023-11-13T20:09:28.725Z/list.zip"
+          "S3Key": "serverless/causef-api-v2-subscribers/live/1700174456075-2023-11-16T22:40:56.075Z/list.zip"
         },
         "Handler": "endpoints/list.handler",
         "Runtime": "nodejs14.x",
-        "FunctionName": "causef-api-v2-subscribers-dev-list",
+        "FunctionName": "causef-api-v2-subscribers-live-list",
         "MemorySize": 1024,
         "Timeout": 6,
         "Environment": {
@@ -365,25 +365,25 @@
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
-            "APP_URL": "http://localhost:4000",
-            "MAIN_DYNAMO_TABLE": "cause-portal-v2-dev",
-            "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-dev",
-            "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-dev",
-            "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-dev",
-            "FEEDBACK_TABLE": "cause-portal-v2-feedback-dev",
-            "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-dev",
-            "MAILER_QUEUE": "cause-portal-v2-mailer-queue-dev.fifo",
-            "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-dev",
-            "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-dev",
-            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-dev",
-            "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-dev",
+            "APP_URL": "https://portal.cause-foundation.org.uk",
+            "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
+            "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-live",
+            "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-live",
+            "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-live",
+            "FEEDBACK_TABLE": "cause-portal-v2-feedback-live",
+            "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-live",
+            "MAILER_QUEUE": "cause-portal-v2-mailer-queue-live.fifo",
+            "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-live",
+            "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-live",
+            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-live",
+            "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-live",
             "TIMEZONE": "Europe/London",
             "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
             "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
-            "INTERNAL_ADDRESS": "email@jamiebuckell.co.uk",
+            "INTERNAL_ADDRESS": "hampers@cause-foundation.org.uk",
             "HASHING_SALT": "46d6a84b07ce2e",
             "HASHING_PREFIX": "H#",
-            "USER_POOL": "eu-west-2_Tq53Gr5Pd"
+            "USER_POOL": "eu-west-2_ueeqpE5iq"
           }
         },
         "Role": {
@@ -408,11 +408,11 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-subscribers/dev/1699906168725-2023-11-13T20:09:28.725Z/check.zip"
+          "S3Key": "serverless/causef-api-v2-subscribers/live/1700174456075-2023-11-16T22:40:56.075Z/check.zip"
         },
         "Handler": "endpoints/check.handler",
         "Runtime": "nodejs14.x",
-        "FunctionName": "causef-api-v2-subscribers-dev-check",
+        "FunctionName": "causef-api-v2-subscribers-live-check",
         "MemorySize": 1024,
         "Timeout": 6,
         "Environment": {
@@ -420,25 +420,25 @@
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
-            "APP_URL": "http://localhost:4000",
-            "MAIN_DYNAMO_TABLE": "cause-portal-v2-dev",
-            "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-dev",
-            "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-dev",
-            "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-dev",
-            "FEEDBACK_TABLE": "cause-portal-v2-feedback-dev",
-            "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-dev",
-            "MAILER_QUEUE": "cause-portal-v2-mailer-queue-dev.fifo",
-            "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-dev",
-            "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-dev",
-            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-dev",
-            "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-dev",
+            "APP_URL": "https://portal.cause-foundation.org.uk",
+            "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
+            "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-live",
+            "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-live",
+            "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-live",
+            "FEEDBACK_TABLE": "cause-portal-v2-feedback-live",
+            "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-live",
+            "MAILER_QUEUE": "cause-portal-v2-mailer-queue-live.fifo",
+            "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-live",
+            "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-live",
+            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-live",
+            "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-live",
             "TIMEZONE": "Europe/London",
             "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
             "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
-            "INTERNAL_ADDRESS": "email@jamiebuckell.co.uk",
+            "INTERNAL_ADDRESS": "hampers@cause-foundation.org.uk",
             "HASHING_SALT": "46d6a84b07ce2e",
             "HASHING_PREFIX": "H#",
-            "USER_POOL": "eu-west-2_Tq53Gr5Pd"
+            "USER_POOL": "eu-west-2_ueeqpE5iq"
           }
         },
         "Role": {
@@ -463,11 +463,11 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-subscribers/dev/1699906168725-2023-11-13T20:09:28.725Z/unsubscribe.zip"
+          "S3Key": "serverless/causef-api-v2-subscribers/live/1700174456075-2023-11-16T22:40:56.075Z/unsubscribe.zip"
         },
         "Handler": "endpoints/unsubscribe.handler",
         "Runtime": "nodejs14.x",
-        "FunctionName": "causef-api-v2-subscribers-dev-unsubscribe",
+        "FunctionName": "causef-api-v2-subscribers-live-unsubscribe",
         "MemorySize": 1024,
         "Timeout": 6,
         "Environment": {
@@ -475,25 +475,25 @@
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
-            "APP_URL": "http://localhost:4000",
-            "MAIN_DYNAMO_TABLE": "cause-portal-v2-dev",
-            "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-dev",
-            "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-dev",
-            "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-dev",
-            "FEEDBACK_TABLE": "cause-portal-v2-feedback-dev",
-            "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-dev",
-            "MAILER_QUEUE": "cause-portal-v2-mailer-queue-dev.fifo",
-            "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-dev",
-            "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-dev",
-            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-dev",
-            "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-dev",
+            "APP_URL": "https://portal.cause-foundation.org.uk",
+            "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
+            "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-live",
+            "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-live",
+            "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-live",
+            "FEEDBACK_TABLE": "cause-portal-v2-feedback-live",
+            "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-live",
+            "MAILER_QUEUE": "cause-portal-v2-mailer-queue-live.fifo",
+            "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-live",
+            "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-live",
+            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-live",
+            "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-live",
             "TIMEZONE": "Europe/London",
             "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
             "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
-            "INTERNAL_ADDRESS": "email@jamiebuckell.co.uk",
+            "INTERNAL_ADDRESS": "hampers@cause-foundation.org.uk",
             "HASHING_SALT": "46d6a84b07ce2e",
             "HASHING_PREFIX": "H#",
-            "USER_POOL": "eu-west-2_Tq53Gr5Pd"
+            "USER_POOL": "eu-west-2_ueeqpE5iq"
           }
         },
         "Role": {
@@ -518,11 +518,11 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-subscribers/dev/1699906168725-2023-11-13T20:09:28.725Z/resubscribe.zip"
+          "S3Key": "serverless/causef-api-v2-subscribers/live/1700174456075-2023-11-16T22:40:56.075Z/resubscribe.zip"
         },
         "Handler": "endpoints/resubscribe.handler",
         "Runtime": "nodejs14.x",
-        "FunctionName": "causef-api-v2-subscribers-dev-resubscribe",
+        "FunctionName": "causef-api-v2-subscribers-live-resubscribe",
         "MemorySize": 1024,
         "Timeout": 6,
         "Environment": {
@@ -530,25 +530,25 @@
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
-            "APP_URL": "http://localhost:4000",
-            "MAIN_DYNAMO_TABLE": "cause-portal-v2-dev",
-            "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-dev",
-            "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-dev",
-            "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-dev",
-            "FEEDBACK_TABLE": "cause-portal-v2-feedback-dev",
-            "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-dev",
-            "MAILER_QUEUE": "cause-portal-v2-mailer-queue-dev.fifo",
-            "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-dev",
-            "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-dev",
-            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-dev",
-            "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-dev",
+            "APP_URL": "https://portal.cause-foundation.org.uk",
+            "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
+            "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-live",
+            "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-live",
+            "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-live",
+            "FEEDBACK_TABLE": "cause-portal-v2-feedback-live",
+            "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-live",
+            "MAILER_QUEUE": "cause-portal-v2-mailer-queue-live.fifo",
+            "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-live",
+            "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-live",
+            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-live",
+            "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-live",
             "TIMEZONE": "Europe/London",
             "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
             "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
-            "INTERNAL_ADDRESS": "email@jamiebuckell.co.uk",
+            "INTERNAL_ADDRESS": "hampers@cause-foundation.org.uk",
             "HASHING_SALT": "46d6a84b07ce2e",
             "HASHING_PREFIX": "H#",
-            "USER_POOL": "eu-west-2_Tq53Gr5Pd"
+            "USER_POOL": "eu-west-2_ueeqpE5iq"
           }
         },
         "Role": {
@@ -566,70 +566,70 @@
         "ResubscribeLogGroup"
       ]
     },
-    "SubscribeLambdaVersioniVuASKhXvmsgbTDzKCGE6HApQzTR5vK3UjHMhnmI8A": {
+    "SubscribeLambdaVersion4AYWKOowI4zUaSRQ7XOoPGh3QGk76GyA1DsMYNpJ4Dg": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "SubscribeLambdaFunction"
         },
-        "CodeSha256": "+J2cc73F190EwDIPZASw//gC1LZYB5vO/eTMSuNyYR0="
+        "CodeSha256": "OtXcr6679s6wk9VO9NnzQCb7gRNdsAEqGIt9XAvmoHI="
       }
     },
-    "VerificationLambdaVersionwPDP4xCDh3uxpEomLU9x3oNLjpsf4x7BhLXM800iPM": {
+    "VerificationLambdaVersiontg8U0y7YldjAZeEWwfjH50F5GJXpv7hlzD5fbbfA": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "VerificationLambdaFunction"
         },
-        "CodeSha256": "+J2cc73F190EwDIPZASw//gC1LZYB5vO/eTMSuNyYR0="
+        "CodeSha256": "OtXcr6679s6wk9VO9NnzQCb7gRNdsAEqGIt9XAvmoHI="
       }
     },
-    "ListLambdaVersionDJbPTYsmbDg90JTHVX4qPJD3vVsqe5QD1N5BHm4X2Qs": {
-      "Type": "AWS::Lambda::Version",
-      "DeletionPolicy": "Retain",
-      "Properties": {
-        "FunctionName": {
-          "Ref": "ListLambdaFunction"
-        },
-        "CodeSha256": "+J2cc73F190EwDIPZASw//gC1LZYB5vO/eTMSuNyYR0="
-      }
-    },
-    "CheckLambdaVersionbfuuDdrEJVWPRL8WbVrlzRYPcqZF3BNIzavIBtpVt2E": {
+    "CheckLambdaVersionBs99mp6C4e4thIFHPJjT2P8yWQ1vr7630HEZs18ZRU": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "CheckLambdaFunction"
         },
-        "CodeSha256": "+J2cc73F190EwDIPZASw//gC1LZYB5vO/eTMSuNyYR0="
+        "CodeSha256": "OtXcr6679s6wk9VO9NnzQCb7gRNdsAEqGIt9XAvmoHI="
       }
     },
-    "UnsubscribeLambdaVersionCod5iO0Lj0DQ348nnuSNteYIjC3dzIeqEDHhuOUs": {
+    "UnsubscribeLambdaVersiong4aReJwpAa5SpykrygdSmFBEAuS7GGBmQmRMny4gb3I": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "UnsubscribeLambdaFunction"
         },
-        "CodeSha256": "+J2cc73F190EwDIPZASw//gC1LZYB5vO/eTMSuNyYR0="
+        "CodeSha256": "OtXcr6679s6wk9VO9NnzQCb7gRNdsAEqGIt9XAvmoHI="
       }
     },
-    "ResubscribeLambdaVersionacspFQiTj1hlwdWbI2Fhw53MPAvp6q4rvjjsG16frcs": {
+    "ResubscribeLambdaVersionnsk6BqOxgPCHJwzP9vEGPNyQyvvSAru66YoQeUVThY": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "ResubscribeLambdaFunction"
         },
-        "CodeSha256": "+J2cc73F190EwDIPZASw//gC1LZYB5vO/eTMSuNyYR0="
+        "CodeSha256": "OtXcr6679s6wk9VO9NnzQCb7gRNdsAEqGIt9XAvmoHI="
+      }
+    },
+    "ListLambdaVersion54DgEIu73YgJFe6KNEY2lkyrAikjhR6AdWMzYz1Z0w": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ListLambdaFunction"
+        },
+        "CodeSha256": "OtXcr6679s6wk9VO9NnzQCb7gRNdsAEqGIt9XAvmoHI="
       }
     },
     "ApiGatewayRestApi": {
       "Type": "AWS::ApiGateway::RestApi",
       "Properties": {
-        "Name": "causef-api-v2-subscribers-dev",
+        "Name": "causef-api-v2-subscribers-live",
         "EndpointConfiguration": {
           "Types": [
             "EDGE"
@@ -1393,7 +1393,7 @@
         },
         "ValidateRequestBody": true,
         "ValidateRequestParameters": true,
-        "Name": "causef-api-v2-subscribers-dev | Validate request body and querystring parameters"
+        "Name": "causef-api-v2-subscribers-live | Validate request body and querystring parameters"
       }
     },
     "PrivateAuthorizerV2ApiGatewayAuthorizer": {
@@ -1407,17 +1407,17 @@
         },
         "Type": "COGNITO_USER_POOLS",
         "ProviderARNs": [
-          "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd"
+          "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq"
         ]
       }
     },
-    "ApiGatewayDeployment1699906167314": {
+    "ApiGatewayDeployment1700174454695": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
         },
-        "StageName": "dev",
+        "StageName": "live",
         "Description": "Microservice for subscriber specific processes"
       },
       "DependsOn": [
@@ -1660,7 +1660,7 @@
     "SubscribersTable": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
-        "TableName": "cause-portal-v2-subscribers-dev",
+        "TableName": "cause-portal-v2-subscribers-live",
         "ProvisionedThroughput": {
           "ReadCapacityUnits": 1,
           "WriteCapacityUnits": 1
@@ -1708,61 +1708,61 @@
         "Ref": "ServerlessDeploymentBucket"
       },
       "Export": {
-        "Name": "sls-causef-api-v2-subscribers-dev-ServerlessDeploymentBucketName"
+        "Name": "sls-causef-api-v2-subscribers-live-ServerlessDeploymentBucketName"
       }
     },
     "SubscribeLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "SubscribeLambdaVersioniVuASKhXvmsgbTDzKCGE6HApQzTR5vK3UjHMhnmI8A"
+        "Ref": "SubscribeLambdaVersion4AYWKOowI4zUaSRQ7XOoPGh3QGk76GyA1DsMYNpJ4Dg"
       },
       "Export": {
-        "Name": "sls-causef-api-v2-subscribers-dev-SubscribeLambdaFunctionQualifiedArn"
+        "Name": "sls-causef-api-v2-subscribers-live-SubscribeLambdaFunctionQualifiedArn"
       }
     },
     "VerificationLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "VerificationLambdaVersionwPDP4xCDh3uxpEomLU9x3oNLjpsf4x7BhLXM800iPM"
+        "Ref": "VerificationLambdaVersiontg8U0y7YldjAZeEWwfjH50F5GJXpv7hlzD5fbbfA"
       },
       "Export": {
-        "Name": "sls-causef-api-v2-subscribers-dev-VerificationLambdaFunctionQualifiedArn"
-      }
-    },
-    "ListLambdaFunctionQualifiedArn": {
-      "Description": "Current Lambda function version",
-      "Value": {
-        "Ref": "ListLambdaVersionDJbPTYsmbDg90JTHVX4qPJD3vVsqe5QD1N5BHm4X2Qs"
-      },
-      "Export": {
-        "Name": "sls-causef-api-v2-subscribers-dev-ListLambdaFunctionQualifiedArn"
+        "Name": "sls-causef-api-v2-subscribers-live-VerificationLambdaFunctionQualifiedArn"
       }
     },
     "CheckLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CheckLambdaVersionbfuuDdrEJVWPRL8WbVrlzRYPcqZF3BNIzavIBtpVt2E"
+        "Ref": "CheckLambdaVersionBs99mp6C4e4thIFHPJjT2P8yWQ1vr7630HEZs18ZRU"
       },
       "Export": {
-        "Name": "sls-causef-api-v2-subscribers-dev-CheckLambdaFunctionQualifiedArn"
+        "Name": "sls-causef-api-v2-subscribers-live-CheckLambdaFunctionQualifiedArn"
       }
     },
     "UnsubscribeLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "UnsubscribeLambdaVersionCod5iO0Lj0DQ348nnuSNteYIjC3dzIeqEDHhuOUs"
+        "Ref": "UnsubscribeLambdaVersiong4aReJwpAa5SpykrygdSmFBEAuS7GGBmQmRMny4gb3I"
       },
       "Export": {
-        "Name": "sls-causef-api-v2-subscribers-dev-UnsubscribeLambdaFunctionQualifiedArn"
+        "Name": "sls-causef-api-v2-subscribers-live-UnsubscribeLambdaFunctionQualifiedArn"
       }
     },
     "ResubscribeLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ResubscribeLambdaVersionacspFQiTj1hlwdWbI2Fhw53MPAvp6q4rvjjsG16frcs"
+        "Ref": "ResubscribeLambdaVersionnsk6BqOxgPCHJwzP9vEGPNyQyvvSAru66YoQeUVThY"
       },
       "Export": {
-        "Name": "sls-causef-api-v2-subscribers-dev-ResubscribeLambdaFunctionQualifiedArn"
+        "Name": "sls-causef-api-v2-subscribers-live-ResubscribeLambdaFunctionQualifiedArn"
+      }
+    },
+    "ListLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ListLambdaVersion54DgEIu73YgJFe6KNEY2lkyrAikjhR6AdWMzYz1Z0w"
+      },
+      "Export": {
+        "Name": "sls-causef-api-v2-subscribers-live-ListLambdaFunctionQualifiedArn"
       }
     },
     "ServiceEndpoint": {
@@ -1783,12 +1783,12 @@
             {
               "Ref": "AWS::URLSuffix"
             },
-            "/dev"
+            "/live"
           ]
         ]
       },
       "Export": {
-        "Name": "sls-causef-api-v2-subscribers-dev-ServiceEndpoint"
+        "Name": "sls-causef-api-v2-subscribers-live-ServiceEndpoint"
       }
     }
   }
