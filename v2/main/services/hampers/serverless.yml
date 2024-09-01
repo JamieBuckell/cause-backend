@@ -1,7 +1,7 @@
 service: causef-api-v2-hampers
 
 useDotenv: true
-frameworkVersion: '3'
+frameworkVersion: "3"
 
 plugins:
   - serverless-domain-manager
@@ -41,26 +41,26 @@ provider:
         - dynamodb:BatchWriteItem
       Resource:
         - Fn::Join:
-          - ""
-          - - "arn:aws:dynamodb:eu-west-2:"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":table/"
-            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+            - ""
+            - - "arn:aws:dynamodb:eu-west-2:"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
         - Fn::Join:
-          - ""
-          - - "arn:aws:dynamodb:eu-west-2:"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":table/"
-            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
-            - "/index/GSI1"
+            - ""
+            - - "arn:aws:dynamodb:eu-west-2:"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+              - "/index/GSI1"
         - Fn::Join:
-          - ""
-          - - "arn:aws:dynamodb:eu-west-2:"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":table/"
-            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
-            - "/index/GSI2"
-    - Effect: 'Allow'
+            - ""
+            - - "arn:aws:dynamodb:eu-west-2:"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+              - "/index/GSI2"
+    - Effect: "Allow"
       Action:
         - lambda:InvokeFunction
       Resource:
@@ -68,91 +68,100 @@ provider:
 package:
   individually: true
   exclude:
-      - '**/*'
+    - "**/*"
   include:
-      - ../common/**
-      - endpoints/**
+    - ../common/**
+    - endpoints/**
 functions:
   check:
     handler: endpoints/check.handler
     events:
-        - http:
-            method: post
-            path: check
-            cors: true
+      - http:
+          method: post
+          path: check
+          cors: true
   receive:
     handler: endpoints/receive.handler
     events:
-        - http:
-            method: post
-            path: receive
-            cors: true
+      - http:
+          method: post
+          path: receive
+          cors: true
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
   markDirect:
     handler: endpoints/markDirect.handler
     events:
-        - http:
-            method: post
-            path: mark-direct
-            cors: true
+      - http:
+          method: post
+          path: mark-direct
+          cors: true
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+  markDirectBulk:
+    handler: endpoints/markDirectBulk.handler
+    events:
+      - http:
+          method: post
+          path: mark-direct-bulk
+          cors: true
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
   screen:
     handler: endpoints/screen.handler
     events:
-        - http:
-            method: get
-            path: screen/{campaignId}
-            cors: true
-            request: 
-              parameters: 
-                paths: 
-                  campaignId: true
+      - http:
+          method: get
+          path: screen/{campaignId}
+          cors: true
+          request:
+            parameters:
+              paths:
+                campaignId: true
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
   overview:
     handler: endpoints/overview.handler
     events:
-        - http:
-            method: get
-            path: get-overview/{hamperRef}
-            cors: true
-            request: 
-              parameters: 
-                 paths: 
-                   hamperRef: true
+      - http:
+          method: get
+          path: get-overview/{hamperRef}
+          cors: true
+          request:
+            parameters:
+              paths:
+                hamperRef: true
   undeliveredHampers:
     handler: endpoints/undelivered.handler
     events:
-        - http:
-            method: get
-            path: undelivered
-            cors: true
-            response:
-              statusCodes:
-                400:
-                  pattern: '.*"error".*'
-                  template: $input.path('$.errorMessage')
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: get
+          path: undelivered
+          cors: true
+          response:
+            statusCodes:
+              400:
+                pattern: '.*"error".*'
+                template: $input.path('$.errorMessage')
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
   undeliveredDonors:
     handler: endpoints/undeliveredDonors.handler
     events:
-        - http:
-            method: get
-            path: undelivered-donors
-            cors: true
-            response:
-              statusCodes:
-                400:
-                  pattern: '.*"error".*'
-                  template: $input.path('$.errorMessage')
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: get
+          path: undelivered-donors
+          cors: true
+          response:
+            statusCodes:
+              400:
+                pattern: '.*"error".*'
+                template: $input.path('$.errorMessage')
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
 resources:
   - ${file(../resources/api-gateway-responses.yml)}

@@ -215,7 +215,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-emails/live/1697707418177-2023-10-19T09:23:38.177Z/create.zip"
+          "S3Key": "serverless/causef-api-v2-emails/live/1724311798987-2024-08-22T07:29:58.987Z/create.zip"
         },
         "Handler": "endpoints/create.handler",
         "Runtime": "nodejs14.x",
@@ -232,10 +232,12 @@
             "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-live",
             "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-live",
             "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-live",
+            "FEEDBACK_TABLE": "cause-portal-v2-feedback-live",
             "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-live",
             "MAILER_QUEUE": "cause-portal-v2-mailer-queue-live.fifo",
             "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-live",
             "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-live",
+            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-live",
             "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-live",
             "TIMEZONE": "Europe/London",
             "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
@@ -268,7 +270,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-emails/live/1697707418177-2023-10-19T09:23:38.177Z/list.zip"
+          "S3Key": "serverless/causef-api-v2-emails/live/1724311798987-2024-08-22T07:29:58.987Z/list.zip"
         },
         "Handler": "endpoints/list.handler",
         "Runtime": "nodejs14.x",
@@ -285,10 +287,12 @@
             "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-live",
             "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-live",
             "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-live",
+            "FEEDBACK_TABLE": "cause-portal-v2-feedback-live",
             "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-live",
             "MAILER_QUEUE": "cause-portal-v2-mailer-queue-live.fifo",
             "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-live",
             "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-live",
+            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-live",
             "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-live",
             "TIMEZONE": "Europe/London",
             "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
@@ -317,7 +321,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-emails/live/1697707418177-2023-10-19T09:23:38.177Z/update.zip"
+          "S3Key": "serverless/causef-api-v2-emails/live/1724311798987-2024-08-22T07:29:58.987Z/update.zip"
         },
         "Handler": "endpoints/update.handler",
         "Runtime": "nodejs14.x",
@@ -334,10 +338,12 @@
             "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-live",
             "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-live",
             "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-live",
+            "FEEDBACK_TABLE": "cause-portal-v2-feedback-live",
             "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-live",
             "MAILER_QUEUE": "cause-portal-v2-mailer-queue-live.fifo",
             "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-live",
             "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-live",
+            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-live",
             "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-live",
             "TIMEZONE": "Europe/London",
             "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
@@ -370,7 +376,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-emails/live/1697707418177-2023-10-19T09:23:38.177Z/delete.zip"
+          "S3Key": "serverless/causef-api-v2-emails/live/1724311798987-2024-08-22T07:29:58.987Z/delete.zip"
         },
         "Handler": "endpoints/delete.handler",
         "Runtime": "nodejs14.x",
@@ -387,10 +393,12 @@
             "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-live",
             "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-live",
             "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-live",
+            "FEEDBACK_TABLE": "cause-portal-v2-feedback-live",
             "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-live",
             "MAILER_QUEUE": "cause-portal-v2-mailer-queue-live.fifo",
             "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-live",
             "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-live",
+            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-live",
             "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-live",
             "TIMEZONE": "Europe/London",
             "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
@@ -415,44 +423,44 @@
         "DeleteLogGroup"
       ]
     },
-    "CreateLambdaVersionh58ekaDS2rMNEtwhEQdvByVUOHKu1slETvNfAIx0Y": {
-      "Type": "AWS::Lambda::Version",
-      "DeletionPolicy": "Retain",
-      "Properties": {
-        "FunctionName": {
-          "Ref": "CreateLambdaFunction"
-        },
-        "CodeSha256": "SRLgLpG10YQ8A2C2iLzrLYVu7ltAYG4Zhe32CaC/Wbs="
-      }
-    },
-    "ListLambdaVersionmfGvdO3rGOrC4XVat7apTuKGjMo8WddS8rlztARGXF4": {
-      "Type": "AWS::Lambda::Version",
-      "DeletionPolicy": "Retain",
-      "Properties": {
-        "FunctionName": {
-          "Ref": "ListLambdaFunction"
-        },
-        "CodeSha256": "SRLgLpG10YQ8A2C2iLzrLYVu7ltAYG4Zhe32CaC/Wbs="
-      }
-    },
-    "UpdateLambdaVersionpuFpuq3IdSgvbEUiFrnDCLW5aauCtDpWnT5uzUQk8": {
+    "UpdateLambdaVersionUhuLCWAugc7TAtWVAZ04CyQ3cL2pslBWQlvPP6Ys": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "UpdateLambdaFunction"
         },
-        "CodeSha256": "SRLgLpG10YQ8A2C2iLzrLYVu7ltAYG4Zhe32CaC/Wbs="
+        "CodeSha256": "46mMNgH/iqqITd5e6lxfMo411oXoLApIBCX3/Bqefqo="
       }
     },
-    "DeleteLambdaVersionmR9v9fUZJ9wiNnm5fzsz7LYnKZ8Lmyw8iq0xlfIww": {
+    "CreateLambdaVersionorI8LYZq5rCe6hOVgtDURox0135JebUwMzzHORlGy4U": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CreateLambdaFunction"
+        },
+        "CodeSha256": "46mMNgH/iqqITd5e6lxfMo411oXoLApIBCX3/Bqefqo="
+      }
+    },
+    "ListLambdaVersionkXsoYUyw3DJF88Qci5EX36aMGgxPxDjzR2UQkaXgpX8": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ListLambdaFunction"
+        },
+        "CodeSha256": "46mMNgH/iqqITd5e6lxfMo411oXoLApIBCX3/Bqefqo="
+      }
+    },
+    "DeleteLambdaVersionfvT3tTk6DqbRaO9BiG4gbSdpO81TwOwlqJ0AE3CpjQ": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "DeleteLambdaFunction"
         },
-        "CodeSha256": "SRLgLpG10YQ8A2C2iLzrLYVu7ltAYG4Zhe32CaC/Wbs="
+        "CodeSha256": "46mMNgH/iqqITd5e6lxfMo411oXoLApIBCX3/Bqefqo="
       }
     },
     "ApiGatewayRestApi": {
@@ -946,7 +954,7 @@
         ]
       }
     },
-    "ApiGatewayDeployment1697707415916": {
+    "ApiGatewayDeployment1724311798515": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -1167,10 +1175,19 @@
         "Name": "sls-causef-api-v2-emails-live-ServerlessDeploymentBucketName"
       }
     },
+    "UpdateLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "UpdateLambdaVersionUhuLCWAugc7TAtWVAZ04CyQ3cL2pslBWQlvPP6Ys"
+      },
+      "Export": {
+        "Name": "sls-causef-api-v2-emails-live-UpdateLambdaFunctionQualifiedArn"
+      }
+    },
     "CreateLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CreateLambdaVersionh58ekaDS2rMNEtwhEQdvByVUOHKu1slETvNfAIx0Y"
+        "Ref": "CreateLambdaVersionorI8LYZq5rCe6hOVgtDURox0135JebUwMzzHORlGy4U"
       },
       "Export": {
         "Name": "sls-causef-api-v2-emails-live-CreateLambdaFunctionQualifiedArn"
@@ -1179,25 +1196,16 @@
     "ListLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ListLambdaVersionmfGvdO3rGOrC4XVat7apTuKGjMo8WddS8rlztARGXF4"
+        "Ref": "ListLambdaVersionkXsoYUyw3DJF88Qci5EX36aMGgxPxDjzR2UQkaXgpX8"
       },
       "Export": {
         "Name": "sls-causef-api-v2-emails-live-ListLambdaFunctionQualifiedArn"
       }
     },
-    "UpdateLambdaFunctionQualifiedArn": {
-      "Description": "Current Lambda function version",
-      "Value": {
-        "Ref": "UpdateLambdaVersionpuFpuq3IdSgvbEUiFrnDCLW5aauCtDpWnT5uzUQk8"
-      },
-      "Export": {
-        "Name": "sls-causef-api-v2-emails-live-UpdateLambdaFunctionQualifiedArn"
-      }
-    },
     "DeleteLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "DeleteLambdaVersionmR9v9fUZJ9wiNnm5fzsz7LYnKZ8Lmyw8iq0xlfIww"
+        "Ref": "DeleteLambdaVersionfvT3tTk6DqbRaO9BiG4gbSdpO81TwOwlqJ0AE3CpjQ"
       },
       "Export": {
         "Name": "sls-causef-api-v2-emails-live-DeleteLambdaFunctionQualifiedArn"

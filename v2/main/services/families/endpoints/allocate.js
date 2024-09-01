@@ -169,6 +169,7 @@ exports.handler = async (event, context, cb) => {
 
         return Responses._200({
           messages: { success: `Family allocated successful` },
+          family: hamperData,
         });
       } else {
         return Responses._400({ messages: { unexpected: "Donor not found" } });

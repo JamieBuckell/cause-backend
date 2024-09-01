@@ -29,7 +29,7 @@ exports.handler = async (event, context, cb) => {
     const timezone = process.env.TIMEZONE;
     const dateFormat = process.env.DATE_FORMAT;
 
-    const parsed = event.nominatorId ? event : JSON.parse(event.body);
+    const parsed = event.hamperId ? event : JSON.parse(event.body);
 
     const valid = await Functions.validateSubmission(parsed, validations);
     if (Object.keys(valid).length > 0) {

@@ -4,14 +4,13 @@
   "description": "API calls and services for the CAUSE Foundation portal",
   "main": "handler.js",
   "dependencies": {
+    "aws-sdk": "^2.1687.0",
     "crypto": "^1.0.1"
   },
   "devDependencies": {
-    "aws-sdk": "^2.1494.0",
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.34",
-    "serverless-domain-manager": "^7.1.2",
-    "stripe": "^8.199.0"
+    "serverless-domain-manager": "^7.4.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

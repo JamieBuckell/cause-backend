@@ -331,6 +331,11 @@ exports.handler = async (event, context, cb) => {
           });
           console.log("Updated cognito id against user in dynamo");
 
+          const urlHash = Hashing.hash(
+            organisationData.hash.data,
+            envSalt + organisationData.hash.salt
+          ).hashedpassword;
+          const nominatorRegisterLink = `${appURL}/register/${organisationData.GSI2PK}/${urlHash}`;
           const emailTemplateNominator = {
             appURL,
             nominator: {
@@ -338,6 +343,7 @@ exports.handler = async (event, context, cb) => {
               email: validEmail,
               password: userPassword,
             },
+            nominatorRegisterLink,
           };
           const emailAccountTemplateParams = await Functions.getEmailTemplate(
             nominatorType === "team-lead"

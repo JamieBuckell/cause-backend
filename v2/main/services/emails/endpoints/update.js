@@ -5,24 +5,29 @@ const Functions = require("../common/Functions");
 
 const validations = [
   {
-    key: "name",
+    key: "key",
     required: true,
-    errorMsg: "Please enter a valid campaign name",
+    errorMsg: "Email key is required",
   },
   {
-    key: "campaignId",
+    key: "subject",
     required: true,
-    errorMsg: "Please enter a valid campaign id",
+    errorMsg: "Please enter a valid email subject",
   },
   {
-    key: "dates.campaignStart",
-    required: true,
-    errorMsg: "This campaign have a start date",
+    key: "pageTitle",
+    required: false,
+    errorMsg: "Please enter a valid email title",
   },
   {
-    key: "dates.campaignEnd",
+    key: "description",
+    required: false,
+    errorMsg: "Please enter a valid email description",
+  },
+  {
+    key: "pageContent",
     required: true,
-    errorMsg: "This campaign have an end date",
+    errorMsg: "Page content is required",
   },
 ];
 
@@ -35,7 +40,7 @@ exports.handler = async (event, context, cb) => {
         },
       });
     }
-    const parsed = event?.campaignId ? event : JSON.parse(event.body);
+    const parsed = event?.key ? event : JSON.parse(event.body);
     console.log("parsed data", parsed);
 
     if (!parsed) {
@@ -51,72 +56,62 @@ exports.handler = async (event, context, cb) => {
     }
 
     const escapeRegEx = new RegExp(/(<([^>]+)>)/gi);
-    const mainTableName = process.env.MAIN_DYNAMO_TABLE;
+    const emailTemplatesTableName = process.env.EMAIL_TEMPLATES_TABLE;
 
-    const campaignId = parsed.campaignId;
+    const emailTemplateKey = parsed.key;
 
-    const campaignsQueryData = {
-      TableName: mainTableName,
-      FilterExpression: "#pk = :pk AND #sk = :sk AND #type = :type",
+    const emailTemplatesQueryData = {
+      TableName: emailTemplatesTableName,
+      FilterExpression: "#pk = :pk",
       ExpressionAttributeNames: {
         "#pk": "PK",
-        "#sk": "SK",
-        "#type": "type",
       },
       ExpressionAttributeValues: {
-        ":pk": campaignId,
-        ":sk": "A",
-        ":type": "campaign",
+        ":pk": emailTemplateKey,
       },
     };
-    let matchedCampaigns = await Dynamo.scan(campaignsQueryData).catch(
-      (err) => {
-        console.log("error in dynamo query", err);
-        return Responses._400({ messages: err });
-      }
-    );
-    if (matchedCampaigns.length) {
-      const campaignData = matchedCampaigns.find((o) => o?.PK === campaignId);
-      if (campaignData?.campaignName) {
-        // use replace for extra layer of security
-        const validCampaignName = parsed.name
+    let matchedEmailTemplates = await Dynamo.scan(
+      emailTemplatesQueryData
+    ).catch((err) => {
+      console.log("error in dynamo query", err);
+      return Responses._400({ messages: err });
+    });
+    if (matchedEmailTemplates.length) {
+      const emailTemplateData = matchedEmailTemplates.find(
+        (o) => o?.PK === emailTemplateKey
+      );
+      if (emailTemplateData?.subject) {
+        emailTemplateData.subject = parsed.subject
           .toString()
           .replace(escapeRegEx, "");
+        emailTemplateData.description = parsed.description
+          .toString()
+          .replace(escapeRegEx, "");
+        emailTemplateData.pageTitle = parsed.pageTitle
+          .toString()
+          .replace(escapeRegEx, "");
+        emailTemplateData.pageContent = parsed.pageContent;
 
-        campaignData.campaignName = validCampaignName;
-        campaignData.campaignDetails.campaignStart = parsed.dates.campaignStart;
-        campaignData.campaignDetails.campaignEnd = parsed.dates.campaignEnd;
-        if (parsed.dates?.nominationsOpen) {
-          campaignData.campaignDetails.nominationsOpen =
-            parsed.dates.nominationsOpen;
-          campaignData.campaignDetails.nominationsClosed =
-            parsed.dates.nominationsClosed;
-        }
-        if (parsed.dates?.registrationOpen) {
-          campaignData.campaignDetails.registrationOpen =
-            parsed.dates.registrationOpen;
-          campaignData.campaignDetails.registrationClosed =
-            parsed.dates.registrationClosed;
-        }
-
-        await Dynamo.write(campaignData, mainTableName).catch((err) => {
-          console.log("error in dynamo query", err);
-          return Responses._400({ messages: err });
-        });
+        await Dynamo.write(emailTemplateData, emailTemplatesTableName).catch(
+          (err) => {
+            console.log("error in dynamo query", err);
+            return Responses._400({ messages: err });
+          }
+        );
 
         return Responses._200({
           messages: { success: "Update successful" },
-          campaign: campaignData,
+          emailTemplate: emailTemplateData,
         });
       } else {
-        console.log("Dodgy campaign data", campaignsQueryData);
+        console.log("Dodgy emailTemplate data", emailTemplatesQueryData);
       }
     } else {
       console.log(
-        "Campaign not found",
-        campaignData,
-        matchedCampaigns,
-        campaignId
+        "Email Template not found",
+        emailTemplateData,
+        matchedEmailTemplates,
+        emailTemplateKey
       );
     }
 

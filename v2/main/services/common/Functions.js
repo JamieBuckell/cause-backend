@@ -3,6 +3,8 @@ var AWS = require("aws-sdk");
 AWS.config.region = "eu-west-2";
 var lambda = new AWS.Lambda();
 
+const commsTemplateTableName = process.env.EMAIL_TEMPLATES_TABLE;
+
 const Functions = {
   timer(ms) {
     return new Promise((res) => setTimeout(res, ms));
@@ -298,7 +300,177 @@ const Functions = {
     }
     return "";
   },
-  getEmailTemplate(template, params) {
+  replaceEmailPlaceholders(content, params) {
+    const placeholderRegex =
+      /((%3C%3C)|(&lt;&lt;)|(<<))([a-zA-Z\.0-9]+)((>>)|(&gt;&gt;)|(%3E%3E))/gm;
+    const placeholderMatches = content.match(placeholderRegex);
+
+    if (placeholderMatches && placeholderMatches.length) {
+      for (const match of placeholderMatches) {
+        const placeholder = match.replace(
+          /((%3C%3C)|(&lt;&lt;)|(<<)|(>>)|(&gt;&gt;)|(%3E%3E))/gm,
+          ""
+        );
+
+        switch (placeholder.toUpperCase()) {
+          case "DONOR.FIRSTNAME":
+            content = content.replace(
+              match,
+              params?.donorData?.firstName ?? ""
+            );
+            break;
+          case "DONOR.LASTNAME":
+            content = content.replace(match, params?.donorData?.lastName ?? "");
+            break;
+          case "DONOR.EMAIL":
+            content = content.replace(match, params?.donorData?.email ?? "");
+            break;
+          case "DONOR.TELEPHONE":
+            content = content.replace(
+              match,
+              params?.donorData?.telephone ?? ""
+            );
+            break;
+          case "REQUEST.FAMILY":
+            content = content.replace(
+              match,
+              this.buildFamilyRequestHTML(params.familyData)
+            );
+            break;
+
+          case "DONOR.COMPANY":
+            content = content.replace(match, params?.donorData?.company ?? "");
+            break;
+          case "ORGANISATION.NAME":
+            content = content.replace(match, params?.companyName ?? "");
+            break;
+          case "NOMINATOR.FIRSTNAME":
+            content = content.replace(
+              match,
+              params?.nominator?.firstName ?? ""
+            );
+            break;
+          case "NOMINATOR.LASTNAME":
+            content = content.replace(match, params?.nominator?.lastName ?? "");
+            break;
+          case "NOMINATOR.FULLNAME":
+            content = content.replace(match, params?.nominator?.name ?? "");
+            break;
+          case "NOMINATOR.EMAIL":
+            content = content.replace(match, params?.nominator?.email ?? "");
+            break;
+          case "NOMINATOR.PASSWORD":
+            content = content.replace(match, params?.nominator?.password ?? "");
+            break;
+          case "NOMINATOR.REGISTRATION.LINK":
+            content = content.replace(
+              match,
+              params?.nominatorRegisterLink ?? ""
+            );
+            break;
+          case "NOMINATOR.RESETPASSWORD.LINK":
+            content = content.replace(match, params?.resetPasswordLink ?? "");
+            break;
+          case "PASSWORD.TEMPORARY":
+            content = content.replace(match, params?.temporaryPassword ?? "");
+            break;
+          case "DONOR.EMAIL.VERIFY.LINK":
+            content = content.replace(
+              match,
+              `${params.appURL}/subscription/verify/${encodeURIComponent(
+                params.emailAddress
+              )}?v=${params.donorHash}&c=${params.campaignId}`
+            );
+            break;
+          case "DONOR.PLEDGE.ACCEPT":
+            content = content.replace(
+              match,
+              `${
+                params.appURL
+              }/pledge-confirmation?t=accept&e=${encodeURIComponent(
+                params.emailAddress
+              )}&v=${params.donorHash}${
+                params?.campaignRequestId
+                  ? "&c=" + params.campaignRequestId
+                  : ""
+              }`
+            );
+            break;
+          case "DONOR.PLEDGE.CHANGE":
+            content = content.replace(
+              match,
+              `${
+                params.appURL
+              }/pledge-confirmation?t=change&e=${encodeURIComponent(
+                params.emailAddress
+              )}&v=${params.donorHash}${
+                params?.campaignRequestId
+                  ? "&c=" + params.campaignRequestId
+                  : ""
+              }`
+            );
+            break;
+          case "ALLOCATION.DATA":
+            content = content.replace(
+              match,
+              params?.familyData
+                ? this.buildDonorAllocationHTML(params.familyData, false)
+                : ""
+            );
+            break;
+          case "ALLOCATION.DATA.NOID":
+            content = content.replace(
+              match,
+              params?.familyData
+                ? this.buildDonorAllocationHTML(params.familyData, true)
+                : ""
+            );
+            break;
+          case "PORTAL.URL":
+            content = content.replace(
+              match,
+              `<a href="${params?.appURL ?? ""}">${params?.appURL ?? ""}</a>`
+            );
+            break;
+          default:
+            content = content.replace(match, "");
+            console.log("UNKNOWN", placeholder);
+            break;
+        }
+      }
+    }
+
+    return content;
+  },
+  async getEmailTemplate(template, params) {
+    const commsTemplateQueryData = {
+      KeyConditionExpression: "#pk= :pk And begins_with(#sk, :sk)",
+      ExpressionAttributeValues: {
+        ":pk": template,
+        ":sk": "SK#",
+      },
+      ExpressionAttributeNames: {
+        "#pk": "PK",
+        "#sk": "SK",
+      },
+    };
+    const dbTemplate = await Dynamo.query(
+      commsTemplateQueryData,
+      commsTemplateTableName
+    ).catch((err) => {
+      console.log("error in dynamo query", err);
+      return Responses._400({ messages: err });
+    });
+
+    if (dbTemplate) {
+      const templateObject = dbTemplate[0];
+      templateObject.pageContent = this.replaceEmailPlaceholders(
+        templateObject.pageContent,
+        params
+      );
+      return templateObject;
+    }
+
     switch (template) {
       case "adminNewNominator":
         return {
@@ -433,34 +605,34 @@ const Functions = {
           pageContent: `Thank you for registering for another hamper, we have received your request and will email you as soon as we allocate your famil${
             params.familyCount > 1 ? "ies" : "y"
           }.
-                    <br /><br />
-                    Your preference request details are:
-                    <br /><br />
-                    <strong>Your Name:</strong> ${params.donorData.firstName} ${
+                  <br /><br />
+                  Your preference request details are:
+                  <br /><br />
+                  <strong>Your Name:</strong> ${params.donorData.firstName} ${
             params.donorData.lastName
           }<br />
-                    ${
-                      params.donorData.company
-                        ? "<strong>Company:</strong> " +
-                          params.donorData.company +
-                          "<br />"
-                        : ""
-                    }
-                    <strong>Email Address:</strong> ${
-                      params.donorData.email
-                    }<br />
-                    ${
-                      params.donorData.telephone
-                        ? "<strong>Contact Number:</strong> " +
-                          params.donorData.telephone +
-                          "<br />"
-                        : ""
-                    }
-                    <br />
-                    ${this.buildFamilyRequestHTML(params.familyData)}
-                    <br /><br />
-                    Kind Regards,<br />
-                    Christmas Hamper Campaign Team`,
+                  ${
+                    params.donorData.company
+                      ? "<strong>Company:</strong> " +
+                        params.donorData.company +
+                        "<br />"
+                      : ""
+                  }
+                  <strong>Email Address:</strong> ${
+                    params.donorData.email
+                  }<br />
+                  ${
+                    params.donorData.telephone
+                      ? "<strong>Contact Number:</strong> " +
+                        params.donorData.telephone +
+                        "<br />"
+                      : ""
+                  }
+                  <br />
+                  ${this.buildFamilyRequestHTML(params.familyData)}
+                  <br /><br />
+                  Kind Regards,<br />
+                  Christmas Hamper Campaign Team`,
         };
       case "pledgeUpdated":
         return {
@@ -585,13 +757,7 @@ const Functions = {
                     <br /><br />
                     <table width="100%" cellpadding="20px" cellspacing="0" style="width:100%;">
                     <tr><td style="padding:0 20px;">
-                        <a href="${
-                          params.appURL
-                        }/pledge-confirmation?t=accept&e=${encodeURIComponent(
-            params.emailAddress
-          )}&v=${params.donorHash}${
-            params?.campaignRequestId ? "&c=" + params.campaignRequestId : ""
-          }" style="display:block;padding:16px 47px;margin:0 0 0 auto;background:#009643;border-radius:100px;font-weight:600;line-height:20px;letter-spacing:0.2px;color:#ffffff;text-decoration:none;width: max-content;">Accept</a>
+                        
                     </td>
                     <td style="padding:0 20px;">
                         <a href="${
@@ -720,6 +886,41 @@ const Functions = {
     }
     return "";
   },
+  createDonorDetail(donorId, donors) {
+    var rtnStr = "Not Allocated";
+    const donor = donors ? donors.find((n) => n.GSI2PK === donorId) : {};
+    if (donor?.PK) {
+      rtnStr = `<strong>${donor.donorDetails.firstName} ${donor.donorDetails.lastName}</strong>`;
+      if (donor.donorDetails.telephone) {
+        rtnStr += ` - <a href="tel:${donor.donorDetails.telephone}">${donor.donorDetails.telephone}</a>`;
+      }
+
+      if (donor.donorDetails.company) {
+        rtnStr += `<br />${donor.donorDetails.company}`;
+      }
+      if (donor.GSI3PK) {
+        rtnStr += `<br /><a href="tel:${donor.GSI3PK}">${donor.GSI3PK}</a>`;
+      }
+      rtnStr += `<br /><a href="/donors/view/${donor.GSI2PK}" class="btn btn-info btn-fill btn-wd">Manage Donor</a>`;
+    }
+    return rtnStr;
+  },
+  createNominatorDetail(nominatorId, nominators) {
+    var rtnStr = "";
+    const nominator = nominators
+      ? nominators.find((n) => n.GSI2PK === nominatorId)
+      : {};
+    if (nominator?.PK) {
+      rtnStr = `<strong>${nominator.nominatorDetails.firstName} ${nominator.nominatorDetails.lastName}</strong>`;
+      if (nominator.nominatorDetails.telephone) {
+        rtnStr += ` - <a href="tel:${nominator.nominatorDetails.telephone}">${nominator.nominatorDetails.telephone}</a>`;
+      }
+      if (nominator.nominatorDetails.email) {
+        rtnStr += `<br /><a href="tel:${nominator.nominatorDetails.email}">${nominator.nominatorDetails.email}</a>`;
+      }
+    }
+    return rtnStr;
+  },
   async generateAllocationEmails(
     donor,
     families,
@@ -782,7 +983,11 @@ const Functions = {
           replaceStrings: {
             "###DONOR_NAME###": `${donor.firstName} ${donor.lastName}`,
             "###HAMPER_ID###": `${family.reference}`,
-            "###FAMILY_DYNAMICS###": `${await Functions.generateFamilyDynamics(family, currentFamilyMembers, csvContent)}`,
+            "###FAMILY_DYNAMICS###": `${await Functions.generateFamilyDynamics(
+              family,
+              currentFamilyMembers,
+              csvContent
+            )}`,
           },
         });
       }
@@ -816,7 +1021,7 @@ const Functions = {
 
     return rawEmailJsonParameters;
   },
-  async generateFamilyDynamics(hamper, members, csvContent = '') {
+  async generateFamilyDynamics(hamper, members, csvContent = "") {
     let familyDynamics = [];
     for (const familyMember of members) {
       const familyWho =
@@ -831,9 +1036,7 @@ const Functions = {
         }"` + "\r\n";
       familyDynamics.push(
         ` ${familyWho} ${
-          familyMember.age
-            ? familyMember.age + " " + familyMember.ageType
-            : ""
+          familyMember.age ? familyMember.age + " " + familyMember.ageType : ""
         }`
       );
     }
@@ -895,7 +1098,11 @@ const Functions = {
         replaceStrings: {
           "###DONOR_NAME###": `${donor.firstName} ${donor.lastName}`,
           "###HAMPER_ID###": `${family.reference}`,
-          "###FAMILY_DYNAMICS###": `${await Functions.generateFamilyDynamics(family, currentFamilyMembers, csvContent)}`,
+          "###FAMILY_DYNAMICS###": `${await Functions.generateFamilyDynamics(
+            family,
+            currentFamilyMembers,
+            csvContent
+          )}`,
         },
       });
     }

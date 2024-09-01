@@ -1,7 +1,7 @@
 service: causef-api-v2-donors
 
 useDotenv: true
-frameworkVersion: '3'
+frameworkVersion: "4"
 
 plugins:
   - serverless-domain-manager
@@ -28,7 +28,7 @@ provider:
     description: Microservice for donor specific processes
   environment: ${file(../resources/.env.${self:custom.stage}.yml):}
   iamRoleStatements:
-    - Effect: 'Allow'
+    - Effect: "Allow"
       Action:
         - "ses:SendEmail"
         - "ses:SendTemplatedEmail"
@@ -49,49 +49,55 @@ provider:
         - dynamodb:BatchWriteItem
       Resource:
         - Fn::Join:
-          - ""
-          - - "arn:aws:dynamodb:eu-west-2:"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":table/"
-            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+            - ""
+            - - "arn:aws:dynamodb:eu-west-2:"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
         - Fn::Join:
-          - ""
-          - - "arn:aws:dynamodb:eu-west-2:"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":table/"
-            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
-            - "/index/GSI1"
+            - ""
+            - - "arn:aws:dynamodb:eu-west-2:"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+              - "/index/GSI1"
         - Fn::Join:
-          - ""
-          - - "arn:aws:dynamodb:eu-west-2:"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":table/"
-            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
-            - "/index/GSI2"
+            - ""
+            - - "arn:aws:dynamodb:eu-west-2:"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+              - "/index/GSI2"
         - Fn::Join:
-          - ""
-          - - "arn:aws:dynamodb:eu-west-2:"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":table/"
-            - ${self:provider.environment.SUBSCRIBERS_TABLE}
+            - ""
+            - - "arn:aws:dynamodb:eu-west-2:"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.SUBSCRIBERS_TABLE}
+        - Fn::Join:
+            - ""
+            - - "arn:aws:dynamodb:eu-west-2:"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.EMAIL_TEMPLATES_TABLE}
     - Effect: Allow
       Action:
         - sqs:sendmessage
       Resource:
         - Fn::Join:
-          - ""
-          - - "arn:aws:sqs:"
-            - ${self:provider.region}
-            - ":"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":"
-            - ${self:provider.environment.PLEDGE_DETAIL_QUEUE}
+            - ""
+            - - "arn:aws:sqs:"
+              - ${self:provider.region}
+              - ":"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":"
+              - ${self:provider.environment.PLEDGE_DETAIL_QUEUE}
     - Effect: Allow
-      Action: 
+      Action:
         - "ses:GetTemplate"
-      Resource: 
+      Resource:
         - "*"
-    - Effect: 'Allow'
+    - Effect: "Allow"
       Action:
         - lambda:InvokeFunction
       Resource:
@@ -99,18 +105,18 @@ provider:
 package:
   individually: true
   exclude:
-      - '**/*'
+    - "**/*"
   include:
-      - ../common/**
-      - endpoints/**
+    - ../common/**
+    - endpoints/**
 functions:
   register:
     handler: endpoints/register.handler
     events:
-        - http:
-            method: post
-            path: register
-            cors: true
+      - http:
+          method: post
+          path: register
+          cors: true
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
@@ -118,107 +124,107 @@ functions:
   delete:
     handler: endpoints/delete.handler
     events:
-        - http:
-            method: post
-            path: delete
-            cors: true
-            integration: lambda-proxy
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: post
+          path: delete
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
   emailUpdate:
     handler: endpoints/emailUpdate.handler
     events:
-        - http:
-            method: post
-            path: email-update
-            cors: true
-            integration: lambda-proxy
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: post
+          path: email-update
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
   updatePledge:
     handler: endpoints/updatePledge.handler
     events:
-        - http:
-            method: post
-            path: update-pledge
-            cors: true
-            integration: lambda-proxy
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: post
+          path: update-pledge
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
   update:
     handler: endpoints/update.handler
     events:
-        - http:
-            method: post
-            path: update
-            cors: true
-            integration: lambda-proxy
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: post
+          path: update
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
   resendVerification:
     handler: endpoints/resendVerification.handler
     events:
-        - http:
-            method: post
-            path: resend-verification
-            cors: true
-            integration: lambda-proxy
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: post
+          path: resend-verification
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
   confirmPledge:
     handler: endpoints/confirmPledge.handler
     events:
-        - http:
-            method: post
-            path: confirm-pledge/{emailAddress}
-            cors: true
-            request: 
-              parameters: 
-                 paths: 
-                   emailAddress: true
-            integration: lambda-proxy
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
-        - http:
-            method: get
-            path: confirm-pledge/{emailAddress}
-            cors: true
-            request: 
-              parameters: 
-                 paths: 
-                   emailAddress: true
+      - http:
+          method: post
+          path: confirm-pledge/{emailAddress}
+          cors: true
+          request:
+            parameters:
+              paths:
+                emailAddress: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: get
+          path: confirm-pledge/{emailAddress}
+          cors: true
+          request:
+            parameters:
+              paths:
+                emailAddress: true
   changePledge:
     handler: endpoints/changePledge.handler
     events:
-        - http:
-            method: post
-            path: change-pledge/{emailAddress}
-            cors: true
-            request: 
-              parameters: 
-                 paths: 
-                   emailAddress: true
+      - http:
+          method: post
+          path: change-pledge/{emailAddress}
+          cors: true
+          request:
+            parameters:
+              paths:
+                emailAddress: true
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
       - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
@@ -237,15 +243,15 @@ functions:
     handler: endpoints/downloadFile.handler
     timeout: 30
     events:
-        - http:
-            method: post
-            path: download-file
-            cors: true
-            integration: lambda-proxy
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: post
+          path: download-file
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
 resources:
   - ${file(../resources/send-pledge-sqs-queue.yml)}
   - ${file(../resources/api-gateway-responses.yml)}

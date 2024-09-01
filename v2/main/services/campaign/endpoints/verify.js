@@ -28,14 +28,19 @@ exports.handler = async (event, context, cb) => {
       }
     );
 
+    console.log(allCampaignData);
+
     const activeCampaigns = allCampaignData.length
-      ? allCampaignData.filter((c) =>
-          moment().isBefore(moment(c.campaignDetails.registrationClosed))
+      ? allCampaignData.filter(
+          (c) =>
+            moment().isBefore(moment(c.campaignDetails.registrationClosed)) &&
+            moment().isAfter(moment(c.campaignDetails.registrationOpen))
         )
       : [];
-
     return Responses._200({
       campaignActive: activeCampaigns.length > 0,
+      campaignKeys:
+        activeCampaigns.length > 0 ? activeCampaigns.map((c) => c?.PK) : [],
     });
   } catch (e) {
     console.log(`An unexpected error occurred ${e}`);

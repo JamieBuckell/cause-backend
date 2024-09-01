@@ -55,10 +55,24 @@ exports.handler = async (event, context, cb) => {
       ),
     ];
 
+    let families = [
+      ...allCampaignData
+        .filter((f) => f.type === "family" && f?.status !== "deleted")
+        .map((f) => {
+          const newFam = { ...f };
+          delete newFam.familyDetail;
+          delete newFam.nominatorDetail;
+          delete newFam.GSI1PK;
+          delete newFam.GSI1SK;
+          return newFam;
+        }),
+    ];
     let organisations = [
       ...allCampaignData
         .filter((o) => o.type === "organisation" && o?.status !== "deleted")
         .map((o) => {
+          o.totalFamilies =
+            families.filter((f) => f?.GSI3PK === o.GSI2PK).length ?? 0;
           o.urlHash = Hashing.hash(
             o.hash.data,
             envSalt + o.hash.salt
@@ -74,18 +88,6 @@ exports.handler = async (event, context, cb) => {
           (n.type === "nominator" || n.type === "team-lead") &&
           n?.status !== "deleted"
       ),
-    ];
-    let families = [
-      ...allCampaignData
-        .filter((f) => f.type === "family" && f?.status !== "deleted")
-        .map((f) => {
-          const newFam = { ...f };
-          delete newFam.familyDetail;
-          delete newFam.nominatorDetail;
-          delete newFam.GSI1PK;
-          delete newFam.GSI1SK;
-          return newFam;
-        }),
     ];
     if (!Functions.hasPermission(event, "Admin")) {
       const userEmail = event.requestContext.authorizer.claims.email;
@@ -105,7 +107,6 @@ exports.handler = async (event, context, cb) => {
       donors,
       organisations,
       nominators,
-      families,
       subscribers: [...allSubscribers.filter((s) => s?.status !== "deleted")],
     });
   } catch (e) {
