@@ -1,0 +1,36 @@
+service: pdf
+
+frameworkVersion: "4"
+
+package:
+  individually: true
+
+custom:
+  serverless-offline:
+    location: .webpack/service
+  bundle:
+    sourcemaps: false
+    copyFiles:
+      - from: "node_modules/chrome-aws-lambda/bin/aws.tar.br"
+        to: "./bin"
+      - from: "node_modules/chrome-aws-lambda/bin/chromium.br"
+        to: "./bin"
+      - from: "node_modules/chrome-aws-lambda/bin/swiftshader.tar.br"
+        to: "./bin"
+provider:
+  name: aws
+  runtime: nodejs16.x
+  profile: jamiebuckell
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'eu-west-2'}
+  apiGateway:
+    shouldStartNameWithService: true
+    binaryMediaTypes:
+      - "*/*"
+  tracing:
+    apiGateway: true
+    lambda: true
+functions:
+  downloadPdf:
+    handler: lambdas/download-pdf.main
+    timeout: 180

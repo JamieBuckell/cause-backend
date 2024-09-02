@@ -579,133 +579,178 @@ const Functions = {
         switch (template) {
             case 'hamperLabels':
                 pdfContent = `
-                    <div style="border: dashed 4px black; width:80%; margin:0 auto 10px; padding:0 20px; font-size:2rem;">
-                        <p style="margin-bottom: 0;">Hamper Identification Label - to be attached to BAG 1</p>
-                        <div style="display: grid; grid-template-columns: 0.4fr 1fr; grid-gap: 20px; width:100%;">
-                            <p style="margin-bottom: 0; margin-top: 0;">
-                            <img src="###QR_CODE###" style="margin:0 auto;width:100%; max-width:200px; display:block;" />
-                            </p>
-                            <p>
-                            <strong>Your Name:</strong> ${params.donorName}<br />
-                            <strong>Hamper ID:</strong> ${params.hamperId}<br />
-                            <strong>Family Dynamics:</strong> ${params.familyDynamics}
-                            </p>
-                        </div>
-                    </div>`;
-                pdfContent += `
                     <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px; margin:0 auto 10px; font-size:3rem; width:85%; page-break-after: always;">
                         <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-                            <p style="margin: 0.5em 0;"><strong>ID:</strong> ${params.hamperId}</p>
-
+                            <p style="font-size: 1.5rem;">
+                                <strong>Family Dynamics${params.familySize ? ' ('+params.familySize+')' : ''}: </strong>${params.familyDynamics}
+                            </p>
+                            <p style="margin: 0.5em auto; text-align:center;">
+                                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:200px; display:block;" />
+                                <span style="font-size:2rem;">${params.hamperId}</span>
+                            </p>
+                            
                             <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-                                <p style="margin: 0.5em 0;">
-                                    <strong>1 of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
+                                <p style="margin: 0 0;">
+                                    <strong>1 of</strong>
+                                    <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
                                 </p>
-                                <img src="###QR_CODE###" style="margin:0 auto;width:100%; max-width:200px; display:block;" />
                             </div>
                         </div>
                         
                         <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-                            <p style="margin: 0.5em 0;"><strong>ID:</strong> ${params.hamperId}</p>
+                            <p style="font-size: 1.5rem;">
+                                <strong>Family Dynamics${params.familySize ? ' ('+params.familySize+')' : ''}: </strong>${params.familyDynamics}
+                            </p>
+                            <p style="margin: 0.5em auto; text-align:center;">
+                                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:200px; display:block;" />
+                                <span style="font-size:2rem;">${params.hamperId}</span>
+                            </p>
 
                             <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-                            <p style="margin: 0.5em 0;">
-                                <strong>2 of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
-                            </p>
-                            <img src="###QR_CODE###" style="margin:0 auto;width:100%; max-width:200px; display:block;" />
+                                <p style="margin: 0.5em 0;">
+                                    <strong>2 of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
+                                </p>
                             </div>
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px; margin:0 auto 10px; font-size:3rem; width:85%; page-break-after: always;">
                         <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-                            <p style="margin: 0.5em 0;"><strong>ID:</strong> ${params.hamperId}</p>
+                            <p style="font-size: 1.5rem;">
+                                <strong>Family Dynamics${params.familySize ? ' ('+params.familySize+')' : ''}: </strong>${params.familyDynamics}
+                            </p>
+                            <p style="margin: 0.5em auto; text-align:center;">
+                                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:200px; display:block;" />
+                                <span style="font-size:2rem;">${params.hamperId}</span>
+                            </p>
 
                             <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
                                 <p style="margin: 0.5em 0;">
                                     <strong>3 of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
                                 </p>
-                                <img src="###QR_CODE###" style="margin:0 auto;width:100%; max-width:200px; display:block;" />
+                                
                             </div>
                         </div>
                         
                         <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-                            <p style="margin: 0.5em 0;"><strong>ID:</strong> ${params.hamperId}</p>
+                            <p style="font-size: 1.5rem;">
+                                <strong>Family Dynamics${params.familySize ? ' ('+params.familySize+')' : ''}: </strong>${params.familyDynamics}
+                            </p>
+                            <p style="margin: 0.5em auto; text-align:center;">
+                                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:200px; display:block;" />
+                                <span style="font-size:2rem;">${params.hamperId}</span>
+                            </p>
 
                             <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
                             <p style="margin: 0.5em 0;">
                                 <strong>4 of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
                             </p>
-                            <img src="###QR_CODE###" style="margin:0 auto;width:100%; max-width:200px; display:block;" />
+                            
                             </div>
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px; margin:0 auto 10px; font-size:3rem; width:85%; page-break-after: always;">
                         <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-                            <p style="margin: 0.5em 0;"><strong>ID:</strong> ${params.hamperId}</p>
+                            <p style="font-size: 1.5rem;">
+                                <strong>Family Dynamics${params.familySize ? ' ('+params.familySize+')' : ''}: </strong>${params.familyDynamics}
+                            </p>
+                            <p style="margin: 0.5em auto; text-align:center;">
+                                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:200px; display:block;" />
+                                <span style="font-size:2rem;">${params.hamperId}</span>
+                            </p>
 
                             <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
                                 <p style="margin: 0.5em 0;">
                                     <strong>5 of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
                                 </p>
-                                <img src="###QR_CODE###" style="margin:0 auto;width:100%; max-width:200px; display:block;" />
+                                
                             </div>
                         </div>
                         
                         <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-                            <p style="margin: 0.5em 0;"><strong>ID:</strong> ${params.hamperId}</p>
+                            <p style="font-size: 1.5rem;">
+                                <strong>Family Dynamics${params.familySize ? ' ('+params.familySize+')' : ''}: </strong>${params.familyDynamics}
+                            </p>
+                            <p style="margin: 0.5em auto; text-align:center;">
+                                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:200px; display:block;" />
+                                <span style="font-size:2rem;">${params.hamperId}</span>
+                            </p>
 
                             <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
                             <p style="margin: 0.5em 0;">
                                 <strong>6 of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
                             </p>
-                            <img src="###QR_CODE###" style="margin:0 auto;width:100%; max-width:200px; display:block;" />
+                            
                             </div>
                         </div>
                     </div>`;
                 pdfContent += `
                     <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px; margin:0 auto 10px; font-size:3rem; width:85%; page-break-after: always;">
                         <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-                            <p style="margin: 0.5em 0;"><strong>ID:</strong> ${params.hamperId}</p>
+                            <p style="font-size: 1.5rem;">
+                                <strong>Family Dynamics${params.familySize ? ' ('+params.familySize+')' : ''}: </strong>${params.familyDynamics}
+                            </p>
+                            <p style="margin: 0.5em auto; text-align:center;">
+                                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:200px; display:block;" />
+                                <span style="font-size:2rem;">${params.hamperId}</span>
+                            </p>
 
                             <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
                                 <p style="margin: 0.5em 0;">
                                     <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span> <strong>of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
                                 </p>
-                                <img src="###QR_CODE###" style="margin:0 auto;width:100%; max-width:200px; display:block;" />
+                                
                             </div>
                         </div>
                         
                         <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-                            <p style="margin: 0.5em 0;"><strong>ID:</strong> ${params.hamperId}</p>
+                            <p style="font-size: 1.5rem;">
+                                <strong>Family Dynamics${params.familySize ? ' ('+params.familySize+')' : ''}: </strong>${params.familyDynamics}
+                            </p>
+                            <p style="margin: 0.5em auto; text-align:center;">
+                                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:200px; display:block;" />
+                                <span style="font-size:2rem;">${params.hamperId}</span>
+                            </p>
 
                             <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
                             <p style="margin: 0.5em 0;">
                                 <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span> <strong>of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
                             </p>
-                            <img src="###QR_CODE###" style="margin:0 auto;width:100%; max-width:200px; display:block;" />
+                            
                             </div>
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px; margin:0 auto 10px; font-size:3rem; width:85%; page-break-after: always;">
                         <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-                            <p style="margin: 0.5em 0;"><strong>ID:</strong> ${params.hamperId}</p>
+                            <p style="font-size: 1.5rem;">
+                                <strong>Family Dynamics${params.familySize ? ' ('+params.familySize+')' : ''}: </strong>${params.familyDynamics}
+                            </p>
+                            <p style="margin: 0.5em auto; text-align:center;">
+                                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:200px; display:block;" />
+                                <span style="font-size:2rem;">${params.hamperId}</span>
+                            </p>
 
                             <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
                                 <p style="margin: 0.5em 0;">
                                     <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span> <strong>of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
                                 </p>
-                                <img src="###QR_CODE###" style="margin:0 auto;width:100%; max-width:200px; display:block;" />
+                                
                             </div>
                         </div>
                         
                         <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-                            <p style="margin: 0.5em 0;"><strong>ID:</strong> ${params.hamperId}</p>
+                            <p style="font-size: 1.5rem;">
+                                <strong>Family Dynamics${params.familySize ? ' ('+params.familySize+')' : ''}: </strong>${params.familyDynamics}
+                            </p>
+                            <p style="margin: 0.5em auto; text-align:center;">
+                                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:200px; display:block;" />
+                                <span style="font-size:2rem;">${params.hamperId}</span>
+                            </p>
 
                             <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
                             <p style="margin: 0.5em 0;">
                                 <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span> <strong>of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
                             </p>
-                            <img src="###QR_CODE###" style="margin:0 auto;width:100%; max-width:200px; display:block;" />
+                            
                             </div>
                         </div>
                     </div>`;

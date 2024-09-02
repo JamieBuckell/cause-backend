@@ -1,7 +1,7 @@
 service: causef-api-v2-feedback
 
 useDotenv: true
-frameworkVersion: '3'
+frameworkVersion: "4"
 
 plugins:
   - serverless-domain-manager
@@ -27,7 +27,7 @@ provider:
   region: ${opt:region, 'eu-west-2'}
   apiGateway:
     description: Microservice for feedback specific processes
-  environment: ${file(../resources/.env.${self:custom.stage}.yml):}
+  environment: ${file(../resources/.env.${self:custom.stage}.yml)}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -41,110 +41,110 @@ provider:
         - dynamodb:BatchWriteItem
       Resource:
         - Fn::Join:
-          - ""
-          - - "arn:aws:dynamodb:eu-west-2:"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":table/"
-            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+            - ""
+            - - "arn:aws:dynamodb:eu-west-2:"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
         - Fn::Join:
-          - ""
-          - - "arn:aws:dynamodb:eu-west-2:"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":table/"
-            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
-            - "/index/GSI1"
+            - ""
+            - - "arn:aws:dynamodb:eu-west-2:"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+              - "/index/GSI1"
         - Fn::Join:
-          - ""
-          - - "arn:aws:dynamodb:eu-west-2:"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":table/"
-            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
-            - "/index/GSI2"
-        - "Fn::GetAtt": [ FeedbackTable, Arn ]
+            - ""
+            - - "arn:aws:dynamodb:eu-west-2:"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+              - "/index/GSI2"
+        - "Fn::GetAtt": [FeedbackTable, Arn]
         - Fn::Join:
-          - ""
-          - - "arn:aws:dynamodb:eu-west-2:"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":table/cause-campaign-feedback-live"
-    - Effect: 'Allow'
+            - ""
+            - - "arn:aws:dynamodb:eu-west-2:"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/cause-campaign-feedback-live"
+    - Effect: "Allow"
       Action:
         - lambda:InvokeFunction
       Resource:
-        - arn:aws:lambda:eu-west-2:988218197909:function:pdf-live-downloadPdf
+        - arn:aws:lambda:eu-west-2:988218197909:function:PdfGeneratorV2Stack-HtmlToPdfLambdaB7443488-LJXTgl6nvBE2
 package:
   individually: true
   exclude:
-      - '**/*'
+    - "**/*"
   include:
-      - ../common/**
-      - endpoints/**
+    - ../common/**
+    - endpoints/**
 functions:
   volunteer:
     handler: endpoints/volunteer.handler
     events:
-        - http:
-            method: post
-            path: volunteer
-            cors: true
+      - http:
+          method: post
+          path: volunteer
+          cors: true
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
       - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
   hamper:
     handler: endpoints/hamper.handler
     events:
-        - http:
-            method: post
-            path: hamper
-            cors: true
+      - http:
+          method: post
+          path: hamper
+          cors: true
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
       - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
   hamperCheck:
     handler: endpoints/hamperCheck.handler
     events:
-        - http:
-            method: post
-            path: hampers/check
-            cors: true
+      - http:
+          method: post
+          path: hampers/check
+          cors: true
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
   getHamper:
     handler: endpoints/getHamper.handler
     events:
-        - http:
-            method: get
-            path: hampers/list/{campaignId}
-            cors: true
-            request: 
-              parameters: 
-                paths: 
-                  campaignId: true
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: get
+          path: hampers/list/{campaignId}
+          cors: true
+          request:
+            parameters:
+              paths:
+                campaignId: true
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
   getVolunteer:
     handler: endpoints/getVolunteer.handler
     events:
-        - http:
-            method: get
-            path: volunteers/list/{campaignId}
-            cors: true
-            request: 
-              parameters: 
-                paths: 
-                  campaignId: true
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: get
+          path: volunteers/list/{campaignId}
+          cors: true
+          request:
+            parameters:
+              paths:
+                campaignId: true
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
   generatePdf:
     handler: endpoints/generatePdf.handler
     events:
-        - http:
-            method: post
-            path: hampers/generate
-            cors: true
+      - http:
+          method: post
+          path: hampers/generate
+          cors: true
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
   transfer:

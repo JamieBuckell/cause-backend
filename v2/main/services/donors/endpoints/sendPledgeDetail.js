@@ -10,6 +10,7 @@ var lambda = new AWS.Lambda();
 
 exports.handler = async (event, context, cb) => {
   try {
+    var https = require("https");
     if (event?.Records) {
       for (const r of event?.Records) {
         console.log(`Running message: ${r.body}`);
@@ -115,23 +116,85 @@ exports.handler = async (event, context, cb) => {
               "your-allocation-families.csv";
           }
 
+          const FunctionName =
+            "PdfGeneratorV2Stack-HtmlToPdfLambdaB7443488-LJXTgl6nvBE2";
+
           var params = {
-            FunctionName: "pdf-live-downloadPdf", // the lambda function we are going to invoke
+            FunctionName, // the lambda function we are going to invoke
             InvocationType: "RequestResponse",
             LogType: "Tail",
-            Payload: `{ "pdfPages" : ${JSON.stringify(pdfPages)} }`,
+            Payload: `{ "body": ${JSON.stringify({
+              pdfPages: pdfPages,
+            })} }`,
           };
 
           const lambdaResult = await lambda.invoke(params).promise();
           const resultObject = JSON.parse(lambdaResult.Payload);
           console.log(resultObject);
 
-          /* */
-          rawEmailJsonParameters.pdfAttachment = resultObject;
-          rawEmailJsonParameters.pdfAttachmentFilename =
-            "family-hamper-labels.pdf";
+          if (resultObject?.body) {
+            const resultBody = JSON.parse(resultObject?.body);
+            if (resultBody?.pdfUrl) {
+              const docRes = https.get(
+                resultBody.pdfUrl,
+                options,
+                async (res) => {
+                  try {
+                    let body = "";
+                    res.setEncoding("utf-8");
+                    for await (const chunk of res) {
+                      body += chunk;
+                    }
+                    console.log("RESPONSE", body);
+                    return body;
+                  } catch (e) {
+                    console.log("ERROR", e);
+                  }
+                }
+              );
+              console.log(docRes);
 
-          await Notifications.sendRawEmail(rawEmailJsonParameters);
+              /* *
+              function (res) {
+                var data = [];
+
+                res.on("data", function (chunk) {
+                    data.push(chunk);
+                  })
+                  .on("end", function () {
+                    //at this point data is an array of Buffers
+                    //so Buffer.concat() can make us a new Buffer
+                    //of all of them together
+                    var buffer = Buffer.concat(data);
+                    return buffer.toString("base64");
+                  });
+              }
+
+
+              http.get(resultBody.pdfUrl),
+                function (res) {
+                  var data = [];
+
+                  res.on("data", function (chunk) {
+                      data.push(chunk);
+                    })
+                    .on("end", async function () {
+                      //at this point data is an array of Buffers
+                      //so Buffer.concat() can make us a new Buffer
+                      //of all of them together
+                      var buffer = Buffer.concat(data);
+
+                      rawEmailJsonParameters.pdfAttachment =
+                        buffer.toString("base64");
+                      rawEmailJsonParameters.pdfAttachmentFilename =
+                        "family-hamper-labels.pdf";
+
+                      await Notifications.sendRawEmail(rawEmailJsonParameters);
+                    });
+                };
+                /* */
+            }
+          }
         }
       }
       return Responses._200({

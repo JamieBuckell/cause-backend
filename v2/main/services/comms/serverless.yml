@@ -1,7 +1,7 @@
 service: causef-api-v2-communications
 
 useDotenv: true
-frameworkVersion: '3'
+frameworkVersion: "4"
 
 plugins:
   - serverless-domain-manager
@@ -26,9 +26,9 @@ provider:
   region: ${opt:region, 'eu-west-2'}
   apiGateway:
     description: Microservice for communication specific processes
-  environment: ${file(../resources/.env.${self:custom.stage}.yml):}
+  environment: ${file(../resources/.env.${self:custom.stage}.yml)}
   iamRoleStatements:
-    - Effect: 'Allow'
+    - Effect: "Allow"
       Action:
         - "ses:SendEmail"
         - "ses:SendTemplatedEmail"
@@ -42,29 +42,29 @@ provider:
         - sqs:sendmessage
       Resource:
         - Fn::Join:
-          - ""
-          - - "arn:aws:sqs:"
-            - ${self:provider.region}
-            - ":"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":"
-            - ${self:provider.environment.MAIL_PROCESSOR_QUEUE}
+            - ""
+            - - "arn:aws:sqs:"
+              - ${self:provider.region}
+              - ":"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":"
+              - ${self:provider.environment.MAIL_PROCESSOR_QUEUE}
         - Fn::Join:
-          - ""
-          - - "arn:aws:sqs:"
-            - ${self:provider.region}
-            - ":"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":"
-            - ${self:provider.environment.MAILER_QUEUE}
+            - ""
+            - - "arn:aws:sqs:"
+              - ${self:provider.region}
+              - ":"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":"
+              - ${self:provider.environment.MAILER_QUEUE}
         - Fn::Join:
-          - ""
-          - - "arn:aws:sqs:"
-            - ${self:provider.region}
-            - ":"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":"
-            - ${self:provider.environment.MAIL_COMPLETE_QUEUE}
+            - ""
+            - - "arn:aws:sqs:"
+              - ${self:provider.region}
+              - ":"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":"
+              - ${self:provider.environment.MAIL_COMPLETE_QUEUE}
     - Effect: Allow
       Action:
         - dynamodb:DescribeTable
@@ -77,54 +77,54 @@ provider:
         - dynamodb:BatchWriteItem
       Resource:
         - Fn::Join:
-          - ""
-          - - "arn:aws:dynamodb:"
-            - ${self:provider.region}
-            - ":"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":table/"
-            - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+            - ""
+            - - "arn:aws:dynamodb:"
+              - ${self:provider.region}
+              - ":"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
         - Fn::Join:
-          - ""
-          - - "arn:aws:dynamodb:"
-            - ${self:provider.region}
-            - ":"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":table/"
-            - ${self:provider.environment.COMMS_DYNAMO_TABLE}
+            - ""
+            - - "arn:aws:dynamodb:"
+              - ${self:provider.region}
+              - ":"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.COMMS_DYNAMO_TABLE}
         - Fn::Join:
-          - ""
-          - - "arn:aws:dynamodb:"
-            - ${self:provider.region}
-            - ":"
-            - ${self:provider.environment.AWS_ACCOUNT_ID}
-            - ":table/"
-            - ${self:provider.environment.SUBSCRIBERS_TABLE}
+            - ""
+            - - "arn:aws:dynamodb:"
+              - ${self:provider.region}
+              - ":"
+              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ":table/"
+              - ${self:provider.environment.SUBSCRIBERS_TABLE}
     - Effect: Allow
-      Action: 
+      Action:
         - "ses:GetTemplate"
-      Resource: 
+      Resource:
         - "*"
 package:
   individually: true
   exclude:
-      - '**/*'
+    - "**/*"
   include:
-      - ../common/**
-      - endpoints/**
+    - ../common/**
+    - endpoints/**
 functions:
   processEmail:
     handler: endpoints/process.handler
     events:
-        - http:
-            method: post
-            path: process
-            cors: true
-            integration: lambda-proxy
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: post
+          path: process
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
@@ -174,15 +174,15 @@ functions:
   sent:
     handler: endpoints/sent.handler
     events:
-        - http:
-            method: get
-            path: sent
-            cors: true
-            integration: lambda-proxy
-            authorizer:
-              name: PrivateAuthorizerV2
-              type: COGNITO_USER_POOLS
-              arn: ${self:custom.userPools.${self:custom.stage}}
+      - http:
+          method: get
+          path: sent
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
 resources:
   - ${file(../resources/portal-comms-data-store.yml)}
   - ${file(../resources/mail-processor-sqs-queue.yml)}

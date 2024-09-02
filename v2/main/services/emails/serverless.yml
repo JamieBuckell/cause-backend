@@ -24,7 +24,7 @@ provider:
   profile: jamiebuckell
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'eu-west-2'}
-  environment: ${file(../resources/.env.${self:custom.stage}.yml):}
+  environment: ${file(../resources/.env.${self:custom.stage}.yml)}
   iamRoleStatements:
     - Effect: Allow
       Action:

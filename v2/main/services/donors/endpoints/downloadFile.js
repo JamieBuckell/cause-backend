@@ -125,29 +125,34 @@ exports.handler = async (event, context, cb) => {
     };
     switch (downloadType) {
       case "pdf":
+        const FunctionName =
+          "PdfGeneratorV2Stack-HtmlToPdfLambdaB7443488-LJXTgl6nvBE2";
+
         var params = {
-          FunctionName: "pdf-live-downloadPdf", // the lambda function we are going to invoke
+          FunctionName, // the lambda function we are going to invoke
           InvocationType: "RequestResponse",
           LogType: "Tail",
-          Payload: `{ "pdfPages" : ${JSON.stringify(
-            pdfPages
-          )}, "version": "${downloadVersion}" }`,
+          Payload: `{ "body": ${JSON.stringify({
+            pdfPages: pdfPages,
+            version: downloadVersion,
+          })} }`,
         };
 
         const lambdaResult = await lambda.invoke(params).promise();
         const resultObject = JSON.parse(lambdaResult.Payload);
 
-        return {
-          headers: {
-            "Content-Type": "application/pdf",
-            "Access-Control-Allow-Methods": "*",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Max-Age": "3600",
-          },
-          statusCode: 200,
-          body: resultObject,
-        };
+        if (resultObject?.body) {
+          const resultBody = JSON.parse(resultObject?.body);
+          if (resultBody?.pdfUrl) {
+            return Responses._200({
+              pdfUrl: resultBody.pdfUrl,
+            });
+          }
+        }
+
+        return Responses._400({
+          messages: { unexpected: "An unexpected error occurred" },
+        });
       case "csv":
         response.headers = { "Content-type": "text/csv" };
         response.body = csvContent;

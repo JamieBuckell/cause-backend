@@ -26,7 +26,7 @@ provider:
   region: ${opt:region, 'eu-west-2'}
   apiGateway:
     description: Microservice for subscriber specific processes
-  environment: ${file(../resources/.env.${self:custom.stage}.yml):}
+  environment: ${file(../resources/.env.${self:custom.stage}.yml)}
   iamRoleStatements:
     - Effect: "Allow"
       Action:

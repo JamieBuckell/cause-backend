@@ -1,7 +1,7 @@
 service: causef-api-v2-reports
 
 useDotenv: true
-frameworkVersion: "3"
+frameworkVersion: "4"
 
 plugins:
   - serverless-domain-manager
@@ -24,7 +24,7 @@ provider:
   profile: jamiebuckell
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'eu-west-2'}
-  environment: ${file(../resources/.env.${self:custom.stage}.yml):}
+  environment: ${file(../resources/.env.${self:custom.stage}.yml)}
   iamRoleStatements:
     - Effect: Allow
       Action:

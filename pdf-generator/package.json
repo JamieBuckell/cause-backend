@@ -1,0 +1,22 @@
+{
+  "name": "download-pdf-aws",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "serverless offline start",
+    "deploy": "sls deploy",
+    "build": "sls package"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chrome-aws-lambda": "^10.1.0",
+    "puppeteer-serverless": "^2.0.0",
+    "qrcode": "^1.5.1"
+  },
+  "devDependencies": {
+    "serverless": "^4.2.4",
+    "typescript": "^5.5.4"
+  }
+}

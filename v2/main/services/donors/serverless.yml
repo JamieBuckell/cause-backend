@@ -1,7 +1,8 @@
+org: jamiebuckell
+app: cause
 service: causef-api-v2-donors
 
 useDotenv: true
-frameworkVersion: "4"
 
 plugins:
   - serverless-domain-manager
@@ -26,7 +27,7 @@ provider:
   region: ${opt:region, 'eu-west-2'}
   apiGateway:
     description: Microservice for donor specific processes
-  environment: ${file(../resources/.env.${self:custom.stage}.yml):}
+  environment: ${file(../resources/.env.${self:custom.stage}.yml)}
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -101,7 +102,7 @@ provider:
       Action:
         - lambda:InvokeFunction
       Resource:
-        - arn:aws:lambda:eu-west-2:988218197909:function:pdf-live-downloadPdf
+        - arn:aws:lambda:eu-west-2:988218197909:function:PdfGeneratorV2Stack-HtmlToPdfLambdaB7443488-LJXTgl6nvBE2
 package:
   individually: true
   exclude:
