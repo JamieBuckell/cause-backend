@@ -5,7 +5,8 @@
   "main": "handler.js",
   "dependencies": {
     "aws-sdk": "^2.1687.0",
-    "crypto": "^1.0.1"
+    "crypto": "^1.0.1",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "moment": "^2.29.1",

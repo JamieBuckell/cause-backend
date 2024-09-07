@@ -101,6 +101,12 @@
         "LogGroupName": "/aws/lambda/causef-api-v2-users-live-create"
       }
     },
+    "GetMeLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/causef-api-v2-users-live-getMe"
+      }
+    },
     "IamRoleLambdaExecution": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -273,7 +279,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-users/live/1725194975295-2024-09-01T12:49:35.295Z/delete.zip"
+          "S3Key": "serverless/causef-api-v2-users/live/1725407969376-2024-09-03T23:59:29.376Z/delete.zip"
         },
         "Handler": "endpoints/delete.handler",
         "Runtime": "nodejs16.x",
@@ -324,7 +330,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-users/live/1725194975295-2024-09-01T12:49:35.295Z/resetPassword.zip"
+          "S3Key": "serverless/causef-api-v2-users/live/1725407969376-2024-09-03T23:59:29.376Z/resetPassword.zip"
         },
         "Handler": "endpoints/resetPassword.handler",
         "Runtime": "nodejs16.x",
@@ -375,7 +381,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-users/live/1725194975295-2024-09-01T12:49:35.295Z/resetPasswordCommit.zip"
+          "S3Key": "serverless/causef-api-v2-users/live/1725407969376-2024-09-03T23:59:29.376Z/resetPasswordCommit.zip"
         },
         "Handler": "endpoints/resetPasswordCommit.handler",
         "Runtime": "nodejs16.x",
@@ -426,7 +432,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-users/live/1725194975295-2024-09-01T12:49:35.295Z/list.zip"
+          "S3Key": "serverless/causef-api-v2-users/live/1725407969376-2024-09-03T23:59:29.376Z/list.zip"
         },
         "Handler": "endpoints/list.handler",
         "Runtime": "nodejs16.x",
@@ -477,7 +483,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-users/live/1725194975295-2024-09-01T12:49:35.295Z/create.zip"
+          "S3Key": "serverless/causef-api-v2-users/live/1725407969376-2024-09-03T23:59:29.376Z/create.zip"
         },
         "Handler": "endpoints/create.handler",
         "Runtime": "nodejs16.x",
@@ -521,54 +527,115 @@
         "CreateLogGroup"
       ]
     },
-    "DeleteLambdaVersionEgBQot8RSTCHrGh8ETnYWvGCoA99DTBelmjL5HA2YXA": {
+    "GetMeLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/causef-api-v2-users/live/1725407969376-2024-09-03T23:59:29.376Z/getMe.zip"
+        },
+        "Handler": "endpoints/me.handler",
+        "Runtime": "nodejs16.x",
+        "FunctionName": "causef-api-v2-users-live-getMe",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "AWS_ACCOUNT_ID": "988218197909",
+            "AWS_ACCOUNT_REGION": "eu-west-2",
+            "WEBSITE_URL": "https://www.cause-foundation.org.uk",
+            "APP_URL": "https://portal.cause-foundation.org.uk",
+            "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
+            "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-live",
+            "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-live",
+            "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-live",
+            "FEEDBACK_TABLE": "cause-portal-v2-feedback-live",
+            "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-live",
+            "MAILER_QUEUE": "cause-portal-v2-mailer-queue-live.fifo",
+            "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-live",
+            "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-live",
+            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-live",
+            "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-live",
+            "TIMEZONE": "Europe/London",
+            "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
+            "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
+            "INTERNAL_ADDRESS": "hampers@cause-foundation.org.uk",
+            "HASHING_SALT": "46d6a84b07ce2e",
+            "HASHING_PREFIX": "H#",
+            "USER_POOL": "eu-west-2_ueeqpE5iq"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "GetMeLogGroup"
+      ]
+    },
+    "DeleteLambdaVersionbGQiSOuFqNOn40SkoJgUWdWcsmZQsYap49X4X3YLqKU": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "DeleteLambdaFunction"
         },
-        "CodeSha256": "nGQtY+FrhheWCHrSk5MG7WDnXcoxVogVmpFtja7MpUg="
+        "CodeSha256": "bugLujgyCwNuccZ3rnTFdLNL9kzwVR7LwImRC2Tx/hk="
       }
     },
-    "ResetPasswordCommitLambdaVersionzEh2UiS9WddVfFI2Qv0Ukmk1xBvezf1aWwskxMShU4": {
-      "Type": "AWS::Lambda::Version",
-      "DeletionPolicy": "Retain",
-      "Properties": {
-        "FunctionName": {
-          "Ref": "ResetPasswordCommitLambdaFunction"
-        },
-        "CodeSha256": "nGQtY+FrhheWCHrSk5MG7WDnXcoxVogVmpFtja7MpUg="
-      }
-    },
-    "ResetPasswordLambdaVersiongSuOk90OQ8Hq1OPqxK9Dp9lW9sEGfE6g4tEupN7Zs": {
+    "ResetPasswordLambdaVersion2QcVMLWA7dSS6uTrBnJGEAcHk0mhowQlDZd5cnbb0": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "ResetPasswordLambdaFunction"
         },
-        "CodeSha256": "nGQtY+FrhheWCHrSk5MG7WDnXcoxVogVmpFtja7MpUg="
+        "CodeSha256": "bugLujgyCwNuccZ3rnTFdLNL9kzwVR7LwImRC2Tx/hk="
       }
     },
-    "ListLambdaVersionOOGCEiKfA3qYFVaCShDSesd1XB0HPJcUoz6L9hqfqVc": {
+    "ResetPasswordCommitLambdaVersioncuMTfHulLiKHsx2ZCS59ea2rDalysf9XXHMIaokw": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
-          "Ref": "ListLambdaFunction"
+          "Ref": "ResetPasswordCommitLambdaFunction"
         },
-        "CodeSha256": "nGQtY+FrhheWCHrSk5MG7WDnXcoxVogVmpFtja7MpUg="
+        "CodeSha256": "bugLujgyCwNuccZ3rnTFdLNL9kzwVR7LwImRC2Tx/hk="
       }
     },
-    "CreateLambdaVersion5b2XRxXChG5UidrfXmSpJpAFIxo2ddD2QDrUkKPcI": {
+    "CreateLambdaVersionguIxI1Y5iUNVeM0PHtMssVpJRIee2LQJiErNCe8Bk": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "CreateLambdaFunction"
         },
-        "CodeSha256": "nGQtY+FrhheWCHrSk5MG7WDnXcoxVogVmpFtja7MpUg="
+        "CodeSha256": "bugLujgyCwNuccZ3rnTFdLNL9kzwVR7LwImRC2Tx/hk="
+      }
+    },
+    "ListLambdaVersionlTeOQvDkoh1nYtj7NTC5fqKPYFRcoMQBRpZMnQsbA": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ListLambdaFunction"
+        },
+        "CodeSha256": "bugLujgyCwNuccZ3rnTFdLNL9kzwVR7LwImRC2Tx/hk="
+      }
+    },
+    "GetMeLambdaVersion6Vc99YEJ3zMYUHEwVGYtTk2HZth54rSgrgC92DAw": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "GetMeLambdaFunction"
+        },
+        "CodeSha256": "bugLujgyCwNuccZ3rnTFdLNL9kzwVR7LwImRC2Tx/hk="
       }
     },
     "ApiGatewayRestApi": {
@@ -750,6 +817,21 @@
           "Ref": "ApiGatewayResourceCreate"
         },
         "PathPart": "{userType}",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceMe": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "me",
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
         }
@@ -1019,6 +1101,51 @@
         },
         "ResourceId": {
           "Ref": "ApiGatewayResourceCreateUsertypeVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodMeOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceMe"
         },
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
@@ -1345,6 +1472,55 @@
         "PrivateAuthorizerV2ApiGatewayAuthorizer"
       ]
     },
+    "ApiGatewayMethodMeGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceMe"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "PrivateAuthorizerV2ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "GetMeLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "PrivateAuthorizerV2ApiGatewayAuthorizer"
+      ]
+    },
     "ApiGatewayCausefapiv2usersRequestValidator": {
       "Type": "AWS::ApiGateway::RequestValidator",
       "Properties": {
@@ -1371,7 +1547,7 @@
         ]
       }
     },
-    "ApiGatewayDeployment1725194973370": {
+    "ApiGatewayDeployment1725407967802": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -1387,12 +1563,14 @@
         "ApiGatewayMethodResetDashpasswordDashcommitEmailaddressVarVerificationhashVarOptions",
         "ApiGatewayMethodListUsertypeVarOptions",
         "ApiGatewayMethodCreateUsertypeVarOptions",
+        "ApiGatewayMethodMeOptions",
         "ApiGatewayMethodDeleteOrganisationidVarEmailaddressVarPost",
         "ApiGatewayMethodDeleteOrganisationidVarEmailaddressVarUsertypeVarPost",
         "ApiGatewayMethodResetDashpasswordEmailaddressVarPost",
         "ApiGatewayMethodResetDashpasswordDashcommitEmailaddressVarVerificationhashVarPost",
         "ApiGatewayMethodListUsertypeVarGet",
-        "ApiGatewayMethodCreateUsertypeVarPost"
+        "ApiGatewayMethodCreateUsertypeVarPost",
+        "ApiGatewayMethodMeGet"
       ]
     },
     "DeleteLambdaPermissionApiGateway": {
@@ -1580,6 +1758,43 @@
         }
       }
     },
+    "GetMeLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "GetMeLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
     "GatewayResponseDefault4XX": {
       "Type": "AWS::ApiGateway::GatewayResponse",
       "Properties": {
@@ -1606,46 +1821,55 @@
     "DeleteLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "DeleteLambdaVersionEgBQot8RSTCHrGh8ETnYWvGCoA99DTBelmjL5HA2YXA"
+        "Ref": "DeleteLambdaVersionbGQiSOuFqNOn40SkoJgUWdWcsmZQsYap49X4X3YLqKU"
       },
       "Export": {
         "Name": "sls-causef-api-v2-users-live-DeleteLambdaFunctionQualifiedArn"
       }
     },
-    "ResetPasswordCommitLambdaFunctionQualifiedArn": {
-      "Description": "Current Lambda function version",
-      "Value": {
-        "Ref": "ResetPasswordCommitLambdaVersionzEh2UiS9WddVfFI2Qv0Ukmk1xBvezf1aWwskxMShU4"
-      },
-      "Export": {
-        "Name": "sls-causef-api-v2-users-live-ResetPasswordCommitLambdaFunctionQualifiedArn"
-      }
-    },
     "ResetPasswordLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ResetPasswordLambdaVersiongSuOk90OQ8Hq1OPqxK9Dp9lW9sEGfE6g4tEupN7Zs"
+        "Ref": "ResetPasswordLambdaVersion2QcVMLWA7dSS6uTrBnJGEAcHk0mhowQlDZd5cnbb0"
       },
       "Export": {
         "Name": "sls-causef-api-v2-users-live-ResetPasswordLambdaFunctionQualifiedArn"
       }
     },
-    "ListLambdaFunctionQualifiedArn": {
+    "ResetPasswordCommitLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ListLambdaVersionOOGCEiKfA3qYFVaCShDSesd1XB0HPJcUoz6L9hqfqVc"
+        "Ref": "ResetPasswordCommitLambdaVersioncuMTfHulLiKHsx2ZCS59ea2rDalysf9XXHMIaokw"
       },
       "Export": {
-        "Name": "sls-causef-api-v2-users-live-ListLambdaFunctionQualifiedArn"
+        "Name": "sls-causef-api-v2-users-live-ResetPasswordCommitLambdaFunctionQualifiedArn"
       }
     },
     "CreateLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CreateLambdaVersion5b2XRxXChG5UidrfXmSpJpAFIxo2ddD2QDrUkKPcI"
+        "Ref": "CreateLambdaVersionguIxI1Y5iUNVeM0PHtMssVpJRIee2LQJiErNCe8Bk"
       },
       "Export": {
         "Name": "sls-causef-api-v2-users-live-CreateLambdaFunctionQualifiedArn"
+      }
+    },
+    "ListLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ListLambdaVersionlTeOQvDkoh1nYtj7NTC5fqKPYFRcoMQBRpZMnQsbA"
+      },
+      "Export": {
+        "Name": "sls-causef-api-v2-users-live-ListLambdaFunctionQualifiedArn"
+      }
+    },
+    "GetMeLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "GetMeLambdaVersion6Vc99YEJ3zMYUHEwVGYtTk2HZth54rSgrgC92DAw"
+      },
+      "Export": {
+        "Name": "sls-causef-api-v2-users-live-GetMeLambdaFunctionQualifiedArn"
       }
     },
     "ServiceEndpoint": {

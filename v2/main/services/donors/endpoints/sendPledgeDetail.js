@@ -1,16 +1,30 @@
 const Responses = require("../common/API_Responses");
-const Dynamo = require("../common/Dynamo");
-const Hashing = require("../common/Hashing");
 const Functions = require("../common/Functions");
 const Notifications = require("../common/Notifications");
 
 var AWS = require("aws-sdk");
 AWS.config.region = "eu-west-2";
 var lambda = new AWS.Lambda();
+var https = require("https");
+
+async function get_page(url) {
+  return new Promise((resolve) => {
+    let data = "";
+
+    https.get(url, (res) => {
+      res.on("data", (chunk) => {
+        data += chunk;
+      });
+
+      res.on("end", () => {
+        resolve(data);
+      });
+    });
+  });
+}
 
 exports.handler = async (event, context, cb) => {
   try {
-    var https = require("https");
     if (event?.Records) {
       for (const r of event?.Records) {
         console.log(`Running message: ${r.body}`);
@@ -130,69 +144,31 @@ exports.handler = async (event, context, cb) => {
 
           const lambdaResult = await lambda.invoke(params).promise();
           const resultObject = JSON.parse(lambdaResult.Payload);
-          console.log(resultObject);
 
           if (resultObject?.body) {
             const resultBody = JSON.parse(resultObject?.body);
             if (resultBody?.pdfUrl) {
-              const docRes = https.get(
-                resultBody.pdfUrl,
-                options,
-                async (res) => {
-                  try {
-                    let body = "";
-                    res.setEncoding("utf-8");
-                    for await (const chunk of res) {
-                      body += chunk;
-                    }
-                    console.log("RESPONSE", body);
-                    return body;
-                  } catch (e) {
-                    console.log("ERROR", e);
-                  }
-                }
-              );
-              console.log(docRes);
+              rawEmailJsonParameters.pdfAttachmentFilename =
+                "family-hamper-labels.pdf";
+
+              const pdfRespone = await get_page(resultBody.pdfUrl);
 
               /* *
-              function (res) {
-                var data = [];
+              var buffer = Buffer.concat(pdfRespone);
+              console.log(buffer.toString("base64"));
 
-                res.on("data", function (chunk) {
-                    data.push(chunk);
-                  })
-                  .on("end", function () {
-                    //at this point data is an array of Buffers
-                    //so Buffer.concat() can make us a new Buffer
-                    //of all of them together
-                    var buffer = Buffer.concat(data);
-                    return buffer.toString("base64");
-                  });
-              }
+              rawEmailJsonParameters.pdfAttachment = buffer;
+              /* */
 
+              /* */
+              //const pdfBuffer = await pdfRespone.arrayBuffer();
+              const binaryPdf = Buffer.from(pdfRespone);
 
-              http.get(resultBody.pdfUrl),
-                function (res) {
-                  var data = [];
+              rawEmailJsonParameters.pdfAttachment = binaryPdf;
+              /* */
 
-                  res.on("data", function (chunk) {
-                      data.push(chunk);
-                    })
-                    .on("end", async function () {
-                      //at this point data is an array of Buffers
-                      //so Buffer.concat() can make us a new Buffer
-                      //of all of them together
-                      var buffer = Buffer.concat(data);
-
-                      rawEmailJsonParameters.pdfAttachment =
-                        buffer.toString("base64");
-                      rawEmailJsonParameters.pdfAttachmentFilename =
-                        "family-hamper-labels.pdf";
-
-                      await Notifications.sendRawEmail(rawEmailJsonParameters);
-                    });
-                };
-                /* */
+              await Notifications.sendRawEmail(rawEmailJsonParameters);
+              console.log("rawEmailJsonParameters", rawEmailJsonParameters);
             }
           }
         }

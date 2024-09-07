@@ -358,6 +358,8 @@ exports.handler = async (event, context, cb) => {
           await Notifications.sendTransactionalEmail(jsonNominatorParameters);
           console.log("Nominator notification sent");
 
+          /*
+          Moved to after first login
           if (nominatorType === "team-lead") {
             const emailWelcomeTemplateParams = await Functions.getEmailTemplate(
               "organisationAdminWelcome",
@@ -370,6 +372,7 @@ exports.handler = async (event, context, cb) => {
             await Notifications.sendTransactionalEmail(jsonWelcomeParameters);
             console.log("Admin welcome sent");
           }
+            */
         }
 
         // Notify Org Admins...

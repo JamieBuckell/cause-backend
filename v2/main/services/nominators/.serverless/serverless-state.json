@@ -330,7 +330,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/causef-api-v2-nominators/live/1725184340168-2024-09-01T09:52:20.168Z/create.zip"
+                "S3Key": "serverless/causef-api-v2-nominators/live/1725408186415-2024-09-04T00:03:06.415Z/create.zip"
               },
               "Handler": "endpoints/create.handler",
               "Runtime": "nodejs14.x",
@@ -385,7 +385,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/causef-api-v2-nominators/live/1725184340168-2024-09-01T09:52:20.168Z/register.zip"
+                "S3Key": "serverless/causef-api-v2-nominators/live/1725408186415-2024-09-04T00:03:06.415Z/register.zip"
               },
               "Handler": "endpoints/create.handler",
               "Runtime": "nodejs14.x",
@@ -440,7 +440,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/causef-api-v2-nominators/live/1725184340168-2024-09-01T09:52:20.168Z/sendWelcome.zip"
+                "S3Key": "serverless/causef-api-v2-nominators/live/1725408186415-2024-09-04T00:03:06.415Z/sendWelcome.zip"
               },
               "Handler": "endpoints/sendWelcome.handler",
               "Runtime": "nodejs14.x",
@@ -494,7 +494,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/causef-api-v2-nominators/live/1725184340168-2024-09-01T09:52:20.168Z/approve.zip"
+                "S3Key": "serverless/causef-api-v2-nominators/live/1725408186415-2024-09-04T00:03:06.415Z/approve.zip"
               },
               "Handler": "endpoints/approve.handler",
               "Runtime": "nodejs14.x",
@@ -548,7 +548,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/causef-api-v2-nominators/live/1725184340168-2024-09-01T09:52:20.168Z/resetPassword.zip"
+                "S3Key": "serverless/causef-api-v2-nominators/live/1725408186415-2024-09-04T00:03:06.415Z/resetPassword.zip"
               },
               "Handler": "endpoints/resetPassword.handler",
               "Runtime": "nodejs14.x",
@@ -599,7 +599,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/causef-api-v2-nominators/live/1725184340168-2024-09-01T09:52:20.168Z/update.zip"
+                "S3Key": "serverless/causef-api-v2-nominators/live/1725408186415-2024-09-04T00:03:06.415Z/update.zip"
               },
               "Handler": "endpoints/update.handler",
               "Runtime": "nodejs14.x",
@@ -646,64 +646,64 @@
               "UpdateLogGroup"
             ]
           },
-          "RegisterLambdaVersionyoqRr2YmJX8UGiq64oKdSfA6eO0ZOHx0fbXJtt1Ic": {
-            "Type": "AWS::Lambda::Version",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "FunctionName": {
-                "Ref": "RegisterLambdaFunction"
-              },
-              "CodeSha256": "Ygp51helRqcH7WZkDSy9BMh9XgAmrCzjG3r6TSuW0vo="
-            }
-          },
-          "CreateLambdaVersionrvnwd5UlZBXpAMgmiaBpJQ9rZhdP5DsQbCXe3uzUlM0": {
+          "CreateLambdaVersionbWAmzoMvDwrgwTUB6VO8QAMFCxAIGnIJbJKwwzQSTZE": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "CreateLambdaFunction"
               },
-              "CodeSha256": "Ygp51helRqcH7WZkDSy9BMh9XgAmrCzjG3r6TSuW0vo="
+              "CodeSha256": "DmDCgMstoGHMC3Ndi7ybUunysDZM5FcDm1Hgzoh1SHI="
             }
           },
-          "SendWelcomeLambdaVersionejUVxtufLF9Htfrcr3wTXKkewmWvIIgWrBx8zMkZMd0": {
-            "Type": "AWS::Lambda::Version",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "FunctionName": {
-                "Ref": "SendWelcomeLambdaFunction"
-              },
-              "CodeSha256": "Ygp51helRqcH7WZkDSy9BMh9XgAmrCzjG3r6TSuW0vo="
-            }
-          },
-          "ApproveLambdaVersionguvrsAp9k6DvJi7N84QpnxvNOmPrLxMl9Fsjti9E": {
+          "ApproveLambdaVersionlQQ3xWdDGkmQCDVYbdt7EnkirUDAbMHBpEEUYfOb8": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ApproveLambdaFunction"
               },
-              "CodeSha256": "Ygp51helRqcH7WZkDSy9BMh9XgAmrCzjG3r6TSuW0vo="
+              "CodeSha256": "DmDCgMstoGHMC3Ndi7ybUunysDZM5FcDm1Hgzoh1SHI="
             }
           },
-          "ResetPasswordLambdaVersionxEUBafJDqHSdzd0KnKnmOkoiaF0HVE9FxcL5JVdmi0": {
+          "SendWelcomeLambdaVersionHBNnOqy7faxB36m6l61afvvUjea1LUaU8wkFJ4Ns": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SendWelcomeLambdaFunction"
+              },
+              "CodeSha256": "DmDCgMstoGHMC3Ndi7ybUunysDZM5FcDm1Hgzoh1SHI="
+            }
+          },
+          "RegisterLambdaVersionESXesiOjmpoRuMSdm1Y722GLusJ7PfO87cynYZQ": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "RegisterLambdaFunction"
+              },
+              "CodeSha256": "DmDCgMstoGHMC3Ndi7ybUunysDZM5FcDm1Hgzoh1SHI="
+            }
+          },
+          "ResetPasswordLambdaVersionRdNjSqYgA9KsT5rR7O4M4mvUQsahZoy0ik7QLQ": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ResetPasswordLambdaFunction"
               },
-              "CodeSha256": "Ygp51helRqcH7WZkDSy9BMh9XgAmrCzjG3r6TSuW0vo="
+              "CodeSha256": "DmDCgMstoGHMC3Ndi7ybUunysDZM5FcDm1Hgzoh1SHI="
             }
           },
-          "UpdateLambdaVersion3jvC9GMkBSTzHQFzDnWxo4gSmJ6bshlTvGrOgHwqc": {
+          "UpdateLambdaVersionz8V9zQbyQL6YOaISn9CR3gZx8u4kd5TvH5k07U8Jg": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "UpdateLambdaFunction"
               },
-              "CodeSha256": "Ygp51helRqcH7WZkDSy9BMh9XgAmrCzjG3r6TSuW0vo="
+              "CodeSha256": "DmDCgMstoGHMC3Ndi7ybUunysDZM5FcDm1Hgzoh1SHI="
             }
           },
           "ApiGatewayRestApi": {
@@ -1460,7 +1460,7 @@
               ]
             }
           },
-          "ApiGatewayDeployment1725184339592": {
+          "ApiGatewayDeployment1725408185884": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -1729,46 +1729,46 @@
               "Name": "sls-causef-api-v2-nominators-live-ServerlessDeploymentBucketName"
             }
           },
-          "RegisterLambdaFunctionQualifiedArn": {
-            "Description": "Current Lambda function version",
-            "Value": {
-              "Ref": "RegisterLambdaVersionyoqRr2YmJX8UGiq64oKdSfA6eO0ZOHx0fbXJtt1Ic"
-            },
-            "Export": {
-              "Name": "sls-causef-api-v2-nominators-live-RegisterLambdaFunctionQualifiedArn"
-            }
-          },
           "CreateLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "CreateLambdaVersionrvnwd5UlZBXpAMgmiaBpJQ9rZhdP5DsQbCXe3uzUlM0"
+              "Ref": "CreateLambdaVersionbWAmzoMvDwrgwTUB6VO8QAMFCxAIGnIJbJKwwzQSTZE"
             },
             "Export": {
               "Name": "sls-causef-api-v2-nominators-live-CreateLambdaFunctionQualifiedArn"
             }
           },
-          "SendWelcomeLambdaFunctionQualifiedArn": {
-            "Description": "Current Lambda function version",
-            "Value": {
-              "Ref": "SendWelcomeLambdaVersionejUVxtufLF9Htfrcr3wTXKkewmWvIIgWrBx8zMkZMd0"
-            },
-            "Export": {
-              "Name": "sls-causef-api-v2-nominators-live-SendWelcomeLambdaFunctionQualifiedArn"
-            }
-          },
           "ApproveLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ApproveLambdaVersionguvrsAp9k6DvJi7N84QpnxvNOmPrLxMl9Fsjti9E"
+              "Ref": "ApproveLambdaVersionlQQ3xWdDGkmQCDVYbdt7EnkirUDAbMHBpEEUYfOb8"
             },
             "Export": {
               "Name": "sls-causef-api-v2-nominators-live-ApproveLambdaFunctionQualifiedArn"
             }
           },
+          "SendWelcomeLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SendWelcomeLambdaVersionHBNnOqy7faxB36m6l61afvvUjea1LUaU8wkFJ4Ns"
+            },
+            "Export": {
+              "Name": "sls-causef-api-v2-nominators-live-SendWelcomeLambdaFunctionQualifiedArn"
+            }
+          },
+          "RegisterLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "RegisterLambdaVersionESXesiOjmpoRuMSdm1Y722GLusJ7PfO87cynYZQ"
+            },
+            "Export": {
+              "Name": "sls-causef-api-v2-nominators-live-RegisterLambdaFunctionQualifiedArn"
+            }
+          },
           "ResetPasswordLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ResetPasswordLambdaVersionxEUBafJDqHSdzd0KnKnmOkoiaF0HVE9FxcL5JVdmi0"
+              "Ref": "ResetPasswordLambdaVersionRdNjSqYgA9KsT5rR7O4M4mvUQsahZoy0ik7QLQ"
             },
             "Export": {
               "Name": "sls-causef-api-v2-nominators-live-ResetPasswordLambdaFunctionQualifiedArn"
@@ -1777,7 +1777,7 @@
           "UpdateLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "UpdateLambdaVersion3jvC9GMkBSTzHQFzDnWxo4gSmJ6bshlTvGrOgHwqc"
+              "Ref": "UpdateLambdaVersionz8V9zQbyQL6YOaISn9CR3gZx8u4kd5TvH5k07U8Jg"
             },
             "Export": {
               "Name": "sls-causef-api-v2-nominators-live-UpdateLambdaFunctionQualifiedArn"
@@ -1965,7 +1965,7 @@
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "CreateLambdaVersionrvnwd5UlZBXpAMgmiaBpJQ9rZhdP5DsQbCXe3uzUlM0"
+        "versionLogicalId": "CreateLambdaVersionbWAmzoMvDwrgwTUB6VO8QAMFCxAIGnIJbJKwwzQSTZE"
       },
       "register": {
         "handler": "endpoints/create.handler",
@@ -2006,7 +2006,7 @@
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "RegisterLambdaVersionyoqRr2YmJX8UGiq64oKdSfA6eO0ZOHx0fbXJtt1Ic"
+        "versionLogicalId": "RegisterLambdaVersionESXesiOjmpoRuMSdm1Y722GLusJ7PfO87cynYZQ"
       },
       "sendWelcome": {
         "handler": "endpoints/sendWelcome.handler",
@@ -2061,7 +2061,7 @@
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "SendWelcomeLambdaVersionejUVxtufLF9Htfrcr3wTXKkewmWvIIgWrBx8zMkZMd0"
+        "versionLogicalId": "SendWelcomeLambdaVersionHBNnOqy7faxB36m6l61afvvUjea1LUaU8wkFJ4Ns"
       },
       "approve": {
         "handler": "endpoints/approve.handler",
@@ -2117,7 +2117,7 @@
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "ApproveLambdaVersionguvrsAp9k6DvJi7N84QpnxvNOmPrLxMl9Fsjti9E"
+        "versionLogicalId": "ApproveLambdaVersionlQQ3xWdDGkmQCDVYbdt7EnkirUDAbMHBpEEUYfOb8"
       },
       "resetPassword": {
         "handler": "endpoints/resetPassword.handler",
@@ -2169,7 +2169,7 @@
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "ResetPasswordLambdaVersionxEUBafJDqHSdzd0KnKnmOkoiaF0HVE9FxcL5JVdmi0"
+        "versionLogicalId": "ResetPasswordLambdaVersionRdNjSqYgA9KsT5rR7O4M4mvUQsahZoy0ik7QLQ"
       },
       "update": {
         "handler": "endpoints/update.handler",
@@ -2219,7 +2219,7 @@
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "UpdateLambdaVersion3jvC9GMkBSTzHQFzDnWxo4gSmJ6bshlTvGrOgHwqc"
+        "versionLogicalId": "UpdateLambdaVersionz8V9zQbyQL6YOaISn9CR3gZx8u4kd5TvH5k07U8Jg"
       }
     },
     "resources": {
@@ -2271,7 +2271,7 @@
           "endpoints/**"
         ],
         "artifactsS3KeyDirname": "serverless/causef-api-v2-nominators/live/code-artifacts",
-        "artifactDirectoryName": "serverless/causef-api-v2-nominators/live/1725184340168-2024-09-01T09:52:20.168Z"
+        "artifactDirectoryName": "serverless/causef-api-v2-nominators/live/1725408186415-2024-09-04T00:03:06.415Z"
       },
       "functions": {
         "$ref": "$[\"service\"][\"functions\"]"
@@ -2286,7 +2286,7 @@
   },
   "package": {
     "individually": true,
-    "artifactDirectoryName": "serverless/causef-api-v2-nominators/live/1725184340168-2024-09-01T09:52:20.168Z",
+    "artifactDirectoryName": "serverless/causef-api-v2-nominators/live/1725408186415-2024-09-04T00:03:06.415Z",
     "artifact": ""
   }
 }

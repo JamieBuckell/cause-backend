@@ -176,5 +176,17 @@ functions:
             name: PrivateAuthorizerV2
             type: COGNITO_USER_POOLS
             arn: ${self:custom.userPools.${self:custom.stage}}
+  getMe:
+    handler: endpoints/me.handler
+    events:
+      - http:
+          method: get
+          path: me
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.userPools.${self:custom.stage}}
 resources:
   - ${file(../resources/api-gateway-responses.yml)}

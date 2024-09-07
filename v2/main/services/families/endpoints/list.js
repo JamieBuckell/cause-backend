@@ -18,6 +18,7 @@ exports.handler = async (event, context, cb) => {
 
     const mainTableName = process.env.MAIN_DYNAMO_TABLE;
     const { campaignId } = event.pathParameters;
+    console.log("cid", campaignId);
     if (!campaignId) {
       return Responses._401({
         messages: "Campaign ID is required",
@@ -45,6 +46,9 @@ exports.handler = async (event, context, cb) => {
         console.log("error in dynamo query", err);
         return Responses._400({ messages: err });
       });
+      if (currentUser.length) {
+        currentUser = currentUser[0];
+      }
     }
 
     const params = {
@@ -75,13 +79,6 @@ exports.handler = async (event, context, cb) => {
       ),
     ];
 
-    /* *
-    (this.userInGroup("admin") ||
-    this.userInGroup("teamlead") ||
-    f?.GSI3SK === this.currentNominator?.GSI2PK &&
-    f?.GSI3PK === this.organisation.requestId &&
-    /* */
-
     let allFamilies = [
       ...allCampaignData
         .filter((f) => f.type === "family" && f?.status !== "deleted")
@@ -108,9 +105,11 @@ exports.handler = async (event, context, cb) => {
         (f) => f?.allocatedTo === parsed.donorId
       );
     }
+
     if (parsed.nominatorId) {
       allFamilies = allFamilies.filter((f) => f?.GSI3SK === parsed.nominatorId);
     }
+
     if (parsed.organisationId) {
       allFamilies = allFamilies.filter(
         (f) => f?.GSI3PK === parsed.organisationId
@@ -118,13 +117,11 @@ exports.handler = async (event, context, cb) => {
     }
 
     if (!Functions.hasPermission(event, "Admin")) {
-      allFamilies = allFamilies.filter((f) => f?.GSI3SK === currentUser.GSI3PK);
+      allFamilies = allFamilies.filter((f) => f?.GSI3PK === currentUser.GSI3PK);
       if (!Functions.hasPermission(event, "TeamLead")) {
-        /* *
         allFamilies = allFamilies.filter(
           (f) => f?.GSI3SK === currentUser?.GSI2PK
         );
-        /* */
       }
     }
 
