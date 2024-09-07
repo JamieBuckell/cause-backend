@@ -16,7 +16,7 @@ custom:
   customDomain:
     domainName: ${self:custom.domains.${self:custom.stage}}
     basePath: donors
-    stage: ${self:provider.stage}
+    stage: ${self:custom.stage}
     createRoute53Record: true
 provider:
   name: aws
@@ -24,7 +24,7 @@ provider:
   profile: jamiebuckell
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'eu-west-2'}
-  environment: ${file(../resources/.env.${opt:stage, 'dev'}.yml)}
+  environment: ${file(../resources/.env.${opt:stage, self:provider.stage}.yml)}
   apiGateway:
     description: Microservice for donor specific processes
   iamRoleStatements:
@@ -102,6 +102,11 @@ provider:
         - lambda:InvokeFunction
       Resource:
         - arn:aws:lambda:eu-west-2:988218197909:function:PdfGeneratorV2Stack-HtmlToPdfLambdaB7443488-LJXTgl6nvBE2
+    - Effect: "Allow"
+      Action:
+        - "s3:GetObject"
+      Resource:
+        - arn:aws:s3:::pdfgeneratorv2stack-pdfss3bucketddbbf369-c95xtwuskgpv/*
 package:
   individually: true
   exclude:

@@ -395,6 +395,8 @@ export const handler: APIGatewayProxyHandler = async (event: any) => {
       statusCode: 200,
       body: JSON.stringify({
         pdfUrl: presignedUrl,
+        location: process.env.S3_PDF_BUCKET,
+        filename: filename,
       }),
     };
   } catch (error) {

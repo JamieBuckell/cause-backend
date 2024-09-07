@@ -6,6 +6,7 @@ var AWS = require("aws-sdk");
 AWS.config.region = "eu-west-2";
 var lambda = new AWS.Lambda();
 var https = require("https");
+const s3 = new AWS.S3();
 
 async function get_page(url) {
   return new Promise((resolve) => {
@@ -145,30 +146,37 @@ exports.handler = async (event, context, cb) => {
           const lambdaResult = await lambda.invoke(params).promise();
           const resultObject = JSON.parse(lambdaResult.Payload);
 
+          rawEmailJsonParameters.pdfAttachmentFilename =
+            "family-hamper-labels.pdf";
           if (resultObject?.body) {
             const resultBody = JSON.parse(resultObject?.body);
-            if (resultBody?.pdfUrl) {
-              rawEmailJsonParameters.pdfAttachmentFilename =
-                "family-hamper-labels.pdf";
 
+            if (resultBody?.filename && resultBody?.location) {
+              console.log("S3 Direct...");
+              const s3Params = {
+                Bucket: resultBody?.location,
+                Key: resultBody?.filename,
+              };
+
+              const pdfFile = await s3.getObject(s3Params).promise();
+              console.log(pdfFile.Body);
+              const base64Pdf = Buffer.from(pdfFile.Body).toString("base64");
+
+              rawEmailJsonParameters.pdfAttachment = base64Pdf;
+            } else if (resultBody?.pdfUrl) {
+              console.log("Secure URL...");
               const pdfRespone = await get_page(resultBody.pdfUrl);
 
-              /* *
-              var buffer = Buffer.concat(pdfRespone);
-              console.log(buffer.toString("base64"));
-
-              rawEmailJsonParameters.pdfAttachment = buffer;
-              /* */
-
-              /* */
-              //const pdfBuffer = await pdfRespone.arrayBuffer();
               const binaryPdf = Buffer.from(pdfRespone);
 
               rawEmailJsonParameters.pdfAttachment = binaryPdf;
-              /* */
+            }
 
+            if (rawEmailJsonParameters.pdfAttachment) {
               await Notifications.sendRawEmail(rawEmailJsonParameters);
               console.log("rawEmailJsonParameters", rawEmailJsonParameters);
+            } else {
+              console.log("Error with the response", rawEmailJsonParameters);
             }
           }
         }
