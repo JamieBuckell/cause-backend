@@ -2,7 +2,7 @@ Resources:
   FeedbackTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: ${self:provider.environment.FEEDBACK_TABLE}
+      TableName: ${self:custom.environment.FEEDBACK_TABLE}
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1

@@ -89,7 +89,7 @@ exports.handler = async (event, context, cb) => {
               o?.type === "team-lead"
           );
 
-          if (!leadData.length) {
+          if (!leadData || !leadData.length) {
             console.log("Lead not found");
             return Responses._401({
               messages: {

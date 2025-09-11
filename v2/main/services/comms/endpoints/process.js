@@ -52,6 +52,7 @@ exports.handler = async (event, context, cb) => {
     if (Object.keys(valid).length > 0) {
       return Responses._400({ messages: valid });
     }
+    console.log(parsed);
 
     const mainTableName = process.env.MAIN_DYNAMO_TABLE;
     const subscriberTableName = process.env.SUBSCRIBERS_TABLE;
@@ -189,10 +190,11 @@ exports.handler = async (event, context, cb) => {
     /* */
     const emailId = existingEmailId ? existingEmailId : nanoid(12);
     const emailData = {
-      PK: emailId,
+      PK: "EMAIL",
       SK: `SORT#${moment(new Date().getTime())
         .tz(timezone)
         .format("YYYYMMDDHHmmss")}`,
+      GSI1PK: emailId,
       dateAdded: moment(new Date().getTime()).tz(timezone).format(dateFormat),
       email: {
         content: verifiedContent,

@@ -6,6 +6,9 @@ var lambda = new AWS.Lambda();
 const commsTemplateTableName = process.env.EMAIL_TEMPLATES_TABLE;
 
 const Functions = {
+  defaultCampaign() {
+    return "CH24"; //Todo: make this dynamic!
+  },
   timer(ms) {
     return new Promise((res) => setTimeout(res, ms));
   },
@@ -267,17 +270,29 @@ const Functions = {
     return this.shuffle(pass);
   },
   createDetailPreview(template, params) {
+    const ageListBase = [
+      { label: "0-6 months", value: 0.25 },
+      { label: "6-12 months", value: 0.75 },
+      { label: "12-18 months", value: 1 },
+      { label: "18-24 months", value: 1.5 },
+    ];
+
     switch (template) {
       case "familyDetail":
         var rtnString = "";
         for (const [key, m] of Object.entries(params.members)) {
+          const ageListIndex = ageListBase.findIndex((al) => al.value == m.age);
           rtnString += `
                     <div class="row">
                         <div class="col-12">
                             <strong>
                             ${m.who}${m.whoOther ? " (" + m.whoOther + ")" : ""}
                             </strong>
-                            ${m.age} ${m.age ? m.ageType : ""}
+                            ${
+                              ageListIndex >= 0
+                                ? ageListBase[ageListIndex].label
+                                : m.age + " " + (m.age ? m.ageType : "")
+                            }
                             ${
                               m.additionalInfo
                                 ? "<br />Info: " + m.additionalInfo
@@ -409,6 +424,9 @@ const Functions = {
                   : ""
               }`
             );
+            break;
+          case "ALLOCATION.PDFLINK":
+            content = content.replace(match, params?.pdfLink ?? "");
             break;
           case "ALLOCATION.DATA":
             content = content.replace(

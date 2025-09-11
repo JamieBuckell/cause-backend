@@ -19,7 +19,7 @@ exports.handler = async (event, context, cb) => {
     const envSalt = process.env.HASHING_SALT;
     const envHashPrefix = process.env.HASHING_PREFIX;
 
-    const campaignId = "CH1"; // 2022 Campaign
+    const campaignId = Functions.defaultCampaign();
 
     console.log("Get Organisations");
     const organisationsData = await Dynamo.scan({
@@ -50,7 +50,6 @@ exports.handler = async (event, context, cb) => {
         if (existingOrg) {
           console.log("This org already exists!", existingOrg);
         } else {
-
           const organisationIdentifier = nanoid(12);
           const organisationData = {
             PK: campaignId,

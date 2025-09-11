@@ -2,7 +2,7 @@ Resources:
   CommsDynamoTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: ${self:provider.environment.COMMS_DYNAMO_TABLE}
+      TableName: ${self:custom.environment.COMMS_DYNAMO_TABLE}
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1

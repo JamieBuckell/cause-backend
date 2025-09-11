@@ -33,16 +33,11 @@ const validations = [
 
 exports.handler = async (event, context, cb) => {
   try {
-    const websiteURL = process.env.WEBSITE_URL;
-    const appURL = process.env.APP_URL;
     const mainTableName = process.env.MAIN_DYNAMO_TABLE;
-    const subscriberTableName = process.env.MAIN_DYNAMO_TABLE;
-    const campaignDonorsTableName = process.env.CAMPAIGN_DONORS_TABLE;
 
-    const envSalt = process.env.HASHING_SALT;
     const parsed = event.emailAddress ? event : JSON.parse(event.body);
 
-    const campaignId = parsed.campaign ?? "CH1"; // 2022 Campaign
+    const campaignId = parsed.campaign ?? Functions.defaultCampaign(); // 2022 Campaign
 
     const currentCampaign = await Dynamo.get(
       {
@@ -101,7 +96,7 @@ exports.handler = async (event, context, cb) => {
       .tz(timezone)
       .format(dateFormat);
 
-      const donorIdentifier = nanoid(12);
+    const donorIdentifier = nanoid(12);
     const donorData = {
       PK: validEmail,
       SK: currentCampaign.PK,

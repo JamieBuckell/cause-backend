@@ -52,13 +52,13 @@ exports.handler = async (event, context, cb) => {
       });
     }
 
-    console.log("We are authorised...");
-
     const escapeRegEx = new RegExp(/(<([^>]+)>)/gi);
     const mainTableName = process.env.MAIN_DYNAMO_TABLE;
 
     const parsed = event.nominators ? event : JSON.parse(event.body);
     const userEmail = event.requestContext.authorizer.claims.email;
+
+    console.log("We are authorised as: ", userEmail);
 
     if (!parsed) {
       return Responses._400({

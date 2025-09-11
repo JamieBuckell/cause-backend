@@ -10,12 +10,11 @@
       "profile": "jamiebuckell",
       "stage": "live",
       "region": "eu-west-2",
-      "apiGateway": {
-        "description": "Microservice for organisation specific processes"
-      },
       "environment": {
         "AWS_ACCOUNT_ID": "988218197909",
         "AWS_ACCOUNT_REGION": "eu-west-2",
+        "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+        "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
         "WEBSITE_URL": "https://www.cause-foundation.org.uk",
         "APP_URL": "https://portal.cause-foundation.org.uk",
         "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -36,6 +35,9 @@
         "HASHING_SALT": "46d6a84b07ce2e",
         "HASHING_PREFIX": "H#",
         "USER_POOL": "eu-west-2_ueeqpE5iq"
+      },
+      "apiGateway": {
+        "description": "Microservice for organisation specific processes"
       },
       "iamRoleStatements": [
         {
@@ -330,7 +332,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/causef-api-v2-nominators/live/1725408186415-2024-09-04T00:03:06.415Z/create.zip"
+                "S3Key": "serverless/causef-api-v2-nominators/live/1757626317385-2025-09-11T21:31:57.385Z/create.zip"
               },
               "Handler": "endpoints/create.handler",
               "Runtime": "nodejs14.x",
@@ -341,6 +343,8 @@
                 "Variables": {
                   "AWS_ACCOUNT_ID": "988218197909",
                   "AWS_ACCOUNT_REGION": "eu-west-2",
+                  "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+                  "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
                   "WEBSITE_URL": "https://www.cause-foundation.org.uk",
                   "APP_URL": "https://portal.cause-foundation.org.uk",
                   "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -385,7 +389,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/causef-api-v2-nominators/live/1725408186415-2024-09-04T00:03:06.415Z/register.zip"
+                "S3Key": "serverless/causef-api-v2-nominators/live/1757626317385-2025-09-11T21:31:57.385Z/register.zip"
               },
               "Handler": "endpoints/create.handler",
               "Runtime": "nodejs14.x",
@@ -396,6 +400,8 @@
                 "Variables": {
                   "AWS_ACCOUNT_ID": "988218197909",
                   "AWS_ACCOUNT_REGION": "eu-west-2",
+                  "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+                  "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
                   "WEBSITE_URL": "https://www.cause-foundation.org.uk",
                   "APP_URL": "https://portal.cause-foundation.org.uk",
                   "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -440,7 +446,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/causef-api-v2-nominators/live/1725408186415-2024-09-04T00:03:06.415Z/sendWelcome.zip"
+                "S3Key": "serverless/causef-api-v2-nominators/live/1757626317385-2025-09-11T21:31:57.385Z/sendWelcome.zip"
               },
               "Handler": "endpoints/sendWelcome.handler",
               "Runtime": "nodejs14.x",
@@ -451,6 +457,8 @@
                 "Variables": {
                   "AWS_ACCOUNT_ID": "988218197909",
                   "AWS_ACCOUNT_REGION": "eu-west-2",
+                  "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+                  "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
                   "WEBSITE_URL": "https://www.cause-foundation.org.uk",
                   "APP_URL": "https://portal.cause-foundation.org.uk",
                   "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -494,7 +502,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/causef-api-v2-nominators/live/1725408186415-2024-09-04T00:03:06.415Z/approve.zip"
+                "S3Key": "serverless/causef-api-v2-nominators/live/1757626317385-2025-09-11T21:31:57.385Z/approve.zip"
               },
               "Handler": "endpoints/approve.handler",
               "Runtime": "nodejs14.x",
@@ -505,6 +513,8 @@
                 "Variables": {
                   "AWS_ACCOUNT_ID": "988218197909",
                   "AWS_ACCOUNT_REGION": "eu-west-2",
+                  "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+                  "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
                   "WEBSITE_URL": "https://www.cause-foundation.org.uk",
                   "APP_URL": "https://portal.cause-foundation.org.uk",
                   "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -548,7 +558,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/causef-api-v2-nominators/live/1725408186415-2024-09-04T00:03:06.415Z/resetPassword.zip"
+                "S3Key": "serverless/causef-api-v2-nominators/live/1757626317385-2025-09-11T21:31:57.385Z/resetPassword.zip"
               },
               "Handler": "endpoints/resetPassword.handler",
               "Runtime": "nodejs14.x",
@@ -559,6 +569,8 @@
                 "Variables": {
                   "AWS_ACCOUNT_ID": "988218197909",
                   "AWS_ACCOUNT_REGION": "eu-west-2",
+                  "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+                  "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
                   "WEBSITE_URL": "https://www.cause-foundation.org.uk",
                   "APP_URL": "https://portal.cause-foundation.org.uk",
                   "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -599,7 +611,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/causef-api-v2-nominators/live/1725408186415-2024-09-04T00:03:06.415Z/update.zip"
+                "S3Key": "serverless/causef-api-v2-nominators/live/1757626317385-2025-09-11T21:31:57.385Z/update.zip"
               },
               "Handler": "endpoints/update.handler",
               "Runtime": "nodejs14.x",
@@ -610,6 +622,8 @@
                 "Variables": {
                   "AWS_ACCOUNT_ID": "988218197909",
                   "AWS_ACCOUNT_REGION": "eu-west-2",
+                  "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+                  "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
                   "WEBSITE_URL": "https://www.cause-foundation.org.uk",
                   "APP_URL": "https://portal.cause-foundation.org.uk",
                   "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -646,64 +660,64 @@
               "UpdateLogGroup"
             ]
           },
-          "CreateLambdaVersionbWAmzoMvDwrgwTUB6VO8QAMFCxAIGnIJbJKwwzQSTZE": {
-            "Type": "AWS::Lambda::Version",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "FunctionName": {
-                "Ref": "CreateLambdaFunction"
-              },
-              "CodeSha256": "DmDCgMstoGHMC3Ndi7ybUunysDZM5FcDm1Hgzoh1SHI="
-            }
-          },
-          "ApproveLambdaVersionlQQ3xWdDGkmQCDVYbdt7EnkirUDAbMHBpEEUYfOb8": {
-            "Type": "AWS::Lambda::Version",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "FunctionName": {
-                "Ref": "ApproveLambdaFunction"
-              },
-              "CodeSha256": "DmDCgMstoGHMC3Ndi7ybUunysDZM5FcDm1Hgzoh1SHI="
-            }
-          },
-          "SendWelcomeLambdaVersionHBNnOqy7faxB36m6l61afvvUjea1LUaU8wkFJ4Ns": {
-            "Type": "AWS::Lambda::Version",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "FunctionName": {
-                "Ref": "SendWelcomeLambdaFunction"
-              },
-              "CodeSha256": "DmDCgMstoGHMC3Ndi7ybUunysDZM5FcDm1Hgzoh1SHI="
-            }
-          },
-          "RegisterLambdaVersionESXesiOjmpoRuMSdm1Y722GLusJ7PfO87cynYZQ": {
+          "RegisterLambdaVersionzHNHRY2P6dZomsKLiE39AKEoyRtVl2er2arhxn43cjE": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "RegisterLambdaFunction"
               },
-              "CodeSha256": "DmDCgMstoGHMC3Ndi7ybUunysDZM5FcDm1Hgzoh1SHI="
+              "CodeSha256": "uW+gUBPsAXFbDaOcfl3DIlGDW147CCI8zfOACtcyeWo="
             }
           },
-          "ResetPasswordLambdaVersionRdNjSqYgA9KsT5rR7O4M4mvUQsahZoy0ik7QLQ": {
+          "SendWelcomeLambdaVersion9QfH9YuEdYeMlsJVov5c9Jjg8gNfzPlUPJ480y7zqQ": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SendWelcomeLambdaFunction"
+              },
+              "CodeSha256": "uW+gUBPsAXFbDaOcfl3DIlGDW147CCI8zfOACtcyeWo="
+            }
+          },
+          "CreateLambdaVersionENUmofiZoyUhpcwkSvLNvA2EUeDj6sYvINkdUOyE": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "CreateLambdaFunction"
+              },
+              "CodeSha256": "uW+gUBPsAXFbDaOcfl3DIlGDW147CCI8zfOACtcyeWo="
+            }
+          },
+          "ApproveLambdaVersioncKsotcCQIbhve9Qk9zIgO4jg9d9KQA5xu82TbEbREc": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "ApproveLambdaFunction"
+              },
+              "CodeSha256": "uW+gUBPsAXFbDaOcfl3DIlGDW147CCI8zfOACtcyeWo="
+            }
+          },
+          "ResetPasswordLambdaVersion08VLRIqer8Nwp1J6MTCANKGR47X4EUlso863FXuAUA0": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ResetPasswordLambdaFunction"
               },
-              "CodeSha256": "DmDCgMstoGHMC3Ndi7ybUunysDZM5FcDm1Hgzoh1SHI="
+              "CodeSha256": "uW+gUBPsAXFbDaOcfl3DIlGDW147CCI8zfOACtcyeWo="
             }
           },
-          "UpdateLambdaVersionz8V9zQbyQL6YOaISn9CR3gZx8u4kd5TvH5k07U8Jg": {
+          "UpdateLambdaVersionRHDCe27N7NTKNQrQ7C4Ri9vTIWYu0A7q3uIHOBvXE": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "UpdateLambdaFunction"
               },
-              "CodeSha256": "DmDCgMstoGHMC3Ndi7ybUunysDZM5FcDm1Hgzoh1SHI="
+              "CodeSha256": "uW+gUBPsAXFbDaOcfl3DIlGDW147CCI8zfOACtcyeWo="
             }
           },
           "ApiGatewayRestApi": {
@@ -1460,7 +1474,7 @@
               ]
             }
           },
-          "ApiGatewayDeployment1725408185884": {
+          "ApiGatewayDeployment1757626313817": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -1729,10 +1743,28 @@
               "Name": "sls-causef-api-v2-nominators-live-ServerlessDeploymentBucketName"
             }
           },
+          "RegisterLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "RegisterLambdaVersionzHNHRY2P6dZomsKLiE39AKEoyRtVl2er2arhxn43cjE"
+            },
+            "Export": {
+              "Name": "sls-causef-api-v2-nominators-live-RegisterLambdaFunctionQualifiedArn"
+            }
+          },
+          "SendWelcomeLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SendWelcomeLambdaVersion9QfH9YuEdYeMlsJVov5c9Jjg8gNfzPlUPJ480y7zqQ"
+            },
+            "Export": {
+              "Name": "sls-causef-api-v2-nominators-live-SendWelcomeLambdaFunctionQualifiedArn"
+            }
+          },
           "CreateLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "CreateLambdaVersionbWAmzoMvDwrgwTUB6VO8QAMFCxAIGnIJbJKwwzQSTZE"
+              "Ref": "CreateLambdaVersionENUmofiZoyUhpcwkSvLNvA2EUeDj6sYvINkdUOyE"
             },
             "Export": {
               "Name": "sls-causef-api-v2-nominators-live-CreateLambdaFunctionQualifiedArn"
@@ -1741,34 +1773,16 @@
           "ApproveLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ApproveLambdaVersionlQQ3xWdDGkmQCDVYbdt7EnkirUDAbMHBpEEUYfOb8"
+              "Ref": "ApproveLambdaVersioncKsotcCQIbhve9Qk9zIgO4jg9d9KQA5xu82TbEbREc"
             },
             "Export": {
               "Name": "sls-causef-api-v2-nominators-live-ApproveLambdaFunctionQualifiedArn"
             }
           },
-          "SendWelcomeLambdaFunctionQualifiedArn": {
-            "Description": "Current Lambda function version",
-            "Value": {
-              "Ref": "SendWelcomeLambdaVersionHBNnOqy7faxB36m6l61afvvUjea1LUaU8wkFJ4Ns"
-            },
-            "Export": {
-              "Name": "sls-causef-api-v2-nominators-live-SendWelcomeLambdaFunctionQualifiedArn"
-            }
-          },
-          "RegisterLambdaFunctionQualifiedArn": {
-            "Description": "Current Lambda function version",
-            "Value": {
-              "Ref": "RegisterLambdaVersionESXesiOjmpoRuMSdm1Y722GLusJ7PfO87cynYZQ"
-            },
-            "Export": {
-              "Name": "sls-causef-api-v2-nominators-live-RegisterLambdaFunctionQualifiedArn"
-            }
-          },
           "ResetPasswordLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ResetPasswordLambdaVersionRdNjSqYgA9KsT5rR7O4M4mvUQsahZoy0ik7QLQ"
+              "Ref": "ResetPasswordLambdaVersion08VLRIqer8Nwp1J6MTCANKGR47X4EUlso863FXuAUA0"
             },
             "Export": {
               "Name": "sls-causef-api-v2-nominators-live-ResetPasswordLambdaFunctionQualifiedArn"
@@ -1777,7 +1791,7 @@
           "UpdateLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "UpdateLambdaVersionz8V9zQbyQL6YOaISn9CR3gZx8u4kd5TvH5k07U8Jg"
+              "Ref": "UpdateLambdaVersionRHDCe27N7NTKNQrQ7C4Ri9vTIWYu0A7q3uIHOBvXE"
             },
             "Export": {
               "Name": "sls-causef-api-v2-nominators-live-UpdateLambdaFunctionQualifiedArn"
@@ -1896,14 +1910,31 @@
       "vpc": {}
     },
     "custom": {
-      "stage": "live",
-      "userPools": {
-        "dev": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd",
-        "live": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq"
-      },
-      "domains": {
-        "live": "api.cause-foundation.org.uk",
-        "dev": "causeapi.bouchelle.co.uk"
+      "environment": {
+        "AWS_ACCOUNT_ID": 988218197909,
+        "AWS_ACCOUNT_REGION": "eu-west-2",
+        "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+        "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
+        "WEBSITE_URL": "https://www.cause-foundation.org.uk",
+        "APP_URL": "https://portal.cause-foundation.org.uk",
+        "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
+        "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-live",
+        "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-live",
+        "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-live",
+        "FEEDBACK_TABLE": "cause-portal-v2-feedback-live",
+        "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-live",
+        "MAILER_QUEUE": "cause-portal-v2-mailer-queue-live.fifo",
+        "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-live",
+        "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-live",
+        "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-live",
+        "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-live",
+        "TIMEZONE": "Europe/London",
+        "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
+        "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
+        "INTERNAL_ADDRESS": "hampers@cause-foundation.org.uk",
+        "HASHING_SALT": "46d6a84b07ce2e",
+        "HASHING_PREFIX": "H#",
+        "USER_POOL": "eu-west-2_ueeqpE5iq"
       },
       "customDomain": {
         "domainName": "api.cause-foundation.org.uk",
@@ -1959,13 +1990,13 @@
         },
         "name": "causef-api-v2-nominators-live-create",
         "package": {
-          "artifact": "/Users/jamiebuckell/Documents/Projects/CAUSE/backend/v2/main/services/nominators/.serverless/create.zip"
+          "artifact": ".serverless/create.zip"
         },
         "memory": 1024,
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "CreateLambdaVersionbWAmzoMvDwrgwTUB6VO8QAMFCxAIGnIJbJKwwzQSTZE"
+        "versionLogicalId": "CreateLambdaVersionENUmofiZoyUhpcwkSvLNvA2EUeDj6sYvINkdUOyE"
       },
       "register": {
         "handler": "endpoints/create.handler",
@@ -2000,13 +2031,13 @@
         },
         "name": "causef-api-v2-nominators-live-register",
         "package": {
-          "artifact": "/Users/jamiebuckell/Documents/Projects/CAUSE/backend/v2/main/services/nominators/.serverless/register.zip"
+          "artifact": ".serverless/register.zip"
         },
         "memory": 1024,
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "RegisterLambdaVersionESXesiOjmpoRuMSdm1Y722GLusJ7PfO87cynYZQ"
+        "versionLogicalId": "RegisterLambdaVersionzHNHRY2P6dZomsKLiE39AKEoyRtVl2er2arhxn43cjE"
       },
       "sendWelcome": {
         "handler": "endpoints/sendWelcome.handler",
@@ -2055,13 +2086,13 @@
         },
         "name": "causef-api-v2-nominators-live-sendWelcome",
         "package": {
-          "artifact": "/Users/jamiebuckell/Documents/Projects/CAUSE/backend/v2/main/services/nominators/.serverless/sendWelcome.zip"
+          "artifact": ".serverless/sendWelcome.zip"
         },
         "memory": 1024,
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "SendWelcomeLambdaVersionHBNnOqy7faxB36m6l61afvvUjea1LUaU8wkFJ4Ns"
+        "versionLogicalId": "SendWelcomeLambdaVersion9QfH9YuEdYeMlsJVov5c9Jjg8gNfzPlUPJ480y7zqQ"
       },
       "approve": {
         "handler": "endpoints/approve.handler",
@@ -2111,13 +2142,13 @@
         },
         "name": "causef-api-v2-nominators-live-approve",
         "package": {
-          "artifact": "/Users/jamiebuckell/Documents/Projects/CAUSE/backend/v2/main/services/nominators/.serverless/approve.zip"
+          "artifact": ".serverless/approve.zip"
         },
         "memory": 1024,
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "ApproveLambdaVersionlQQ3xWdDGkmQCDVYbdt7EnkirUDAbMHBpEEUYfOb8"
+        "versionLogicalId": "ApproveLambdaVersioncKsotcCQIbhve9Qk9zIgO4jg9d9KQA5xu82TbEbREc"
       },
       "resetPassword": {
         "handler": "endpoints/resetPassword.handler",
@@ -2163,13 +2194,13 @@
         ],
         "name": "causef-api-v2-nominators-live-resetPassword",
         "package": {
-          "artifact": "/Users/jamiebuckell/Documents/Projects/CAUSE/backend/v2/main/services/nominators/.serverless/resetPassword.zip"
+          "artifact": ".serverless/resetPassword.zip"
         },
         "memory": 1024,
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "ResetPasswordLambdaVersionRdNjSqYgA9KsT5rR7O4M4mvUQsahZoy0ik7QLQ"
+        "versionLogicalId": "ResetPasswordLambdaVersion08VLRIqer8Nwp1J6MTCANKGR47X4EUlso863FXuAUA0"
       },
       "update": {
         "handler": "endpoints/update.handler",
@@ -2213,13 +2244,13 @@
         },
         "name": "causef-api-v2-nominators-live-update",
         "package": {
-          "artifact": "/Users/jamiebuckell/Documents/Projects/CAUSE/backend/v2/main/services/nominators/.serverless/update.zip"
+          "artifact": ".serverless/update.zip"
         },
         "memory": 1024,
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "UpdateLambdaVersionz8V9zQbyQL6YOaISn9CR3gZx8u4kd5TvH5k07U8Jg"
+        "versionLogicalId": "UpdateLambdaVersionRHDCe27N7NTKNQrQ7C4Ri9vTIWYu0A7q3uIHOBvXE"
       }
     },
     "resources": {
@@ -2247,10 +2278,9 @@
       "Outputs": {}
     },
     "configValidationMode": "warn",
-    "serviceFilename": "serverless.yml",
+    "serviceFilename": "serverless",
     "initialServerlessConfig": {
       "service": "causef-api-v2-nominators",
-      "useDotenv": true,
       "frameworkVersion": "4",
       "plugins": {
         "$ref": "$[\"service\"][\"plugins\"]"
@@ -2271,7 +2301,7 @@
           "endpoints/**"
         ],
         "artifactsS3KeyDirname": "serverless/causef-api-v2-nominators/live/code-artifacts",
-        "artifactDirectoryName": "serverless/causef-api-v2-nominators/live/1725408186415-2024-09-04T00:03:06.415Z"
+        "artifactDirectoryName": "serverless/causef-api-v2-nominators/live/1757626317385-2025-09-11T21:31:57.385Z"
       },
       "functions": {
         "$ref": "$[\"service\"][\"functions\"]"
@@ -2286,7 +2316,7 @@
   },
   "package": {
     "individually": true,
-    "artifactDirectoryName": "serverless/causef-api-v2-nominators/live/1725408186415-2024-09-04T00:03:06.415Z",
+    "artifactDirectoryName": "serverless/causef-api-v2-nominators/live/1757626317385-2025-09-11T21:31:57.385Z",
     "artifact": ""
   }
 }

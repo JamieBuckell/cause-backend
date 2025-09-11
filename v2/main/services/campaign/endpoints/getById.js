@@ -38,10 +38,7 @@ exports.handler = async (event, context, cb) => {
     });
 
     let allSubscribers = [];
-    if (
-      !Functions.hasPermission(event, "TeamLead") &&
-      !Functions.hasPermission(event, "Nominator")
-    ) {
+    if (Functions.hasPermission(event, "Admin")) {
       const subscriberParams = { TableName: subscribersTableName };
       allSubscribers = await Dynamo.scan(subscriberParams).catch((err) => {
         console.log("error in dynamo query", err);

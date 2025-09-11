@@ -96,8 +96,8 @@ const Notifications = {
 
     // set email parameters
     const emailParams = {
-      Source: process.env.FROM_ADDRESS,
-      ReplyToAddresses: [process.env.FROM_ADDRESS],
+      Source: data?.fromAddress ?? process.env.FROM_ADDRESS,
+      ReplyToAddresses: [data?.fromAddress ?? process.env.FROM_ADDRESS],
       Destination: {
         ToAddresses,
         BccAddresses,

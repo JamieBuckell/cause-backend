@@ -2,7 +2,7 @@ Resources:
   SubscribersTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: ${self:provider.environment.SUBSCRIBERS_TABLE}
+      TableName: ${self:custom.environment.SUBSCRIBERS_TABLE}
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1

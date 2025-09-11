@@ -90,7 +90,12 @@ exports.handler = async (event, context, cb) => {
           );
         }, 0),
       verifiedPledged: allCampaignData
-        .filter((d) => d.type === "donor" && d?.status !== "deleted")
+        .filter(
+          (d) =>
+            d.type === "donor" &&
+            d?.status !== "deleted" &&
+            d?.emailVerification?.verified === true
+        )
         .reduce((accumulator, d) => {
           return (
             accumulator +

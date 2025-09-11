@@ -71,6 +71,18 @@
         }
       }
     },
+    "CreateLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/causef-api-v2-subscribers-live-create"
+      }
+    },
+    "DeleteLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/causef-api-v2-subscribers-live-delete"
+      }
+    },
     "SubscribeLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
@@ -246,6 +258,116 @@
         }
       }
     },
+    "CreateLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/causef-api-v2-subscribers/live/1757626391915-2025-09-11T21:33:11.915Z/create.zip"
+        },
+        "Handler": "endpoints/create.handler",
+        "Runtime": "nodejs16.x",
+        "FunctionName": "causef-api-v2-subscribers-live-create",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "AWS_ACCOUNT_ID": "988218197909",
+            "AWS_ACCOUNT_REGION": "eu-west-2",
+            "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+            "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
+            "WEBSITE_URL": "https://www.cause-foundation.org.uk",
+            "APP_URL": "https://portal.cause-foundation.org.uk",
+            "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
+            "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-live",
+            "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-live",
+            "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-live",
+            "FEEDBACK_TABLE": "cause-portal-v2-feedback-live",
+            "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-live",
+            "MAILER_QUEUE": "cause-portal-v2-mailer-queue-live.fifo",
+            "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-live",
+            "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-live",
+            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-live",
+            "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-live",
+            "TIMEZONE": "Europe/London",
+            "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
+            "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
+            "INTERNAL_ADDRESS": "hampers@cause-foundation.org.uk",
+            "HASHING_SALT": "46d6a84b07ce2e",
+            "HASHING_PREFIX": "H#",
+            "USER_POOL": "eu-west-2_ueeqpE5iq"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "Layers": [
+          "arn:aws:lambda:eu-west-2:988218197909:layer:moment:1",
+          "arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2"
+        ]
+      },
+      "DependsOn": [
+        "CreateLogGroup"
+      ]
+    },
+    "DeleteLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/causef-api-v2-subscribers/live/1757626391915-2025-09-11T21:33:11.915Z/delete.zip"
+        },
+        "Handler": "endpoints/delete.handler",
+        "Runtime": "nodejs16.x",
+        "FunctionName": "causef-api-v2-subscribers-live-delete",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "AWS_ACCOUNT_ID": "988218197909",
+            "AWS_ACCOUNT_REGION": "eu-west-2",
+            "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+            "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
+            "WEBSITE_URL": "https://www.cause-foundation.org.uk",
+            "APP_URL": "https://portal.cause-foundation.org.uk",
+            "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
+            "COMMS_DYNAMO_TABLE": "cause-portal-v2-comms-live",
+            "SUBSCRIBERS_TABLE": "cause-portal-v2-subscribers-live",
+            "EMAIL_TEMPLATES_TABLE": "cause-portal-v2-email-templates-live",
+            "FEEDBACK_TABLE": "cause-portal-v2-feedback-live",
+            "MAIL_PROCESSOR_QUEUE": "cause-portal-v2-mail-processor-queue-live",
+            "MAILER_QUEUE": "cause-portal-v2-mailer-queue-live.fifo",
+            "MAIL_COMPLETE_QUEUE": "cause-portal-v2-mailer-complete-queue-live",
+            "PLEDGE_DETAIL_QUEUE": "cause-portal-v2-send-pledge-detail-queue-live",
+            "FIX_DONOR_REFERENCES_QUEUE": "cause-portal-v2-fix-donor-references-queue-live",
+            "SUBSCRIBER_UPDATE_QUEUE": "cause-campaign-subscriber-update-queue-live",
+            "TIMEZONE": "Europe/London",
+            "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
+            "FROM_ADDRESS": "hampers@cause-foundation.org.uk",
+            "INTERNAL_ADDRESS": "hampers@cause-foundation.org.uk",
+            "HASHING_SALT": "46d6a84b07ce2e",
+            "HASHING_PREFIX": "H#",
+            "USER_POOL": "eu-west-2_ueeqpE5iq"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "DeleteLogGroup"
+      ]
+    },
     "SubscribeLambdaFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
@@ -253,7 +375,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-subscribers/live/1725391474560-2024-09-03T19:24:34.560Z/subscribe.zip"
+          "S3Key": "serverless/causef-api-v2-subscribers/live/1757626391915-2025-09-11T21:33:11.915Z/subscribe.zip"
         },
         "Handler": "endpoints/subscribe.handler",
         "Runtime": "nodejs16.x",
@@ -264,6 +386,8 @@
           "Variables": {
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
+            "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+            "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
             "APP_URL": "https://portal.cause-foundation.org.uk",
             "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -309,7 +433,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-subscribers/live/1725391474560-2024-09-03T19:24:34.560Z/verification.zip"
+          "S3Key": "serverless/causef-api-v2-subscribers/live/1757626391915-2025-09-11T21:33:11.915Z/verification.zip"
         },
         "Handler": "endpoints/verification.handler",
         "Runtime": "nodejs16.x",
@@ -320,6 +444,8 @@
           "Variables": {
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
+            "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+            "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
             "APP_URL": "https://portal.cause-foundation.org.uk",
             "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -364,7 +490,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-subscribers/live/1725391474560-2024-09-03T19:24:34.560Z/list.zip"
+          "S3Key": "serverless/causef-api-v2-subscribers/live/1757626391915-2025-09-11T21:33:11.915Z/list.zip"
         },
         "Handler": "endpoints/list.handler",
         "Runtime": "nodejs16.x",
@@ -375,6 +501,8 @@
           "Variables": {
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
+            "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+            "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
             "APP_URL": "https://portal.cause-foundation.org.uk",
             "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -419,7 +547,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-subscribers/live/1725391474560-2024-09-03T19:24:34.560Z/check.zip"
+          "S3Key": "serverless/causef-api-v2-subscribers/live/1757626391915-2025-09-11T21:33:11.915Z/check.zip"
         },
         "Handler": "endpoints/check.handler",
         "Runtime": "nodejs16.x",
@@ -430,6 +558,8 @@
           "Variables": {
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
+            "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+            "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
             "APP_URL": "https://portal.cause-foundation.org.uk",
             "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -474,7 +604,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-subscribers/live/1725391474560-2024-09-03T19:24:34.560Z/unsubscribe.zip"
+          "S3Key": "serverless/causef-api-v2-subscribers/live/1757626391915-2025-09-11T21:33:11.915Z/unsubscribe.zip"
         },
         "Handler": "endpoints/unsubscribe.handler",
         "Runtime": "nodejs16.x",
@@ -485,6 +615,8 @@
           "Variables": {
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
+            "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+            "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
             "APP_URL": "https://portal.cause-foundation.org.uk",
             "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -529,7 +661,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-subscribers/live/1725391474560-2024-09-03T19:24:34.560Z/resubscribe.zip"
+          "S3Key": "serverless/causef-api-v2-subscribers/live/1757626391915-2025-09-11T21:33:11.915Z/resubscribe.zip"
         },
         "Handler": "endpoints/resubscribe.handler",
         "Runtime": "nodejs16.x",
@@ -540,6 +672,8 @@
           "Variables": {
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
+            "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+            "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
             "APP_URL": "https://portal.cause-foundation.org.uk",
             "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -577,64 +711,84 @@
         "ResubscribeLogGroup"
       ]
     },
-    "SubscribeLambdaVersionyB4vUIlPmWSFxacRkorq7BAYxAR8hwAp5L2fr1MJFA": {
+    "DeleteLambdaVersionXylTVrRjeRh6VM2xU8GNXFM1V8BzfteI8GGbWGyU": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "DeleteLambdaFunction"
+        },
+        "CodeSha256": "M2PqM9fuPsPFb84ZAo88p56RZLL7UrDS1C+mvFePw8I="
+      }
+    },
+    "CreateLambdaVersionfK2EB4a0w6nN70G4gW7bdl9pYl4yHfXwcEz5qeeGY": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CreateLambdaFunction"
+        },
+        "CodeSha256": "M2PqM9fuPsPFb84ZAo88p56RZLL7UrDS1C+mvFePw8I="
+      }
+    },
+    "SubscribeLambdaVersionar9tj3FPdOGO8EWnvg90ZEjpmhQcZCH8VHdnIhfJk": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "SubscribeLambdaFunction"
         },
-        "CodeSha256": "/VHcRFKzDeZgPffD/uJLn5s/fZrnh15q8AINcVJO3qA="
+        "CodeSha256": "M2PqM9fuPsPFb84ZAo88p56RZLL7UrDS1C+mvFePw8I="
       }
     },
-    "VerificationLambdaVersionrddnkfQcqW6v4HnqgFWzHqKuGh1eM6xXEOaU5lXo": {
-      "Type": "AWS::Lambda::Version",
-      "DeletionPolicy": "Retain",
-      "Properties": {
-        "FunctionName": {
-          "Ref": "VerificationLambdaFunction"
-        },
-        "CodeSha256": "/VHcRFKzDeZgPffD/uJLn5s/fZrnh15q8AINcVJO3qA="
-      }
-    },
-    "CheckLambdaVersionYy8vE6dKr7YVIqyaadY0plP7eCH3TS39sT3h4phPk": {
-      "Type": "AWS::Lambda::Version",
-      "DeletionPolicy": "Retain",
-      "Properties": {
-        "FunctionName": {
-          "Ref": "CheckLambdaFunction"
-        },
-        "CodeSha256": "/VHcRFKzDeZgPffD/uJLn5s/fZrnh15q8AINcVJO3qA="
-      }
-    },
-    "UnsubscribeLambdaVersiondxbkIXcja6sSuwMWKOXwz34h3Ho3RiEXnTnbGAw": {
-      "Type": "AWS::Lambda::Version",
-      "DeletionPolicy": "Retain",
-      "Properties": {
-        "FunctionName": {
-          "Ref": "UnsubscribeLambdaFunction"
-        },
-        "CodeSha256": "/VHcRFKzDeZgPffD/uJLn5s/fZrnh15q8AINcVJO3qA="
-      }
-    },
-    "ResubscribeLambdaVersion3ouGepIWTXDJCVzXGkXHAjnsWvozVpYxnrDmOsQ6WuI": {
-      "Type": "AWS::Lambda::Version",
-      "DeletionPolicy": "Retain",
-      "Properties": {
-        "FunctionName": {
-          "Ref": "ResubscribeLambdaFunction"
-        },
-        "CodeSha256": "/VHcRFKzDeZgPffD/uJLn5s/fZrnh15q8AINcVJO3qA="
-      }
-    },
-    "ListLambdaVersionFV3ZVWTjnbRjjzWD67ozW0yflRmRBsSlsXQqj5zAi5s": {
+    "ListLambdaVersionSktr2Pgff3tipbEHs5uodehEHrpngVqwdUHbduRFM": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "ListLambdaFunction"
         },
-        "CodeSha256": "/VHcRFKzDeZgPffD/uJLn5s/fZrnh15q8AINcVJO3qA="
+        "CodeSha256": "M2PqM9fuPsPFb84ZAo88p56RZLL7UrDS1C+mvFePw8I="
+      }
+    },
+    "VerificationLambdaVersionaLMsERsbfpYgJm0vM1PuyV9gC7IBfSKyHpdrKYPk1tI": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "VerificationLambdaFunction"
+        },
+        "CodeSha256": "M2PqM9fuPsPFb84ZAo88p56RZLL7UrDS1C+mvFePw8I="
+      }
+    },
+    "UnsubscribeLambdaVersionICmBfWQtdktopwBJXumY4Ldtf52o45lHOTFxYN5MB00": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "UnsubscribeLambdaFunction"
+        },
+        "CodeSha256": "M2PqM9fuPsPFb84ZAo88p56RZLL7UrDS1C+mvFePw8I="
+      }
+    },
+    "ResubscribeLambdaVersionUZjg2XLkzol9z4CZTkE6Gfqva7B9dmkPBUHTWoER4D0": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ResubscribeLambdaFunction"
+        },
+        "CodeSha256": "M2PqM9fuPsPFb84ZAo88p56RZLL7UrDS1C+mvFePw8I="
+      }
+    },
+    "CheckLambdaVersion6FbFmvESY6fgkXnoO8jyJuA95DCGbJGhfqIL3rJiwHo": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CheckLambdaFunction"
+        },
+        "CodeSha256": "M2PqM9fuPsPFb84ZAo88p56RZLL7UrDS1C+mvFePw8I="
       }
     },
     "ApiGatewayRestApi": {
@@ -648,6 +802,48 @@
         },
         "Policy": "",
         "Description": "Microservice for subscriber specific processes"
+      }
+    },
+    "ApiGatewayResourceCreate": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "create",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceDelete": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "delete",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceDeleteEmailaddressVar": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceDelete"
+        },
+        "PathPart": "{emailAddress}",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
       }
     },
     "ApiGatewayResourceSubscribe": {
@@ -819,6 +1015,96 @@
           "Ref": "ApiGatewayResourceResubscribeEmailaddressVar"
         },
         "PathPart": "{hash}",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodCreateOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceCreate"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodDeleteEmailaddressVarOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceDeleteEmailaddressVar"
+        },
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
         }
@@ -1093,6 +1379,109 @@
           "Ref": "ApiGatewayRestApi"
         }
       }
+    },
+    "ApiGatewayMethodCreatePost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceCreate"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "PrivateAuthorizerV2ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "CreateLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "PrivateAuthorizerV2ApiGatewayAuthorizer"
+      ]
+    },
+    "ApiGatewayMethodDeleteEmailaddressVarPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {
+          "method.request.path.emailAddress": true
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceDeleteEmailaddressVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "PrivateAuthorizerV2ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "DeleteLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": [],
+        "RequestValidatorId": {
+          "Ref": "ApiGatewayCausefapiv2subscribersRequestValidator"
+        }
+      },
+      "DependsOn": [
+        "PrivateAuthorizerV2ApiGatewayAuthorizer"
+      ]
     },
     "ApiGatewayMethodSubscribePost": {
       "Type": "AWS::ApiGateway::Method",
@@ -1422,7 +1811,7 @@
         ]
       }
     },
-    "ApiGatewayDeployment1725391474019": {
+    "ApiGatewayDeployment1757626388851": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -1432,12 +1821,16 @@
         "Description": "Microservice for subscriber specific processes"
       },
       "DependsOn": [
+        "ApiGatewayMethodCreateOptions",
+        "ApiGatewayMethodDeleteEmailaddressVarOptions",
         "ApiGatewayMethodSubscribeOptions",
         "ApiGatewayMethodVerifyEmailaddressVarOptions",
         "ApiGatewayMethodListOptions",
         "ApiGatewayMethodCheckEmailaddressVarHashVarOptions",
         "ApiGatewayMethodUnsubscribeEmailaddressVarHashVarOptions",
         "ApiGatewayMethodResubscribeEmailaddressVarHashVarOptions",
+        "ApiGatewayMethodCreatePost",
+        "ApiGatewayMethodDeleteEmailaddressVarPost",
         "ApiGatewayMethodSubscribePost",
         "ApiGatewayMethodVerifyEmailaddressVarGet",
         "ApiGatewayMethodListGet",
@@ -1445,6 +1838,80 @@
         "ApiGatewayMethodUnsubscribeEmailaddressVarHashVarGet",
         "ApiGatewayMethodResubscribeEmailaddressVarHashVarGet"
       ]
+    },
+    "CreateLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CreateLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "DeleteLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "DeleteLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
     },
     "SubscribeLambdaPermissionApiGateway": {
       "Type": "AWS::Lambda::Permission",
@@ -1722,37 +2189,55 @@
         "Name": "sls-causef-api-v2-subscribers-live-ServerlessDeploymentBucketName"
       }
     },
+    "DeleteLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "DeleteLambdaVersionXylTVrRjeRh6VM2xU8GNXFM1V8BzfteI8GGbWGyU"
+      },
+      "Export": {
+        "Name": "sls-causef-api-v2-subscribers-live-DeleteLambdaFunctionQualifiedArn"
+      }
+    },
+    "CreateLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "CreateLambdaVersionfK2EB4a0w6nN70G4gW7bdl9pYl4yHfXwcEz5qeeGY"
+      },
+      "Export": {
+        "Name": "sls-causef-api-v2-subscribers-live-CreateLambdaFunctionQualifiedArn"
+      }
+    },
     "SubscribeLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "SubscribeLambdaVersionyB4vUIlPmWSFxacRkorq7BAYxAR8hwAp5L2fr1MJFA"
+        "Ref": "SubscribeLambdaVersionar9tj3FPdOGO8EWnvg90ZEjpmhQcZCH8VHdnIhfJk"
       },
       "Export": {
         "Name": "sls-causef-api-v2-subscribers-live-SubscribeLambdaFunctionQualifiedArn"
       }
     },
+    "ListLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ListLambdaVersionSktr2Pgff3tipbEHs5uodehEHrpngVqwdUHbduRFM"
+      },
+      "Export": {
+        "Name": "sls-causef-api-v2-subscribers-live-ListLambdaFunctionQualifiedArn"
+      }
+    },
     "VerificationLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "VerificationLambdaVersionrddnkfQcqW6v4HnqgFWzHqKuGh1eM6xXEOaU5lXo"
+        "Ref": "VerificationLambdaVersionaLMsERsbfpYgJm0vM1PuyV9gC7IBfSKyHpdrKYPk1tI"
       },
       "Export": {
         "Name": "sls-causef-api-v2-subscribers-live-VerificationLambdaFunctionQualifiedArn"
       }
     },
-    "CheckLambdaFunctionQualifiedArn": {
-      "Description": "Current Lambda function version",
-      "Value": {
-        "Ref": "CheckLambdaVersionYy8vE6dKr7YVIqyaadY0plP7eCH3TS39sT3h4phPk"
-      },
-      "Export": {
-        "Name": "sls-causef-api-v2-subscribers-live-CheckLambdaFunctionQualifiedArn"
-      }
-    },
     "UnsubscribeLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "UnsubscribeLambdaVersiondxbkIXcja6sSuwMWKOXwz34h3Ho3RiEXnTnbGAw"
+        "Ref": "UnsubscribeLambdaVersionICmBfWQtdktopwBJXumY4Ldtf52o45lHOTFxYN5MB00"
       },
       "Export": {
         "Name": "sls-causef-api-v2-subscribers-live-UnsubscribeLambdaFunctionQualifiedArn"
@@ -1761,19 +2246,19 @@
     "ResubscribeLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ResubscribeLambdaVersion3ouGepIWTXDJCVzXGkXHAjnsWvozVpYxnrDmOsQ6WuI"
+        "Ref": "ResubscribeLambdaVersionUZjg2XLkzol9z4CZTkE6Gfqva7B9dmkPBUHTWoER4D0"
       },
       "Export": {
         "Name": "sls-causef-api-v2-subscribers-live-ResubscribeLambdaFunctionQualifiedArn"
       }
     },
-    "ListLambdaFunctionQualifiedArn": {
+    "CheckLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ListLambdaVersionFV3ZVWTjnbRjjzWD67ozW0yflRmRBsSlsXQqj5zAi5s"
+        "Ref": "CheckLambdaVersion6FbFmvESY6fgkXnoO8jyJuA95DCGbJGhfqIL3rJiwHo"
       },
       "Export": {
-        "Name": "sls-causef-api-v2-subscribers-live-ListLambdaFunctionQualifiedArn"
+        "Name": "sls-causef-api-v2-subscribers-live-CheckLambdaFunctionQualifiedArn"
       }
     },
     "ServiceEndpoint": {

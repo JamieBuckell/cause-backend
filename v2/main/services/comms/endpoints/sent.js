@@ -14,47 +14,25 @@ exports.handler = async (event, context, cb) => {
     }
     const commsTableName = process.env.COMMS_DYNAMO_TABLE;
 
-    const nomParams = {
-      TableName: commsTableName,
-      FilterExpression:
-        "attribute_not_exists(#gsi1pk) AND attribute_not_exists(#gsi1sk)",
-      ExpressionAttributeNames: {
-        "#gsi1pk": "GSI1PK",
-        "#gsi1sk": "GSI1SK",
-      },
-    };
-    const sentEmailsData = await Dynamo.scan(nomParams).catch((err) => {
-      console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
-    });
-
-    /*
-    const params = { TableName: commsTableName };
-    const sentEmailsData = await Dynamo.scan(params).catch((err) => {
-      console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
-    });
-    */
-    /*
-    const queryData = {
-      KeyConditionExpression: "#type = :type",
+    const sentEmailParams = {
+      KeyConditionExpression: "#pk= :pk",
       ExpressionAttributeValues: {
-        ":type": "email",
+        ":pk": "EMAIL",
       },
       ExpressionAttributeNames: {
-        "#type": "type",
+        "#pk": "PK",
       },
     };
-    const sentEmailsData = await Dynamo.query(queryData, commsTableName).catch(
-      (err) => {
-        console.log("error in dynamo query", err);
-        return Responses._400({ messages: err });
-      }
-    );
-    */
+    let sentEmailsData = await Dynamo.query(
+      sentEmailParams,
+      commsTableName
+    ).catch((err) => {
+      console.log("error in dynamo query", err);
+      return Responses._400({ messages: err });
+    });
 
     if (!sentEmailsData) {
-      return Responses._400({ message: "Failed to retrieve all via scan" });
+      return Responses._400({ message: "Failed to retrieve all via query" });
     }
 
     const standardTemplate = await Notifications.getEmailTemplate();

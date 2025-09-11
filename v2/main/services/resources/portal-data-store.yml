@@ -2,7 +2,7 @@ Resources:
   MainDynamoTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: ${self:provider.environment.MAIN_DYNAMO_TABLE}
+      TableName: ${self:custom.environment.MAIN_DYNAMO_TABLE}
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1

@@ -46,7 +46,7 @@ exports.handler = async (event, context, cb) => {
 
     const emailVerificationHash = `${envHashPrefix}${context.awsRequestId}`;
 
-    const campaignId = parsed.campaign ?? "CH1"; // 2022 Campaign
+    const campaignId = parsed.campaign ?? Functions.defaultCampaign();
 
     console.log("Get the campaign!", {
       PK: campaignId,
@@ -173,6 +173,12 @@ exports.handler = async (event, context, cb) => {
     if (existingDonor.length && existingDonor[0]?.PK) {
       const previousData = existingDonor[0];
       console.log("Donor Exists", previousData);
+
+      donorData.GSI1PK = previousData.GSI1PK;
+      donorData.GSI2PK = previousData.GSI2PK;
+
+      // History was too big?
+      /* *
       const historicData = {
         donorDetails: previousData?.donorDetails ?? {},
         familyDetails: previousData?.familyDetails ?? {},
@@ -180,6 +186,7 @@ exports.handler = async (event, context, cb) => {
       };
       const existingHistory = previousData.history ?? [];
       donorData.history = [historicData, ...existingHistory];
+      /* */
       donorData.totalChanges = previousData?.totalChanges
         ? previousData?.totalChanges + 1
         : 1;
@@ -187,15 +194,9 @@ exports.handler = async (event, context, cb) => {
       if (!donorData?.familyDetails) {
         console.log("Setting a blank familyDetails");
         donorData.familyDetails = {
-          allocation: {},
           request: [],
         };
       }
-
-      // Make sure we don't wipe out any allocation data!
-      console.log("Set the allocation");
-      donorData.familyDetails.allocation =
-        previousData?.familyDetails?.allocation ?? {};
 
       // Add new request in alongside the old one
       console.log("Set the request");
@@ -203,6 +204,18 @@ exports.handler = async (event, context, cb) => {
         ...donorData.familyDetails.request,
         ...(previousData?.familyDetails?.request ?? []),
       ];
+
+      if (
+        previousData?.emailVerification &&
+        previousData?.emailVerification?.verified
+      ) {
+        donorData.emailVerification["dateVerified"] =
+          previousData?.emailVerification?.dateVerified;
+        donorData.emailVerification["verified"] =
+          previousData?.emailVerification?.verified;
+        donorData.emailVerification["hash"] =
+          previousData?.emailVerification?.hash ?? emailVerificationHash;
+      }
     }
     console.log("Do the write request");
     const donorRequest = await Dynamo.write(donorData, mainTableName).catch(

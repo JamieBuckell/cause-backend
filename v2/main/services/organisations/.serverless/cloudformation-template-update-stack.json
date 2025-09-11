@@ -237,7 +237,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-organisations/live/1701733015137-2023-12-04T23:36:55.137Z/create.zip"
+          "S3Key": "serverless/causef-api-v2-organisations/live/1757626352494-2025-09-11T21:32:32.494Z/create.zip"
         },
         "Handler": "endpoints/create.handler",
         "Runtime": "nodejs14.x",
@@ -248,6 +248,8 @@
           "Variables": {
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
+            "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+            "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
             "APP_URL": "https://portal.cause-foundation.org.uk",
             "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -292,7 +294,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-organisations/live/1701733015137-2023-12-04T23:36:55.137Z/update.zip"
+          "S3Key": "serverless/causef-api-v2-organisations/live/1757626352494-2025-09-11T21:32:32.494Z/update.zip"
         },
         "Handler": "endpoints/update.handler",
         "Runtime": "nodejs14.x",
@@ -303,6 +305,8 @@
           "Variables": {
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
+            "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+            "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
             "APP_URL": "https://portal.cause-foundation.org.uk",
             "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -347,7 +351,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-organisations/live/1701733015137-2023-12-04T23:36:55.137Z/delete.zip"
+          "S3Key": "serverless/causef-api-v2-organisations/live/1757626352494-2025-09-11T21:32:32.494Z/delete.zip"
         },
         "Handler": "endpoints/delete.handler",
         "Runtime": "nodejs14.x",
@@ -358,6 +362,8 @@
           "Variables": {
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
+            "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+            "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
             "APP_URL": "https://portal.cause-foundation.org.uk",
             "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -401,7 +407,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-organisations/live/1701733015137-2023-12-04T23:36:55.137Z/checkReference.zip"
+          "S3Key": "serverless/causef-api-v2-organisations/live/1757626352494-2025-09-11T21:32:32.494Z/checkReference.zip"
         },
         "Handler": "endpoints/checkReference.handler",
         "Runtime": "nodejs14.x",
@@ -412,6 +418,8 @@
           "Variables": {
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
+            "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+            "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
             "APP_URL": "https://portal.cause-foundation.org.uk",
             "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -452,7 +460,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/causef-api-v2-organisations/live/1701733015137-2023-12-04T23:36:55.137Z/getByHash.zip"
+          "S3Key": "serverless/causef-api-v2-organisations/live/1757626352494-2025-09-11T21:32:32.494Z/getByHash.zip"
         },
         "Handler": "endpoints/getByHash.handler",
         "Runtime": "nodejs14.x",
@@ -463,6 +471,8 @@
           "Variables": {
             "AWS_ACCOUNT_ID": "988218197909",
             "AWS_ACCOUNT_REGION": "eu-west-2",
+            "USER_POOL_ARN": "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq",
+            "CUSTOM_DOMAIN": "api.cause-foundation.org.uk",
             "WEBSITE_URL": "https://www.cause-foundation.org.uk",
             "APP_URL": "https://portal.cause-foundation.org.uk",
             "MAIN_DYNAMO_TABLE": "cause-portal-v2-live",
@@ -500,54 +510,54 @@
         "GetByHashLogGroup"
       ]
     },
-    "CreateLambdaVersions13GONDA0xk4OC6jtRbbfi6tIdpt0Kc4b8KPbovbnQ": {
-      "Type": "AWS::Lambda::Version",
-      "DeletionPolicy": "Retain",
-      "Properties": {
-        "FunctionName": {
-          "Ref": "CreateLambdaFunction"
-        },
-        "CodeSha256": "zYit3yAF60ggXrlWBfnTkAPMmeqkVtSySsHnA2JRCaE="
-      }
-    },
-    "UpdateLambdaVersionudAKvD4f5zivZ0K4ZeP3o1amiiOzikLOEeN3XKei4E": {
+    "UpdateLambdaVersionmFYf4ffJMZCcu9yrvDK8CTz4rYuK8mPc3dnTro7Fc": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "UpdateLambdaFunction"
         },
-        "CodeSha256": "zYit3yAF60ggXrlWBfnTkAPMmeqkVtSySsHnA2JRCaE="
+        "CodeSha256": "CL6gg4LN6XjR8ChdEHQcICosL6ZthbzzZHUuJsqo4mY="
       }
     },
-    "DeleteLambdaVersionuZHpa5211PidHtjxn3X1dzMVtVj8GKZkCgYxZ4Rw": {
+    "DeleteLambdaVersionS0TOE9IEChFNTBWokJWDxAHtYAPiB0W6dPbcvlnuw": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "DeleteLambdaFunction"
         },
-        "CodeSha256": "zYit3yAF60ggXrlWBfnTkAPMmeqkVtSySsHnA2JRCaE="
+        "CodeSha256": "CL6gg4LN6XjR8ChdEHQcICosL6ZthbzzZHUuJsqo4mY="
       }
     },
-    "CheckReferenceLambdaVersion9N1vMH9Dsm6RmJ9p5ii4haVofPlUzpFj6DTPwsxlI": {
+    "CheckReferenceLambdaVersionAjGkW5j4qY3AxpSaTCpK3sc00mCmpXg30cyP9kzuag": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "CheckReferenceLambdaFunction"
         },
-        "CodeSha256": "zYit3yAF60ggXrlWBfnTkAPMmeqkVtSySsHnA2JRCaE="
+        "CodeSha256": "CL6gg4LN6XjR8ChdEHQcICosL6ZthbzzZHUuJsqo4mY="
       }
     },
-    "GetByHashLambdaVersionf3GmPsytBp6xBLnxVZjRtzIdOkXUDo69QXDE1Pz4ts": {
+    "CreateLambdaVersionTk5HWbNZxTVS3141giWV9mPlxwiDRXf1m8ABdYG3I": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CreateLambdaFunction"
+        },
+        "CodeSha256": "CL6gg4LN6XjR8ChdEHQcICosL6ZthbzzZHUuJsqo4mY="
+      }
+    },
+    "GetByHashLambdaVersionYIVMVejrs7EuruwANFDxi0sQzIphp9jCTlkBi5MEzt0": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "GetByHashLambdaFunction"
         },
-        "CodeSha256": "zYit3yAF60ggXrlWBfnTkAPMmeqkVtSySsHnA2JRCaE="
+        "CodeSha256": "CL6gg4LN6XjR8ChdEHQcICosL6ZthbzzZHUuJsqo4mY="
       }
     },
     "ApiGatewayRestApi": {
@@ -1195,7 +1205,7 @@
         ]
       }
     },
-    "ApiGatewayDeployment1701733013857": {
+    "ApiGatewayDeployment1757626349380": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -1425,19 +1435,10 @@
         "Name": "sls-causef-api-v2-organisations-live-ServerlessDeploymentBucketName"
       }
     },
-    "CreateLambdaFunctionQualifiedArn": {
-      "Description": "Current Lambda function version",
-      "Value": {
-        "Ref": "CreateLambdaVersions13GONDA0xk4OC6jtRbbfi6tIdpt0Kc4b8KPbovbnQ"
-      },
-      "Export": {
-        "Name": "sls-causef-api-v2-organisations-live-CreateLambdaFunctionQualifiedArn"
-      }
-    },
     "UpdateLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "UpdateLambdaVersionudAKvD4f5zivZ0K4ZeP3o1amiiOzikLOEeN3XKei4E"
+        "Ref": "UpdateLambdaVersionmFYf4ffJMZCcu9yrvDK8CTz4rYuK8mPc3dnTro7Fc"
       },
       "Export": {
         "Name": "sls-causef-api-v2-organisations-live-UpdateLambdaFunctionQualifiedArn"
@@ -1446,7 +1447,7 @@
     "DeleteLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "DeleteLambdaVersionuZHpa5211PidHtjxn3X1dzMVtVj8GKZkCgYxZ4Rw"
+        "Ref": "DeleteLambdaVersionS0TOE9IEChFNTBWokJWDxAHtYAPiB0W6dPbcvlnuw"
       },
       "Export": {
         "Name": "sls-causef-api-v2-organisations-live-DeleteLambdaFunctionQualifiedArn"
@@ -1455,16 +1456,25 @@
     "CheckReferenceLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CheckReferenceLambdaVersion9N1vMH9Dsm6RmJ9p5ii4haVofPlUzpFj6DTPwsxlI"
+        "Ref": "CheckReferenceLambdaVersionAjGkW5j4qY3AxpSaTCpK3sc00mCmpXg30cyP9kzuag"
       },
       "Export": {
         "Name": "sls-causef-api-v2-organisations-live-CheckReferenceLambdaFunctionQualifiedArn"
       }
     },
+    "CreateLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "CreateLambdaVersionTk5HWbNZxTVS3141giWV9mPlxwiDRXf1m8ABdYG3I"
+      },
+      "Export": {
+        "Name": "sls-causef-api-v2-organisations-live-CreateLambdaFunctionQualifiedArn"
+      }
+    },
     "GetByHashLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GetByHashLambdaVersionf3GmPsytBp6xBLnxVZjRtzIdOkXUDo69QXDE1Pz4ts"
+        "Ref": "GetByHashLambdaVersionYIVMVejrs7EuruwANFDxi0sQzIphp9jCTlkBi5MEzt0"
       },
       "Export": {
         "Name": "sls-causef-api-v2-organisations-live-GetByHashLambdaFunctionQualifiedArn"

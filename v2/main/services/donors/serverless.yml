@@ -1,30 +1,23 @@
 service: causef-api-v2-donors
 
-useDotenv: true
 frameworkVersion: "4"
 
 plugins:
   - serverless-domain-manager
 custom:
-  stage: ${opt:stage, self:provider.stage}
-  userPools:
-    dev: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd"
-    live: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq"
-  domains:
-    live: api.cause-foundation.org.uk
-    dev: causeapi.bouchelle.co.uk
+  environment: ${file(../.env.${sls:stage}.yml)}
   customDomain:
-    domainName: ${self:custom.domains.${self:custom.stage}}
+    domainName: ${self:custom.environment.CUSTOM_DOMAIN}
     basePath: donors
-    stage: ${self:custom.stage}
+    stage: ${sls:stage}
     createRoute53Record: true
 provider:
   name: aws
   runtime: nodejs16.x
   profile: jamiebuckell
-  stage: ${opt:stage, 'dev'}
-  region: ${opt:region, 'eu-west-2'}
-  environment: ${file(../resources/.env.${opt:stage, self:provider.stage}.yml)}
+  stage: ${sls:stage}
+  region: ${self:custom.environment.AWS_ACCOUNT_REGION}
+  environment: ${file(../.env.${sls:stage}.yml)}
   apiGateway:
     description: Microservice for donor specific processes
   iamRoleStatements:
@@ -51,35 +44,35 @@ provider:
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:eu-west-2:"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/"
-              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+              - ${self:custom.environment.MAIN_DYNAMO_TABLE}
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:eu-west-2:"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/"
-              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+              - ${self:custom.environment.MAIN_DYNAMO_TABLE}
               - "/index/GSI1"
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:eu-west-2:"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/"
-              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+              - ${self:custom.environment.MAIN_DYNAMO_TABLE}
               - "/index/GSI2"
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:eu-west-2:"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/"
-              - ${self:provider.environment.SUBSCRIBERS_TABLE}
+              - ${self:custom.environment.SUBSCRIBERS_TABLE}
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:eu-west-2:"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/"
-              - ${self:provider.environment.EMAIL_TEMPLATES_TABLE}
+              - ${self:custom.environment.EMAIL_TEMPLATES_TABLE}
     - Effect: Allow
       Action:
         - sqs:sendmessage
@@ -89,9 +82,9 @@ provider:
             - - "arn:aws:sqs:"
               - ${self:provider.region}
               - ":"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":"
-              - ${self:provider.environment.PLEDGE_DETAIL_QUEUE}
+              - ${self:custom.environment.PLEDGE_DETAIL_QUEUE}
     - Effect: Allow
       Action:
         - "ses:GetTemplate"
@@ -137,7 +130,9 @@ functions:
           authorizer:
             name: PrivateAuthorizerV2
             type: COGNITO_USER_POOLS
-            arn: ${self:custom.userPools.${self:custom.stage}}
+            arn: ${self:custom.environment.USER_POOL_ARN}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
   hide:
     handler: endpoints/hide.handler
     events:
@@ -149,7 +144,7 @@ functions:
           authorizer:
             name: PrivateAuthorizerV2
             type: COGNITO_USER_POOLS
-            arn: ${self:custom.userPools.${self:custom.stage}}
+            arn: ${self:custom.environment.USER_POOL_ARN}
   emailUpdate:
     handler: endpoints/emailUpdate.handler
     events:
@@ -161,7 +156,7 @@ functions:
           authorizer:
             name: PrivateAuthorizerV2
             type: COGNITO_USER_POOLS
-            arn: ${self:custom.userPools.${self:custom.stage}}
+            arn: ${self:custom.environment.USER_POOL_ARN}
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
@@ -176,7 +171,7 @@ functions:
           authorizer:
             name: PrivateAuthorizerV2
             type: COGNITO_USER_POOLS
-            arn: ${self:custom.userPools.${self:custom.stage}}
+            arn: ${self:custom.environment.USER_POOL_ARN}
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
   update:
@@ -190,7 +185,7 @@ functions:
           authorizer:
             name: PrivateAuthorizerV2
             type: COGNITO_USER_POOLS
-            arn: ${self:custom.userPools.${self:custom.stage}}
+            arn: ${self:custom.environment.USER_POOL_ARN}
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
   resendVerification:
@@ -204,7 +199,7 @@ functions:
           authorizer:
             name: PrivateAuthorizerV2
             type: COGNITO_USER_POOLS
-            arn: ${self:custom.userPools.${self:custom.stage}}
+            arn: ${self:custom.environment.USER_POOL_ARN}
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
   confirmPledge:
@@ -222,7 +217,7 @@ functions:
           authorizer:
             name: PrivateAuthorizerV2
             type: COGNITO_USER_POOLS
-            arn: ${self:custom.userPools.${self:custom.stage}}
+            arn: ${self:custom.environment.USER_POOL_ARN}
       - http:
           method: get
           path: confirm-pledge/{emailAddress}
@@ -269,7 +264,7 @@ functions:
           authorizer:
             name: PrivateAuthorizerV2
             type: COGNITO_USER_POOLS
-            arn: ${self:custom.userPools.${self:custom.stage}}
+            arn: ${self:custom.environment.USER_POOL_ARN}
 resources:
   - ${file(../resources/send-pledge-sqs-queue.yml)}
   - ${file(../resources/api-gateway-responses.yml)}

@@ -20,7 +20,7 @@ exports.handler = async (event, context, cb) => {
     const envSalt = process.env.HASHING_SALT;
     const envHashPrefix = process.env.HASHING_PREFIX;
 
-    const campaignId = "CH1"; // 2022 Campaign
+    const campaignId = Functions.defaultCampaign();
 
     const params = {
       TableName: mainTableName,

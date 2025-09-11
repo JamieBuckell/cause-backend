@@ -91,7 +91,7 @@ exports.handler = async (event, context, cb) => {
       }
     }
     console.log(parsed.hamperId, "not found");
-    return Responses._400({
+    return Responses._200({
       messages: { unexpected: "An unexpected error occurred" },
     });
   } catch (e) {

@@ -17,7 +17,7 @@ exports.handler = async (event, context, cb) => {
         "#pk": "PK",
       },
       ExpressionAttributeValues: {
-        ":pk": "CH2",
+        ":pk": Functions.defaultCampaign(),
       },
     };
     let allCampaignData = await Dynamo.scan(params).catch((err) => {

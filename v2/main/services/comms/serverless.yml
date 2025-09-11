@@ -1,32 +1,25 @@
 service: causef-api-v2-communications
 
-useDotenv: true
 frameworkVersion: "4"
 
 plugins:
   - serverless-domain-manager
 custom:
-  stage: ${opt:stage, self:provider.stage}
-  userPools:
-    dev: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd"
-    live: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq"
-  domains:
-    live: api.cause-foundation.org.uk
-    dev: causeapi.bouchelle.co.uk
+  environment: ${file(../.env.${sls:stage}.yml)}
   customDomain:
-    domainName: ${self:custom.domains.${self:custom.stage}}
+    domainName: ${self:custom.environment.CUSTOM_DOMAIN}
     basePath: communications
-    stage: ${self:provider.stage}
+    stage: ${sls:stage}
     createRoute53Record: true
 provider:
   name: aws
   runtime: nodejs16.x
   profile: jamiebuckell
-  stage: ${opt:stage, 'dev'}
-  region: ${opt:region, 'eu-west-2'}
+  stage: ${sls:stage}
+  region: ${self:custom.environment.AWS_ACCOUNT_REGION}
+  environment: ${file(../.env.${sls:stage}.yml)}
   apiGateway:
     description: Microservice for communication specific processes
-  environment: ${file(../resources/.env.${self:custom.stage}.yml)}
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -44,27 +37,27 @@ provider:
         - Fn::Join:
             - ""
             - - "arn:aws:sqs:"
-              - ${self:provider.region}
+              - ${self:custom.environment.AWS_ACCOUNT_REGION}
               - ":"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":"
-              - ${self:provider.environment.MAIL_PROCESSOR_QUEUE}
+              - ${self:custom.environment.MAIL_PROCESSOR_QUEUE}
         - Fn::Join:
             - ""
             - - "arn:aws:sqs:"
-              - ${self:provider.region}
+              - ${self:custom.environment.AWS_ACCOUNT_REGION}
               - ":"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":"
-              - ${self:provider.environment.MAILER_QUEUE}
+              - ${self:custom.environment.MAILER_QUEUE}
         - Fn::Join:
             - ""
             - - "arn:aws:sqs:"
-              - ${self:provider.region}
+              - ${self:custom.environment.AWS_ACCOUNT_REGION}
               - ":"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":"
-              - ${self:provider.environment.MAIL_COMPLETE_QUEUE}
+              - ${self:custom.environment.MAIL_COMPLETE_QUEUE}
     - Effect: Allow
       Action:
         - dynamodb:DescribeTable
@@ -79,27 +72,27 @@ provider:
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:"
-              - ${self:provider.region}
+              - ${self:custom.environment.AWS_ACCOUNT_REGION}
               - ":"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/"
-              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+              - ${self:custom.environment.MAIN_DYNAMO_TABLE}
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:"
-              - ${self:provider.region}
+              - ${self:custom.environment.AWS_ACCOUNT_REGION}
               - ":"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/"
-              - ${self:provider.environment.COMMS_DYNAMO_TABLE}
+              - ${self:custom.environment.COMMS_DYNAMO_TABLE}
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:"
-              - ${self:provider.region}
+              - ${self:custom.environment.AWS_ACCOUNT_REGION}
               - ":"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/"
-              - ${self:provider.environment.SUBSCRIBERS_TABLE}
+              - ${self:custom.environment.SUBSCRIBERS_TABLE}
     - Effect: Allow
       Action:
         - "ses:GetTemplate"
@@ -124,7 +117,7 @@ functions:
           authorizer:
             name: PrivateAuthorizerV2
             type: COGNITO_USER_POOLS
-            arn: ${self:custom.userPools.${self:custom.stage}}
+            arn: ${self:custom.environment.USER_POOL_ARN}
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
@@ -182,7 +175,25 @@ functions:
           authorizer:
             name: PrivateAuthorizerV2
             type: COGNITO_USER_POOLS
-            arn: ${self:custom.userPools.${self:custom.stage}}
+            arn: ${self:custom.environment.USER_POOL_ARN}
+  reconfigureEmails:
+    handler: endpoints/reconfigureEmails.handler
+    timeout: 900
+    reservedConcurrency: 10
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+  reconfigureRecipients:
+    handler: endpoints/reconfigureRecipients.handler
+    timeout: 900
+    reservedConcurrency: 10
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+  recipientFix:
+    handler: endpoints/recipientFix.handler
+    timeout: 900
+    reservedConcurrency: 10
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
 resources:
   - ${file(../resources/portal-comms-data-store.yml)}
   - ${file(../resources/mail-processor-sqs-queue.yml)}

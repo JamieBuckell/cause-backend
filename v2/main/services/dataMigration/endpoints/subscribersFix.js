@@ -23,7 +23,7 @@ exports.handler = async (event, context, cb) => {
     const batchData = [];
     const batchSubscriberData = [];
 
-    const campaignId = "CH1";
+    const campaignId = Functions.defaultCampaign();
 
     const legacyDonorData = await Dynamo.scan({
       TableName: legacyDonorsTable,

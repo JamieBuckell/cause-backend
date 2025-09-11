@@ -53,8 +53,10 @@ exports.handler = async (event, context, cb) => {
             const dateAdded = emailData?.dateAdded ?? dateSent;
 
             const recipientData = {
-              PK: `EMAIL#${subscriber.email}`,
-              SK: `SORT#${moment(dateSent).format("YYYYMMDDHHmmss.SSS")}`,
+              PK: "RECIPIENT",
+              SK: `SORT#${moment(new Date().getTime())
+                .tz(timezone)
+                .format("YYYYMMDDHHmmss")}#${nanoid(12)}`,
               dateSent: dateSent,
               emailAddress: subscriber.email,
               emailData,

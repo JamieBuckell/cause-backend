@@ -31,6 +31,11 @@ exports.handler = async (event, context, cb) => {
         console.log(`Running message: ${r.body}`);
 
         if (r?.messageAttributes?.donorDetails) {
+          const pdfPages = [];
+
+          let hamperCount = 0;
+          let csvContent = "";
+
           const donorDetails = JSON.parse(
             r.messageAttributes.donorDetails.stringValue
           );
@@ -38,45 +43,6 @@ exports.handler = async (event, context, cb) => {
             r.messageAttributes.donorFamiliesData.stringValue
           );
           console.log(donorFamiliesData);
-
-          let standardTemplate = await Notifications.getEmailTemplate();
-
-          const familyData = [];
-          for (const family of donorFamiliesData) {
-            familyData.push({
-              reference: family.GSI2SK.replace("SK#", ""),
-              totalUnit: family.members.length,
-              members: family.members,
-              familyDetail: "",
-            });
-          }
-
-          const emailTemplate = {
-            familyData: familyData,
-          };
-          const emailTemplateParams = await Functions.getEmailTemplate(
-            "donorFamilyAllocationConfirmed",
-            emailTemplate
-          );
-
-          standardTemplate = standardTemplate.replace(
-            "{{pageTitle}}",
-            emailTemplateParams.pageTitle
-          );
-          standardTemplate = standardTemplate.replace(
-            "{{pageContent}}",
-            emailTemplateParams.pageContent
-          );
-
-          const rawEmailJsonParameters = {
-            ToAddress: donorDetails.GSI3PK,
-            htmlContent: standardTemplate,
-            subject: emailTemplateParams.subject,
-          };
-
-          let hamperCount = 0;
-          let csvContent = "";
-          const pdfPages = [];
 
           for (const family of donorFamiliesData) {
             hamperCount++;
@@ -125,10 +91,16 @@ exports.handler = async (event, context, cb) => {
             });
           }
 
-          if (donorFamiliesData.length >= 5) {
-            rawEmailJsonParameters.csvAttachment = csvContent;
-            rawEmailJsonParameters.csvAttachmentFilename =
-              "your-allocation-families.csv";
+          let standardTemplate = await Notifications.getEmailTemplate();
+
+          const familyData = [];
+          for (const family of donorFamiliesData) {
+            familyData.push({
+              reference: family.GSI2SK.replace("SK#", ""),
+              totalUnit: family.members.length,
+              members: family.members,
+              familyDetail: "",
+            });
           }
 
           const FunctionName =
@@ -146,10 +118,20 @@ exports.handler = async (event, context, cb) => {
           const lambdaResult = await lambda.invoke(params).promise();
           const resultObject = JSON.parse(lambdaResult.Payload);
 
+          let pdfLink = "";
+
+          const rawEmailJsonParameters = {
+            ToAddress: donorDetails.GSI3PK,
+          };
+
           rawEmailJsonParameters.pdfAttachmentFilename =
             "family-hamper-labels.pdf";
           if (resultObject?.body) {
             const resultBody = JSON.parse(resultObject?.body);
+
+            if (resultBody?.pdfUrl) {
+              pdfLink = resultBody?.pdfUrl;
+            }
 
             if (resultBody?.filename && resultBody?.location) {
               console.log("S3 Direct...");
@@ -171,13 +153,42 @@ exports.handler = async (event, context, cb) => {
 
               rawEmailJsonParameters.pdfAttachment = binaryPdf;
             }
+          }
 
-            if (rawEmailJsonParameters.pdfAttachment) {
-              await Notifications.sendRawEmail(rawEmailJsonParameters);
-              console.log("rawEmailJsonParameters", rawEmailJsonParameters);
-            } else {
-              console.log("Error with the response", rawEmailJsonParameters);
-            }
+          const emailTemplate = {
+            familyData: familyData,
+          };
+          if (pdfLink) {
+            emailTemplate["pdfLink"] = pdfLink;
+          }
+          const emailTemplateParams = await Functions.getEmailTemplate(
+            "donorFamilyAllocationConfirmed",
+            emailTemplate
+          );
+
+          rawEmailJsonParameters["subject"] = emailTemplateParams.subject;
+
+          standardTemplate = standardTemplate.replace(
+            "{{pageTitle}}",
+            emailTemplateParams.pageTitle
+          );
+          standardTemplate = standardTemplate.replace(
+            "{{pageContent}}",
+            emailTemplateParams.pageContent
+          );
+          rawEmailJsonParameters["htmlContent"] = standardTemplate;
+
+          if (donorFamiliesData.length >= 5) {
+            rawEmailJsonParameters.csvAttachment = csvContent;
+            rawEmailJsonParameters.csvAttachmentFilename =
+              "your-allocation-families.csv";
+          }
+
+          if (rawEmailJsonParameters.pdfAttachment) {
+            await Notifications.sendRawEmail(rawEmailJsonParameters);
+            console.log("rawEmailJsonParameters", rawEmailJsonParameters);
+          } else {
+            console.log("Error with the response", rawEmailJsonParameters);
           }
         }
       }

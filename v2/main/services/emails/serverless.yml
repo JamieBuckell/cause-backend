@@ -1,30 +1,23 @@
 service: causef-api-v2-emails
 
-useDotenv: true
 frameworkVersion: "4"
 
 plugins:
   - serverless-domain-manager
 custom:
-  stage: ${opt:stage, self:provider.stage}
-  userPools:
-    dev: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd"
-    live: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq"
-  domains:
-    live: api.cause-foundation.org.uk
-    dev: causeapi.bouchelle.co.uk
+  environment: ${file(../.env.${sls:stage}.yml)}
   customDomain:
-    domainName: ${self:custom.domains.${self:custom.stage}}
+    domainName: ${self:custom.environment.CUSTOM_DOMAIN}
     basePath: emails
-    stage: ${self:provider.stage}
+    stage: ${sls:stage}
     createRoute53Record: true
 provider:
   name: aws
   runtime: nodejs14.x
   profile: jamiebuckell
-  stage: ${opt:stage, 'dev'}
-  region: ${opt:region, 'eu-west-2'}
-  environment: ${file(../resources/.env.${self:custom.stage}.yml)}
+  stage: ${sls:stage}
+  region: ${self:custom.environment.AWS_ACCOUNT_REGION}
+  environment: ${file(../.env.${sls:stage}.yml)}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -40,9 +33,9 @@ provider:
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:eu-west-2:"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/"
-              - ${self:provider.environment.EMAIL_TEMPLATES_TABLE}
+              - ${self:custom.environment.EMAIL_TEMPLATES_TABLE}
     - Effect: Allow
       Action:
         - "ses:GetTemplate"
@@ -67,7 +60,7 @@ functions:
           authorizer:
             name: PrivateAuthorizerV2
             type: COGNITO_USER_POOLS
-            arn: ${self:custom.userPools.${self:custom.stage}}
+            arn: ${self:custom.environment.USER_POOL_ARN}
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
       - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
@@ -82,7 +75,7 @@ functions:
           authorizer:
             name: PrivateAuthorizerV2
             type: COGNITO_USER_POOLS
-            arn: ${self:custom.userPools.${self:custom.stage}}
+            arn: ${self:custom.environment.USER_POOL_ARN}
   update:
     handler: endpoints/update.handler
     events:
@@ -94,7 +87,7 @@ functions:
           authorizer:
             name: PrivateAuthorizerV2
             type: COGNITO_USER_POOLS
-            arn: ${self:custom.userPools.${self:custom.stage}}
+            arn: ${self:custom.environment.USER_POOL_ARN}
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
       - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
@@ -113,7 +106,7 @@ functions:
           authorizer:
             name: PrivateAuthorizerV2
             type: COGNITO_USER_POOLS
-            arn: ${self:custom.userPools.${self:custom.stage}}
+            arn: ${self:custom.environment.USER_POOL_ARN}
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
 resources:

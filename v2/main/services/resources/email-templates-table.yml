@@ -2,7 +2,7 @@ Resources:
   EmailTemplatesTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: ${self:provider.environment.EMAIL_TEMPLATES_TABLE}
+      TableName: ${self:custom.environment.EMAIL_TEMPLATES_TABLE}
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1

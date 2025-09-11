@@ -71,7 +71,9 @@ exports.handler = async (event, context, cb) => {
       }
       return Responses._200(returnRes);
     } else {
-      return Responses._400({ messages: { error: "Hamper ID not found" } });
+      console.log("hamperId", hamperId);
+      console.log("campaignId", parsed.campaignId);
+      return Responses._200({ messages: { error: "Hamper ID not found" } });
     }
   } catch (e) {
     console.log(`An unexpected error occurred ${e}`);

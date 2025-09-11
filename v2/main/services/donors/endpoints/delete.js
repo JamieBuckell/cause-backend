@@ -4,6 +4,8 @@ const Hashing = require("../common/Hashing");
 const Functions = require("../common/Functions");
 const Notifications = require("../common/Notifications");
 
+const moment = require("moment-timezone");
+
 exports.handler = async (event, context, cb) => {
   try {
     if (!Functions.hasPermission(event, "Admin")) {
@@ -15,6 +17,8 @@ exports.handler = async (event, context, cb) => {
     }
 
     const mainTableName = process.env.MAIN_DYNAMO_TABLE;
+    const timezone = process.env.TIMEZONE;
+    const dateFormat = process.env.DATE_FORMAT;
 
     const userEmail = event.requestContext.authorizer.claims.email;
 
@@ -49,9 +53,37 @@ exports.handler = async (event, context, cb) => {
       });
     }
 
+    const donorToDelete = { ...donor };
+    console.log(`Attempting the delete write to ${mainTableName}...`, donor);
     donor.status = "deleted";
-    await Dynamo.write(donor, mainTableName).catch((err) => {
+    donor.dateDeleted = moment(new Date().getTime())
+      .tz(timezone)
+      .format(dateFormat);
+    donor.deletedBy = userEmail;
+
+    const deletedSuffix = "-DELETED";
+    donor.SK = donor.SK + deletedSuffix;
+    donor.GSI1PK = (donor?.GSI1PK ?? "") + deletedSuffix;
+    donor.GSI2PK = (donor?.GSI2PK ?? "") + deletedSuffix;
+    donor.GSI2SK = (donor?.GSI2SK ?? "") + deletedSuffix;
+    donor.GSI3PK = (donor?.GSI3PK ?? "") + deletedSuffix;
+    donor.GSI3SK = (donor?.GSI3SK ?? "") + deletedSuffix;
+
+    const test = await Dynamo.write(donor, mainTableName).catch((err) => {
       console.log("error in dynamo write (deleted)", err);
+      return Responses._400({ messages: err });
+    });
+    console.log("write res...", test);
+
+    console.log("Now delete the original...", {
+      PK: donorToDelete?.PK,
+      SK: donorToDelete?.SK,
+    });
+    await Dynamo.delete(
+      { PK: donorToDelete?.PK, SK: donorToDelete?.SK },
+      mainTableName
+    ).catch((err) => {
+      console.log("error in dynamo query", err);
       return Responses._400({ messages: err });
     });
 

@@ -17,7 +17,7 @@ exports.handler = async (event, context, cb) => {
     const legacyNominatorsTable = "cause-nominators-live";
     const legacyOrganisationsTable = "cause-organisations-live-restored";
 
-    const campaignId = "CH1"; // 2022 Campaign
+    const campaignId = Functions.defaultCampaign();
 
     const params = {
       TableName: mainTableName,

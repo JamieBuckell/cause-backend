@@ -2,4 +2,4 @@ Resources:
   SendPledgeDetailQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: ${self:provider.environment.PLEDGE_DETAIL_QUEUE}
+      QueueName: ${self:custom.environment.PLEDGE_DETAIL_QUEUE}

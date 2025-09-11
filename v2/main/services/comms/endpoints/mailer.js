@@ -30,6 +30,7 @@ exports.handler = async (event, context, cb) => {
           const emailData = JSON.parse(
             r.messageAttributes.emailData.stringValue
           );
+          console.log("emailData", emailData);
           const recipient = r.messageAttributes.recipient.stringValue ?? null;
 
           if (!recipient) {
@@ -53,9 +54,10 @@ exports.handler = async (event, context, cb) => {
             TemplateName: unsubscribeLink
               ? "CauseFSubscriber"
               : "CauseFStandard",
-            fromAddress: emailData?.email?.sendFrom
-              ? emailData?.email?.sendFrom
-              : "hampers",
+            fromAddress:
+              (emailData?.email?.sendFrom
+                ? emailData?.email?.sendFrom
+                : "hampers") + "@cause-foundation.org.uk",
             ToAddresses: [recipient],
             subject: emailData?.email?.subject,
             pageTitle: emailData?.email?.title,

@@ -1,20 +1,16 @@
 service: causef-api-v2-dataMigration
 
-useDotenv: true
 frameworkVersion: "4"
 
 custom:
-  stage: ${opt:stage, self:provider.stage}
-  userPools:
-    dev: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_Tq53Gr5Pd"
-    live: "arn:aws:cognito-idp:eu-west-2:988218197909:userpool/eu-west-2_ueeqpE5iq"
+  environment: ${file(../.env.${sls:stage}.yml)}
 provider:
   name: aws
   runtime: nodejs14.x
   profile: jamiebuckell
-  stage: ${opt:stage, 'dev'}
-  region: ${opt:region, 'eu-west-2'}
-  environment: ${file(../resources/.env.${self:custom.stage}.yml)}
+  stage: ${sls:stage}
+  region: ${self:custom.environment.AWS_ACCOUNT_REGION}
+  environment: ${file(../.env.${sls:stage}.yml)}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -30,24 +26,24 @@ provider:
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:eu-west-2:"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/"
-              - ${self:provider.environment.MAIN_DYNAMO_TABLE}
+              - ${self:custom.environment.MAIN_DYNAMO_TABLE}
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:eu-west-2:"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/"
-              - ${self:provider.environment.SUBSCRIBERS_TABLE}
+              - ${self:custom.environment.SUBSCRIBERS_TABLE}
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:eu-west-2:"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/cause-portal-v2-live-restored-18Oct"
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:eu-west-2:"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/cause-portal-v2-live-restored-19Oct"
     - Effect: Allow
       Action:
@@ -59,32 +55,32 @@ provider:
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:eu-west-2:"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/cause-donors-live"
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:eu-west-2:"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/cause-campaign-donors-new-live"
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:eu-west-2:"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/cause-organisations-live-restored"
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:eu-west-2:"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/cause-nominators-live"
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:eu-west-2:"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/cause-families-live"
         - Fn::Join:
             - ""
             - - "arn:aws:dynamodb:eu-west-2:"
-              - ${self:provider.environment.AWS_ACCOUNT_ID}
+              - ${self:custom.environment.AWS_ACCOUNT_ID}
               - ":table/cause-family-members-live"
 package:
   individually: true

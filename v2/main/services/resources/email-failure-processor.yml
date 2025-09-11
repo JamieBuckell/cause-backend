@@ -2,11 +2,11 @@ Resources:
     EmailFailureTopic:
       Type: AWS::SNS::Topic
       Properties:
-        TopicName: ses-failure-topic-${self:provider.stage}
+        TopicName: ses-failure-topic-stage: ${sls:stage}
     EmailFailureQueue:
       Type: "AWS::SQS::Queue"
       Properties:
-        QueueName: "EmailFailureQueue-${self:provider.stage}"
+        QueueName: "EmailFailureQueue-stage: ${sls:stage}"
     EmailFailureQueueSubscription:
       Type: AWS::SNS::Subscription
       Properties:

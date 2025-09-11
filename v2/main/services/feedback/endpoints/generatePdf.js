@@ -18,8 +18,6 @@ const validations = [
 
 exports.handler = async (event, context, cb) => {
   try {
-    const envSalt = process.env.HASHING_SALT;
-
     const parsed = event.email ? event : JSON.parse(event.body);
 
     const valid = await Functions.validateSubmission(parsed, validations);
@@ -36,6 +34,7 @@ exports.handler = async (event, context, cb) => {
         "###HAMPER_ID###": "",
       },
     };
+    console.log(pdfData);
     pdfPages.push(pdfData);
     pdfPages.push(pdfData);
     pdfPages.push(pdfData);
@@ -54,7 +53,9 @@ exports.handler = async (event, context, cb) => {
       })} }`,
     };
 
+    console.log("params", params);
     const lambdaResult = await lambda.invoke(params).promise();
+    console.log("lambdaResult", lambdaResult);
     const resultObject = JSON.parse(lambdaResult.Payload);
 
     if (resultObject?.body) {
