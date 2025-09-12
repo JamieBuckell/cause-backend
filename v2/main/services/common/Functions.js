@@ -5,6 +5,13 @@ var lambda = new AWS.Lambda();
 
 const commsTemplateTableName = process.env.EMAIL_TEMPLATES_TABLE;
 
+const ageListBase = [
+  { label: "0-6 months", value: 0.25 },
+  { label: "6-12 months", value: 0.75 },
+  { label: "12-18 months", value: 1 },
+  { label: "18-24 months", value: 1.5 },
+];
+
 const Functions = {
   defaultCampaign() {
     return "CH24"; //Todo: make this dynamic!
@@ -131,17 +138,22 @@ const Functions = {
 
             rtnHTML += `
                         <table>`;
-
             for (const [j, fm] of currentFamilyMembers.entries()) {
+              const ageListIndex = ageListBase.findIndex(
+                (al) => al.value == fm.age
+              );
+
               rtnHTML += `
                         <tr>`;
               rtnHTML += `
                             <td style="padding-right: 30px;">${fm.who}${
                 fm.whoOther ? " (" + fm.whoOther + ")" : ""
               }</td>
-                            <td style="padding-right: 30px;">${fm.age} ${
-                fm.age ? fm.ageType : ""
-              }</td>
+                            <td style="padding-right: 30px;">${
+                              ageListIndex >= 0
+                                ? ageListBase[ageListIndex].label
+                                : fm.age + " " + (fm.age ? fm.ageType : "")
+                            }</td>
                             <td>${
                               fm.additionalInfo ? fm.additionalInfo : ""
                             }</td>`;
@@ -270,13 +282,6 @@ const Functions = {
     return this.shuffle(pass);
   },
   createDetailPreview(template, params) {
-    const ageListBase = [
-      { label: "0-6 months", value: 0.25 },
-      { label: "6-12 months", value: 0.75 },
-      { label: "12-18 months", value: 1 },
-      { label: "18-24 months", value: 1.5 },
-    ];
-
     switch (template) {
       case "familyDetail":
         var rtnString = "";
@@ -1046,15 +1051,27 @@ const Functions = {
         familyMember.who +
         (familyMember.whoOther ? " (" + familyMember.whoOther + ")" : "");
 
+      const ageListIndex = ageListBase.findIndex(
+        (al) => al.value == familyMember.age
+      );
+
       csvContent +=
-        `"${hamper.reference}","${familyWho}","${familyMember.age}${
-          familyMember.age ? " " + familyMember.ageType : ""
+        `"${hamper.reference}","${familyWho}","${
+          ageListIndex >= 0
+            ? ageListBase[ageListIndex].label
+            : familyMember.age +
+              " " +
+              (familyMember.age ? familyMember.ageType : "")
         }","${
           familyMember.additionalInfo ? familyMember.additionalInfo : ""
         }"` + "\r\n";
       familyDynamics.push(
         ` ${familyWho} ${
-          familyMember.age ? familyMember.age + " " + familyMember.ageType : ""
+          ageListIndex >= 0
+            ? ageListBase[ageListIndex].label
+            : familyMember.age +
+              " " +
+              (familyMember.age ? familyMember.ageType : "")
         }`
       );
     }
