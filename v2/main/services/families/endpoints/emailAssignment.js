@@ -6,6 +6,13 @@ const Notifications = require("../common/Notifications");
 
 const moment = require("moment-timezone");
 
+const ageListBase = [
+  { label: "0-6 months", value: 0.25 },
+  { label: "6-12 months", value: 0.75 },
+  { label: "12-18 months", value: 1 },
+  { label: "18-24 months", value: 1.5 },
+];
+
 const validations = [
   {
     key: "donorId",
@@ -94,17 +101,27 @@ exports.handler = async (event, context, cb) => {
           for (const familyMember of allocation.members) {
             const familyWho = familyMember.who;
 
+            const ageListIndex = ageListBase.findIndex(
+              (al) => al.value == familyMember.age
+            );
+
             csvContent +=
-              `"${familyWho}","${familyMember.age}${
-                familyMember.age ? " " + familyMember.ageType : ""
+              `"${familyWho}","${
+                ageListIndex >= 0
+                  ? ageListBase[ageListIndex].label
+                  : familyMember.age +
+                    " " +
+                    (familyMember.age ? familyMember.ageType : "")
               }","${
                 familyMember.additionalInfo ? familyMember.additionalInfo : ""
               }"` + "\r\n";
             familyDynamics.push(
               ` ${familyWho} ${
-                familyMember.age
-                  ? familyMember.age + " " + familyMember.ageType
-                  : ""
+                ageListIndex >= 0
+                  ? ageListBase[ageListIndex].label
+                  : familyMember.age +
+                    " " +
+                    (familyMember.age ? familyMember.ageType : "")
               }`
             );
           }

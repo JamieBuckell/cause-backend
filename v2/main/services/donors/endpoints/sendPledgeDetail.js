@@ -8,6 +8,13 @@ var lambda = new AWS.Lambda();
 var https = require("https");
 const s3 = new AWS.S3();
 
+const ageListBase = [
+  { label: "0-6 months", value: 0.25 },
+  { label: "6-12 months", value: 0.75 },
+  { label: "12-18 months", value: 1 },
+  { label: "18-24 months", value: 1.5 },
+];
+
 async function get_page(url) {
   return new Promise((resolve) => {
     let data = "";
@@ -62,17 +69,27 @@ exports.handler = async (event, context, cb) => {
             for (const familyMember of currentFamilyMembers) {
               const familyWho = familyMember.who;
 
+              const ageListIndex = ageListBase.findIndex(
+                (al) => al.value == familyMember.age
+              );
+
               csvContent +=
-                `"${hamperReference}","${familyWho}","${familyMember.age}${
-                  familyMember.age ? " " + familyMember.ageType : ""
+                `"${hamperReference}","${familyWho}","${
+                  ageListIndex >= 0
+                    ? ageListBase[ageListIndex].label
+                    : familyMember.age +
+                      " " +
+                      (familyMember.age ? familyMember.ageType : "")
                 }","${
                   familyMember.additionalInfo ? familyMember.additionalInfo : ""
                 }"` + "\r\n";
               familyDynamics.push(
                 ` ${familyWho} ${
-                  familyMember.age
-                    ? familyMember.age + " " + familyMember.ageType
-                    : ""
+                  ageListIndex >= 0
+                    ? ageListBase[ageListIndex].label
+                    : familyMember.age +
+                      " " +
+                      (familyMember.age ? familyMember.ageType : "")
                 }`
               );
             }
