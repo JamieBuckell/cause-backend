@@ -12,7 +12,11 @@ const cognito = new AWS.CognitoIdentityServiceProvider({
 
 exports.handler = async (event, context, cb) => {
   try {
-    const { emailAddress, verificationHash } = event.pathParameters;
+    const { emailAddress, verificationHash } = {
+      emailAddress: (event.pathParameters.emailAddress || "")
+        .replace(escapeRegEx, "")
+        .toLowerCase(),
+    };
     const nomTableName = process.env.NOMINATORS_TABLE;
     const mainTableName = process.env.MAIN_DYNAMO_TABLE;
     const appURL = process.env.APP_URL;

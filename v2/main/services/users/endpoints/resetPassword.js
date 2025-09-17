@@ -6,7 +6,11 @@ const Notifications = require("../common/Notifications");
 
 exports.handler = async (event, context, cb) => {
   try {
-    const { emailAddress } = event.pathParameters;
+    const { emailAddress } = {
+      emailAddress: (event.pathParameters.emailAddress || "")
+        .replace(escapeRegEx, "")
+        .toLowerCase(),
+    };
     const mainTableName = process.env.MAIN_DYNAMO_TABLE;
     const appURL = process.env.APP_URL;
     const envSalt = process.env.HASHING_SALT;
