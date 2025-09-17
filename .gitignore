@@ -15,6 +15,7 @@ dist/
 
 # AWS Serverless files
 *.serverless
+**/.serverless/
 
 # Log files
 *.log
