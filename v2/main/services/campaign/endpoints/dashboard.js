@@ -107,12 +107,13 @@ exports.handler = async (event, context, cb) => {
       allocated: allCampaignData
         .filter((d) => d.type === "donor" && d?.status !== "deleted")
         .reduce((accumulator, d) => {
-          return (
-            accumulator +
-            d?.familyDetails?.request.reduce((a2, r) => {
-              return a2 + r?.allocation ? parseInt(r.allocation.length) : 0;
-            }, 0)
-          );
+          const donorAllocated =
+            d?.familyDetails?.request?.reduce((sum, r) => {
+              const count = r?.allocation ? r.allocation.length : 0;
+              return sum + count;
+            }, 0) ?? 0;
+
+          return accumulator + donorAllocated;
         }, 0),
       subscribers: allSubscribers.filter(
         (s) =>
