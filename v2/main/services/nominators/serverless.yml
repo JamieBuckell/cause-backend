@@ -163,6 +163,22 @@ functions:
             name: PrivateAuthorizerV2
             type: COGNITO_USER_POOLS
             arn: ${self:custom.environment.USER_POOL_ARN}
+  delete:
+    handler: endpoints/delete.handler
+    events:
+      - http:
+          method: post
+          path: delete/{nominatorId}
+          cors: true
+          request:
+            parameters:
+              paths:
+                nominatorId: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.environment.USER_POOL_ARN}
   update:
     handler: endpoints/update.handler
     events:
