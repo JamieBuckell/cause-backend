@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: deploy-backend-dev
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -64,10 +64,24 @@ jobs:
         run: |
           set -euo pipefail
           service="${{ matrix.service }}"
+          log_file="${RUNNER_TEMP}/${service}-deploy.log"
           cd "v2/main/services/${service}"
 
-          if ! node "${GITHUB_WORKSPACE}/node_modules/serverless/scripts/serverless" deploy --stage dev --param="customDomainEnabled=false"; then
+          deploy_service() {
+            node "${GITHUB_WORKSPACE}/node_modules/serverless/scripts/serverless" deploy --stage dev --param="customDomainEnabled=false" 2>&1 | tee "${log_file}"
+            return "${PIPESTATUS[0]}"
+          }
+
+          if ! deploy_service; then
             echo "Deployment failed; retrying ${service} once after 20 seconds"
             sleep 20
-            node "${GITHUB_WORKSPACE}/node_modules/serverless/scripts/serverless" deploy --stage dev --param="customDomainEnabled=false"
+            if ! deploy_service; then
+              {
+                echo "### ${service} deployment failure"
+                echo "~~~text"
+                tail -n 100 "${log_file}"
+                echo "~~~"
+              } >> "${GITHUB_STEP_SUMMARY}"
+              exit 1
+            fi
           fi
