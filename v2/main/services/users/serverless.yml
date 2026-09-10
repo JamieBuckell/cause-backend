@@ -1,6 +1,6 @@
 service: causef-api-v2-users
 
-frameworkVersion: "4"
+frameworkVersion: "3"
 
 plugins:
   - serverless-domain-manager
@@ -14,7 +14,6 @@ custom:
 provider:
   name: aws
   runtime: nodejs16.x
-  profile: jamiebuckell
   stage: ${sls:stage}
   region: ${self:custom.environment.AWS_ACCOUNT_REGION}
   environment: ${file(../.env.${sls:stage}.yml)}
