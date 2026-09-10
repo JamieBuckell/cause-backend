@@ -66,8 +66,8 @@ jobs:
           service="${{ matrix.service }}"
           cd "v2/main/services/${service}"
 
-          if ! node "${GITHUB_WORKSPACE}/node_modules/serverless/scripts/serverless" deploy --stage dev; then
+          if ! node "${GITHUB_WORKSPACE}/node_modules/serverless/scripts/serverless" deploy --stage dev --param="customDomainEnabled=false"; then
             echo "Deployment failed; retrying ${service} once after 20 seconds"
             sleep 20
-            node "${GITHUB_WORKSPACE}/node_modules/serverless/scripts/serverless" deploy --stage dev
+            node "${GITHUB_WORKSPACE}/node_modules/serverless/scripts/serverless" deploy --stage dev --param="customDomainEnabled=false"
           fi
