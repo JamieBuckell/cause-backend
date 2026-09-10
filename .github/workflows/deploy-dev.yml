@@ -68,7 +68,11 @@ jobs:
             echo "::group::Deploy ${service}"
             (
               cd "${service_dir}"
-              node "${GITHUB_WORKSPACE}/node_modules/serverless/scripts/serverless" deploy --stage dev
+              if ! node "${GITHUB_WORKSPACE}/node_modules/serverless/scripts/serverless" deploy --stage dev; then
+                echo "Deployment failed; retrying ${service} once after 20 seconds"
+                sleep 20
+                node "${GITHUB_WORKSPACE}/node_modules/serverless/scripts/serverless" deploy --stage dev
+              fi
             )
             echo "::endgroup::"
           done
