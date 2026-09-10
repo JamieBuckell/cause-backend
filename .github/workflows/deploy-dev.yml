@@ -16,9 +16,23 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy Serverless services
+    name: Deploy ${{ matrix.service }}
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        service:
+          - campaign
+          - comms
+          - donors
+          - families
+          - nominators
+          - organisations
+          - subscription
+          - users
+          - hampers
 
     steps:
       - name: Check out repository
@@ -42,37 +56,18 @@ jobs:
           role-to-assume: arn:aws:iam::988218197909:role/cause-backend-github-actions
           aws-region: eu-west-2
 
-      - name: Deploy dev services
+      - name: Install service dependencies
+        run: npm install --prefix "v2/main/services/${{ matrix.service }}" --no-audit --no-fund
+
+      - name: Deploy dev service
         shell: bash
         run: |
           set -euo pipefail
+          service="${{ matrix.service }}"
+          cd "v2/main/services/${service}"
 
-          services=(
-            campaign
-            comms
-            donors
-            families
-            nominators
-            organisations
-            subscription
-            users
-            hampers
-          )
-
-          for service in "${services[@]}"; do
-            service_dir="v2/main/services/${service}"
-            echo "::group::Install ${service} dependencies"
-            npm install --prefix "${service_dir}" --no-audit --no-fund
-            echo "::endgroup::"
-
-            echo "::group::Deploy ${service}"
-            (
-              cd "${service_dir}"
-              if ! node "${GITHUB_WORKSPACE}/node_modules/serverless/scripts/serverless" deploy --stage dev; then
-                echo "Deployment failed; retrying ${service} once after 20 seconds"
-                sleep 20
-                node "${GITHUB_WORKSPACE}/node_modules/serverless/scripts/serverless" deploy --stage dev
-              fi
-            )
-            echo "::endgroup::"
-          done
+          if ! node "${GITHUB_WORKSPACE}/node_modules/serverless/scripts/serverless" deploy --stage dev; then
+            echo "Deployment failed; retrying ${service} once after 20 seconds"
+            sleep 20
+            node "${GITHUB_WORKSPACE}/node_modules/serverless/scripts/serverless" deploy --stage dev
+          fi
