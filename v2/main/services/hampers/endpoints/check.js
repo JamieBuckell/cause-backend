@@ -51,12 +51,44 @@ exports.handler = async (event, context, cb) => {
         hamperId.substring(0, insertPos) + "-" + hamperId.substring(insertPos);
     }
 
-    const hamper = campaignData.find((h) => h.GSI2SK === `SK#${hamperId}`);
+    const donorQueryData = {
+      KeyConditionExpression: "#pk= :pk And begins_with(#sk, :sk)",
+      ExpressionAttributeValues: {
+        ":pk": parsed.campaignId,
+        ":sk": `EMAIL#D#`,
+      },
+      ExpressionAttributeNames: {
+        "#pk": "PK",
+        "#sk": "SK",
+      },
+    };
+    var campaignDonors = await Dynamo.query(
+      donorQueryData,
+      mainTableName
+    ).catch((err) => {
+      console.log("error in dynamo query", err);
+      return Responses._400({ messages: err });
+    });
+
+    const campaignDonorsMapped = campaignDonors.map((d) => ({
+      donorId: d.GSI2PK,
+      name: `${d.donorDetails.firstName} ${d.donorDetails.lastName}`,
+      company: d.donorDetails.company,
+    }));
+
+    const allDonorPledges = Object.fromEntries(
+      campaignDonorsMapped.map((d) => [d.donorId, d])
+    );
+
+    const hamper = campaignData.find(
+      (h) => h.GSI2SK === `SK#${hamperId}` && h.status != "deleted"
+    );
     if (hamper && hamper?.PK) {
       const returnRes = {
         success: true,
         hamperId,
         bagsReceived: hamper?.bagsReceived ? hamper.bagsReceived : 0,
+        donor: hamper?.allocatedTo ? allDonorPledges[hamper.allocatedTo] : {},
         familyUnitTotal: hamper?.totalUnit ?? 0,
         familyDynamic: await Functions.generateFamilyDynamics(
           { reference: hamperId },

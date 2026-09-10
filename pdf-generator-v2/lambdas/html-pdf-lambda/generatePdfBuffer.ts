@@ -29,6 +29,7 @@ export const generatePdfBuffer = async (
       format: "a4",
       printBackground: true,
       landscape: true,
+      margin: { left: "0", top: "0", right: "0", bottom: "0" },
     });
   } catch (e) {
     console.log("Chromium error", { e });

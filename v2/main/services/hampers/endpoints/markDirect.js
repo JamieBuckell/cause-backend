@@ -49,7 +49,7 @@ exports.handler = async (event, context, cb) => {
     });
 
     const hamper = campaignData.find(
-      (h) => h.GSI2SK === `SK#${parsed.hamperId}`
+      (h) => h.GSI2SK === `SK#${parsed.hamperId}` && h.status != "deleted"
     );
     if (hamper && hamper?.PK) {
       hamper.receiveStatus = "direct-hamper";

@@ -9,288 +9,278 @@ const s3Client = new S3Client({ region: process.env.AWS_REGION });
 
 const pdfTemplates: any = {
   labels: `
-  <div
-        style="display: grid; grid-template-columns: 1fr 1fr 1fr; grid-gap: 20px; margin: auto auto; font-size: 2rem; width:85%; page-break-after: always;">
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0 0 0;"><strong>ID:</strong> ###HAMPER_ID###</p>
+  <div class="page landscape">
+    <div class="middle label-grid">
+          <div class="label">
+              <p class="id"><strong>ID:</strong> ###HAMPER_ID###</p>
 
-            <p style="margin: 0.5em 0; font-size:0.75rem; text-align: center;">
-                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:150px; display:block;" />
-                <br />
-                <strong>Dynamics</strong>
-                <br />
-                ###FAMILY_DYNAMICS###
-            </p>
+              <p class="code">
+                  <img src="###QR_CODE###" />
+                  <strong>Dynamics</strong>
+                  <br />
+                  ###FAMILY_DYNAMICS###
+              </p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-                <p style="margin: 0 0 0.5em 0;">
-                    <strong>1 of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
-                </p>
-            </div>
-        </div>
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0 0 0;"><strong>ID:</strong> ###HAMPER_ID###</p>
+              <div class="label-footer">
+                  <p>
+                      <strong>1 of </strong> <span class="ellipsis">...</span>
+                  </p>
+              </div>
+          </div>
+          <div class="label">
+              <p class="id"><strong>ID:</strong> ###HAMPER_ID###</p>
 
-            <p style="margin: 0.5em 0; font-size:0.75rem; text-align: center;">
-                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:150px; display:block;" />
-                <br />
-                <strong>Dynamics</strong>
-                <br />
-                ###FAMILY_DYNAMICS###
-            </p>
+              <p class="code">
+                  <img src="###QR_CODE###" />
+                  <strong>Dynamics</strong>
+                  <br />
+                  ###FAMILY_DYNAMICS###
+              </p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-                <p style="margin: 0 0 0.5em 0;">
-                    <strong>2 of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
-                </p>
-            </div>
-        </div>
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0 0 0;"><strong>ID:</strong> ###HAMPER_ID###</p>
+              <div class="label-footer">
+                  <p>
+                      <strong>2 of </strong> <span class="ellipsis">...</span>
+                  </p>
+              </div>
+          </div>
+          <div class="label">
+              <p class="id"><strong>ID:</strong> ###HAMPER_ID###</p>
 
-            <p style="margin: 0.5em 0; font-size:0.75rem; text-align: center;">
-                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:150px; display:block;" />
-                <br />
-                <strong>Dynamics</strong>
-                <br />
-                ###FAMILY_DYNAMICS###
-            </p>
+              <p class="code">
+                  <img src="###QR_CODE###" />
+                  <strong>Dynamics</strong>
+                  <br />
+                  ###FAMILY_DYNAMICS###
+              </p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-                <p style="margin: 0 0 0.5em 0;">
-                    <strong>3 of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
-                </p>
-            </div>
-        </div>
+              <div class="label-footer">
+                  <p>
+                      <strong>3 of </strong> <span class="ellipsis">...</span>
+                  </p>
+              </div>
+          </div>
 
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0 0 0;"><strong>ID:</strong> ###HAMPER_ID###</p>
+          <div class="label">
+              <p class="id"><strong>ID:</strong> ###HAMPER_ID###</p>
 
-            <p style="margin: 0.5em 0; font-size:0.75rem; text-align: center;">
-                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:150px; display:block;" />
-                <br />
-                <strong>Dynamics</strong>
-                <br />
-                ###FAMILY_DYNAMICS###
-            </p>
+              <p class="code">
+                  <img src="###QR_CODE###" />
+                  <strong>Dynamics</strong>
+                  <br />
+                  ###FAMILY_DYNAMICS###
+              </p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-                <p style="margin: 0 0 0.5em 0;">
-                    <strong>4 of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
-                </p>
-            </div>
-        </div>
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0 0 0;"><strong>ID:</strong> ###HAMPER_ID###</p>
+              <div class="label-footer">
+                  <p>
+                      <strong>4 of </strong> <span class="ellipsis">...</span>
+                  </p>
+              </div>
+          </div>
+          <div class="label">
+              <p class="id"><strong>ID:</strong> ###HAMPER_ID###</p>
 
-            <p style="margin: 0.5em 0; font-size:0.75rem; text-align: center;">
-                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:150px; display:block;" />
-                <br />
-                <strong>Dynamics</strong>
-                <br />
-                ###FAMILY_DYNAMICS###
-            </p>
+              <p class="code">
+                  <img src="###QR_CODE###" />
+                  <strong>Dynamics</strong>
+                  <br />
+                  ###FAMILY_DYNAMICS###
+              </p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-                <p style="margin: 0 0 0.5em 0;">
-                    <strong>5 of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
-                </p>
-            </div>
-        </div>
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0 0 0;"><strong>ID:</strong> ###HAMPER_ID###</p>
+              <div class="label-footer">
+                  <p>
+                      <strong>5 of </strong> <span class="ellipsis">...</span>
+                  </p>
+              </div>
+          </div>
+          <div class="label">
+              <p class="id"><strong>ID:</strong> ###HAMPER_ID###</p>
 
-            <p style="margin: 0.5em 0; font-size:0.75rem; text-align: center;">
-                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:150px; display:block;" />
-                <br />
-                <strong>Dynamics</strong>
-                <br />
-                ###FAMILY_DYNAMICS###
-            </p>
+              <p class="code">
+                  <img src="###QR_CODE###" />
+                  <strong>Dynamics</strong>
+                  <br />
+                  ###FAMILY_DYNAMICS###
+              </p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-                <p style="margin: 0 0 0.5em 0;">
-                    <strong>6 of</strong> <span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
-                </p>
-            </div>
-        </div>
+              <div class="label-footer">
+                  <p>
+                      <strong>6 of </strong> <span class="ellipsis">...</span>
+                  </p>
+              </div>
+          </div>
+      </div>
     </div>
-    <div
-        style="display: grid; grid-template-columns: 1fr 1fr 1fr; grid-gap: 20px; margin: auto auto; font-size: 2rem; width:85%; page-break-after: always;">
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0 0 0;"><strong>ID:</strong> ###HAMPER_ID###</p>
+    <div class="page landscape">
+      <div class="middle label-grid">
+          <div class="label">
+              <p class="id"><strong>ID:</strong> ###HAMPER_ID###</p>
 
-            <p style="margin: 0.5em 0; font-size:0.75rem; text-align: center;">
-                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:150px; display:block;" />
-                <br />
-                <strong>Dynamics</strong>
-                <br />
-                ###FAMILY_DYNAMICS###
-            </p>
+              <p class="code">
+                  <img src="###QR_CODE###" />
+                  <strong>Dynamics</strong>
+                  <br />
+                  ###FAMILY_DYNAMICS###
+              </p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-                <p style="margin: 0 0 0.5em 0;">
-                    <strong><span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span> of</strong> <span
-                        style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
-                </p>
-            </div>
-        </div>
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0 0 0;"><strong>ID:</strong> ###HAMPER_ID###</p>
+              <div class="label-footer">
+                  <p>
+                      <span class="ellipsis">...</span><strong> of </strong> <span
+                          class="ellipsis">...</span>
+                  </p>
+              </div>
+          </div>
+          <div class="label">
+              <p class="id"><strong>ID:</strong> ###HAMPER_ID###</p>
 
-            <p style="margin: 0.5em 0; font-size:0.75rem; text-align: center;">
-                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:150px; display:block;" />
-                <br />
-                <strong>Dynamics</strong>
-                <br />
-                ###FAMILY_DYNAMICS###
-            </p>
+              <p class="code">
+                  <img src="###QR_CODE###" />
+                  <strong>Dynamics</strong>
+                  <br />
+                  ###FAMILY_DYNAMICS###
+              </p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-                <p style="margin: 0 0 0.5em 0;">
-                    <strong><span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span> of</strong> <span
-                        style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
-                </p>
-            </div>
-        </div>
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0 0 0;"><strong>ID:</strong> ###HAMPER_ID###</p>
+              <div class="label-footer">
+                  <p>
+                      <span class="ellipsis">...</span><strong> of </strong> <span
+                          class="ellipsis">...</span>
+                  </p>
+              </div>
+          </div>
+          <div class="label">
+              <p class="id"><strong>ID:</strong> ###HAMPER_ID###</p>
 
-            <p style="margin: 0.5em 0; font-size:0.75rem; text-align: center;">
-                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:150px; display:block;" />
-                <br />
-                <strong>Dynamics</strong>
-                <br />
-                ###FAMILY_DYNAMICS###
-            </p>
+              <p class="code">
+                  <img src="###QR_CODE###" />
+                  <strong>Dynamics</strong>
+                  <br />
+                  ###FAMILY_DYNAMICS###
+              </p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-                <p style="margin: 0 0 0.5em 0;">
-                    <strong><span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span> of</strong> <span
-                        style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
-                </p>
-            </div>
-        </div>
+              <div class="label-footer">
+                  <p>
+                      <span class="ellipsis">...</span><strong> of </strong> <span
+                          class="ellipsis">...</span>
+                  </p>
+              </div>
+          </div>
 
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0 0 0;"><strong>ID:</strong> ###HAMPER_ID###</p>
+          <div class="label">
+              <p class="id"><strong>ID:</strong> ###HAMPER_ID###</p>
 
-            <p style="margin: 0.5em 0; font-size:0.75rem; text-align: center;">
-                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:150px; display:block;" />
-                <br />
-                <strong>Dynamics</strong>
-                <br />
-                ###FAMILY_DYNAMICS###
-            </p>
+              <p class="code">
+                  <img src="###QR_CODE###" />
+                  <strong>Dynamics</strong>
+                  <br />
+                  ###FAMILY_DYNAMICS###
+              </p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-                <p style="margin: 0 0 0.5em 0;">
-                    <strong><span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span> of</strong> <span
-                        style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
-                </p>
-            </div>
-        </div>
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0 0 0;"><strong>ID:</strong> ###HAMPER_ID###</p>
+              <div class="label-footer">
+                  <p>
+                      <span class="ellipsis">...</span><strong> of </strong> <span
+                          class="ellipsis">...</span>
+                  </p>
+              </div>
+          </div>
+          <div class="label">
+              <p class="id"><strong>ID:</strong> ###HAMPER_ID###</p>
 
-            <p style="margin: 0.5em 0; font-size:0.75rem; text-align: center;">
-                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:150px; display:block;" />
-                <br />
-                <strong>Dynamics</strong>
-                <br />
-                ###FAMILY_DYNAMICS###
-            </p>
+              <p class="code">
+                  <img src="###QR_CODE###" />
+                  <strong>Dynamics</strong>
+                  <br />
+                  ###FAMILY_DYNAMICS###
+              </p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-                <p style="margin: 0 0 0.5em 0;">
-                    <strong><span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span> of</strong> <span
-                        style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
-                </p>
-            </div>
-        </div>
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0 0 0;"><strong>ID:</strong> ###HAMPER_ID###</p>
+              <div class="label-footer">
+                  <p>
+                      <span class="ellipsis">...</span><strong> of </strong> <span
+                          class="ellipsis">...</span>
+                  </p>
+              </div>
+          </div>
+          <div class="label">
+              <p class="id"><strong>ID:</strong> ###HAMPER_ID###</p>
 
-            <p style="margin: 0.5em 0; font-size:0.75rem; text-align: center;">
-                <img src="###QR_CODE###" style="margin:0 auto; width:100%; max-width:150px; display:block;" />
-                <br />
-                <strong>Dynamics</strong>
-                <br />
-                ###FAMILY_DYNAMICS###
-            </p>
+              <p class="code">
+                  <img src="###QR_CODE###" />
+                  <strong>Dynamics</strong>
+                  <br />
+                  ###FAMILY_DYNAMICS###
+              </p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-                <p style="margin: 0 0 0.5em 0;">
-                    <strong><span style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span> of</strong> <span
-                        style="font-size:1.5rem; letter-spacing: 0.5rem;">...</span>
-                </p>
-            </div>
-        </div>
+              <div class="label-footer">
+                  <p>
+                      <span class="ellipsis">...</span><strong> of </strong> <span
+                          class="ellipsis">...</span>
+                  </p>
+              </div>
+          </div>
+      </div>
     </div>`,
   labelsBasic: `
     <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px; margin: 10px auto; font-size: 2rem; width:85%; page-break-after: always;">
                 
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0; font-size:0.6em;"><strong>ID:</strong> ###HAMPER_ID###</p>
-            <p style="margin: 0.5em 0; font-size:0.3em;"><strong>Family Dynamics:</strong> ###FAMILY_DYNAMICS###</p>
+        <div class="label">
+            <p style="font-size:0.6em;"><strong>ID:</strong> ###HAMPER_ID###</p>
+            <p style="font-size:0.3em;"><strong>Family Dynamics:</strong> ###FAMILY_DYNAMICS###</p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-              <p style="margin: 0.5em 0; font-size:0.6em;">
+            <div class="label-footer">
+              <p style="font-size:0.6em;">
                   <span style="letter-spacing: 0.5rem;">...</span> <strong>of</strong> <span style="letter-spacing: 0.5rem;">...</span>
               </p>
             </div>
         </div>
         
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0; font-size:0.6em;"><strong>ID:</strong> ###HAMPER_ID###</p>
-            <p style="margin: 0.5em 0; font-size:0.3em;"><strong>Family Dynamics:</strong> ###FAMILY_DYNAMICS###</p>
+        <div class="label">
+            <p style="font-size:0.6em;"><strong>ID:</strong> ###HAMPER_ID###</p>
+            <p style="font-size:0.3em;"><strong>Family Dynamics:</strong> ###FAMILY_DYNAMICS###</p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-              <p style="margin: 0.5em 0; font-size:0.6em;">
+            <div class="label-footer">
+              <p style="font-size:0.6em;">
                   <span style="letter-spacing: 0.5rem;">...</span> <strong>of</strong> <span style="letter-spacing: 0.5rem;">...</span>
               </p>
             </div>
         </div>
         
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0; font-size:0.6em;"><strong>ID:</strong> ###HAMPER_ID###</p>
-            <p style="margin: 0.5em 0; font-size:0.3em;"><strong>Family Dynamics:</strong> ###FAMILY_DYNAMICS###</p>
+        <div class="label">
+            <p style="font-size:0.6em;"><strong>ID:</strong> ###HAMPER_ID###</p>
+            <p style="font-size:0.3em;"><strong>Family Dynamics:</strong> ###FAMILY_DYNAMICS###</p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-              <p style="margin: 0.5em 0; font-size:0.6em;">
+            <div class="label-footer">
+              <p style="font-size:0.6em;">
                   <span style="letter-spacing: 0.5rem;">...</span> <strong>of</strong> <span style="letter-spacing: 0.5rem;">...</span>
               </p>
             </div>
         </div>
         
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0; font-size:0.6em;"><strong>ID:</strong> ###HAMPER_ID###</p>
-            <p style="margin: 0.5em 0; font-size:0.3em;"><strong>Family Dynamics:</strong> ###FAMILY_DYNAMICS###</p>
+        <div class="label">
+            <p style="font-size:0.6em;"><strong>ID:</strong> ###HAMPER_ID###</p>
+            <p style="font-size:0.3em;"><strong>Family Dynamics:</strong> ###FAMILY_DYNAMICS###</p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-              <p style="margin: 0.5em 0; font-size:0.6em;">
+            <div class="label-footer">
+              <p style="font-size:0.6em;">
                   <span style="letter-spacing: 0.5rem;">...</span> <strong>of</strong> <span style="letter-spacing: 0.5rem;">...</span>
               </p>
             </div>
         </div>
         
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0; font-size:0.6em;"><strong>ID:</strong> ###HAMPER_ID###</p>
-            <p style="margin: 0.5em 0; font-size:0.3em;"><strong>Family Dynamics:</strong> ###FAMILY_DYNAMICS###</p>
+        <div class="label">
+            <p style="font-size:0.6em;"><strong>ID:</strong> ###HAMPER_ID###</p>
+            <p style="font-size:0.3em;"><strong>Family Dynamics:</strong> ###FAMILY_DYNAMICS###</p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-              <p style="margin: 0.5em 0; font-size:0.6em;">
+            <div class="label-footer">
+              <p style="font-size:0.6em;">
                   <span style="letter-spacing: 0.5rem;">...</span> <strong>of</strong> <span style="letter-spacing: 0.5rem;">...</span>
               </p>
             </div>
         </div>
         
-        <div style="border: dashed 4px black; width:85%; padding:0 20px;">
-            <p style="margin: 0.5em 0; font-size:0.6em;"><strong>ID:</strong> ###HAMPER_ID###</p>
-            <p style="margin: 0.5em 0; font-size:0.3em;"><strong>Family Dynamics:</strong> ###FAMILY_DYNAMICS###</p>
+        <div class="label">
+            <p style="font-size:0.6em;"><strong>ID:</strong> ###HAMPER_ID###</p>
+            <p style="font-size:0.3em;"><strong>Family Dynamics:</strong> ###FAMILY_DYNAMICS###</p>
 
-            <div style="display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; width:100%;">
-              <p style="margin: 0.5em 0; font-size:0.6em;">
+            <div class="label-footer">
+              <p style="font-size:0.6em;">
                   <span style="letter-spacing: 0.5rem;">...</span> <strong>of</strong> <span style="letter-spacing: 0.5rem;">...</span>
               </p>
             </div>
@@ -302,7 +292,7 @@ const pdfTemplates: any = {
         This hamper was provided by the kind and generous supporters of
       </p>
       <img src="https://portal.cause-foundation.org.uk/static/img/cause-foundation-logo.png" height="50px" style="margin:0 auto; padding: 0;">
-      <div style="margin: 0.5em 0; text-align:left;">
+      <div style="text-align:left;">
         <div style="float:left;width:120px">
           <img src="###QR_CODE###" style=" max-width:100px;">
             <br>
@@ -335,7 +325,24 @@ export const handler: APIGatewayProxyHandler = async (event: any) => {
 
     const filename = uuid + "-new.pdf";
 
-    let docContent = `<!DOCTYPE html><html><body style="font-family: Verdana, sans-serif;">`;
+    let docContent = `<!DOCTYPE html><html class="landscape"><body class="landscape">
+    <style type="text/css">
+    @page { size: a4 landscape; margin: 0; }
+    html, body{ height:100%; font-family: Verdana, sans-serif; }
+    html.landscape, html.landscape{ size: a4 landscape; margin: 0; }
+    .page {position: relative; overflow: hidden; page-break-after: always; padding: 0; }
+    .page.landscape { width: 11.7in; height: 8.2in; }
+    .page.portrait { width: 8.3in; height: 11.6in; }
+    .middle { width: 100%; height:90%; position:absolute; top:0px; bottom:0px; margin: auto; margin-top: 0px !important; padding: 2rem; }
+    .label-grid { box-sizing: border-box; display: grid; grid-template-columns: 1fr 1fr 1fr; grid-gap: 20px; font-size: 2rem; }
+    .label { border: dashed 4px black; width:85%; padding: 20px; font-size: 1.5rem; }
+    .label p, .label-footer p { margin: 0; }
+    .label-footer { display: grid; grid-template-columns: 1fr 0.4fr; grid-gap: 20px; margin-top: 20px; width:100%; }
+    .label .id { }
+    .label .code { font-size:0.75rem; text-align: center; }
+    .label .code img { margin:0 auto; width:100%; max-width:160px; display:block; }
+    .ellipsis { font-size:1.5rem; letter-spacing: 0.25rem; }
+    </style>`;
 
     interface PDFPages {
       template: string;
@@ -364,6 +371,8 @@ export const handler: APIGatewayProxyHandler = async (event: any) => {
     }
 
     docContent += `</body></html>`;
+    console.log("Doc Content To Generate: ");
+    console.log(docContent);
     const pdfBuffer = await generatePdfBuffer(docContent);
 
     if (!pdfBuffer) {
@@ -382,19 +391,24 @@ export const handler: APIGatewayProxyHandler = async (event: any) => {
     });
     await s3Upload.done();
 
+    const dateDifferenceInSeconds = (dateInitial: number, dateFinal: number) =>
+      Math.round((dateFinal - dateInitial) / 1_000);
+
     const presignedUrl = await getSignedUrl(
       s3Client,
       new GetObjectCommand({
         Bucket: process.env.S3_PDF_BUCKET,
         Key: filename,
       }),
-      { expiresIn: 3600 }
+      {
+        expiresIn: 3600,
+      }
     );
 
     return {
       statusCode: 200,
       body: JSON.stringify({
-        pdfUrl: presignedUrl,
+        pdfUrl: `https://${process.env.S3_PDF_BUCKET}.s3.eu-west-2.amazonaws.com/${filename}`, //presignedUrl,
         location: process.env.S3_PDF_BUCKET,
         filename: filename,
       }),

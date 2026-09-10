@@ -53,7 +53,9 @@ exports.handler = async (event, context, cb) => {
       const errors = [];
       const batchData = [];
       for (const hamperId of parsed.hamperIds) {
-        const hamper = campaignData.find((h) => h.GSI2SK === `SK#${hamperId}`);
+        const hamper = campaignData.find(
+          (h) => h.GSI2SK === `SK#${hamperId}` && h.status != "deleted"
+        );
         if (hamper && hamper?.PK) {
           hamper.receiveStatus = "direct-hamper";
 

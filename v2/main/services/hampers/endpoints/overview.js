@@ -32,7 +32,9 @@ exports.handler = async (event, context, cb) => {
       return Responses._400({ messages: err });
     });
 
-    const hamper = campaignData.find((h) => h.GSI2SK === `SK#${hamperRef}`);
+    const hamper = campaignData.find(
+      (h) => h.GSI2SK === `SK#${hamperRef}` && h.status != "deleted"
+    );
 
     if (hamper && hamper?.PK) {
       const hamperDetail = {
