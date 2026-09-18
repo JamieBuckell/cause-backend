@@ -102,11 +102,11 @@ provider:
         - arn:aws:s3:::pdfgeneratorv2stack-pdfss3bucketddbbf369-c95xtwuskgpv/*
 package:
   individually: true
-  exclude:
-    - "**/*"
-  include:
-    - ../common/**
-    - endpoints/**
+  patterns:
+    - "!**/*"
+    - "../common/**"
+    - "endpoints/**"
+    - "node_modules/**"
 functions:
   register:
     handler: endpoints/register.handler

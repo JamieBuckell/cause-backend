@@ -125,7 +125,14 @@ declare class OSIS extends Service {
   validatePipeline(callback?: (err: AWSError, data: OSIS.Types.ValidatePipelineResponse) => void): Request<OSIS.Types.ValidatePipelineResponse, AWSError>;
 }
 declare namespace OSIS {
+  export type BlueprintFormat = string;
   export type Boolean = boolean;
+  export interface BufferOptions {
+    /**
+     * Whether persistent buffering should be enabled.
+     */
+    PersistentBufferEnabled: Boolean;
+  }
   export interface ChangeProgressStage {
     /**
      * The name of the stage.
@@ -166,9 +173,10 @@ declare namespace OSIS {
   }
   export type ChangeProgressStatusList = ChangeProgressStatus[];
   export type ChangeProgressStatuses = "PENDING"|"IN_PROGRESS"|"COMPLETED"|"FAILED"|string;
+  export type CidrBlock = string;
   export interface CloudWatchLogDestination {
     /**
-     * The name of the CloudWatch Logs group to send pipeline logs to. You can specify an existing log group or create a new one. For example, /aws/OpenSearchService/IngestionService/my-pipeline.
+     * The name of the CloudWatch Logs group to send pipeline logs to. You can specify an existing log group or create a new one. For example, /aws/vendedlogs/OpenSearchService/pipelines.
      */
     LogGroup: LogGroup;
   }
@@ -198,6 +206,14 @@ declare namespace OSIS {
      */
     VpcOptions?: VpcOptions;
     /**
+     * Key-value pairs to configure persistent buffering for the pipeline.
+     */
+    BufferOptions?: BufferOptions;
+    /**
+     * Key-value pairs to configure encryption for data that is written to a persistent buffer.
+     */
+    EncryptionAtRestOptions?: EncryptionAtRestOptions;
+    /**
      * List of tags to add to the pipeline upon creation.
      */
     Tags?: TagList;
@@ -216,17 +232,31 @@ declare namespace OSIS {
   }
   export interface DeletePipelineResponse {
   }
+  export interface EncryptionAtRestOptions {
+    /**
+     * The ARN of the KMS key used to encrypt buffer data. By default, data is encrypted using an Amazon Web Services owned key.
+     */
+    KmsKeyArn: KmsKeyArn;
+  }
   export interface GetPipelineBlueprintRequest {
     /**
      * The name of the blueprint to retrieve.
      */
     BlueprintName: String;
+    /**
+     * The format format of the blueprint to retrieve.
+     */
+    Format?: BlueprintFormat;
   }
   export interface GetPipelineBlueprintResponse {
     /**
      * The requested blueprint in YAML format.
      */
     Blueprint?: PipelineBlueprint;
+    /**
+     * The format of the blueprint.
+     */
+    Format?: String;
   }
   export interface GetPipelineChangeProgressRequest {
     /**
@@ -242,7 +272,7 @@ declare namespace OSIS {
   }
   export interface GetPipelineRequest {
     /**
-     * The name of the pipeline to get information about.
+     * The name of the pipeline.
      */
     PipelineName: PipelineName;
   }
@@ -254,6 +284,7 @@ declare namespace OSIS {
   }
   export type IngestEndpointUrlsList = String[];
   export type Integer = number;
+  export type KmsKeyArn = string;
   export interface ListPipelineBlueprintsRequest {
   }
   export interface ListPipelineBlueprintsResponse {
@@ -356,6 +387,24 @@ declare namespace OSIS {
      * The VPC interface endpoints that have access to the pipeline.
      */
     VpcEndpoints?: VpcEndpointsList;
+    BufferOptions?: BufferOptions;
+    EncryptionAtRestOptions?: EncryptionAtRestOptions;
+    /**
+     * The VPC endpoint service name for the pipeline.
+     */
+    VpcEndpointService?: String;
+    /**
+     * A list of VPC endpoints that OpenSearch Ingestion has created to other Amazon Web Services services.
+     */
+    ServiceVpcEndpoints?: ServiceVpcEndpointsList;
+    /**
+     * Destinations to which the pipeline writes data.
+     */
+    Destinations?: PipelineDestinationList;
+    /**
+     * A list of tags associated with the given pipeline.
+     */
+    Tags?: TagList;
   }
   export type PipelineArn = string;
   export interface PipelineBlueprint {
@@ -367,15 +416,58 @@ declare namespace OSIS {
      * The YAML configuration of the blueprint.
      */
     PipelineConfigurationBody?: String;
+    /**
+     * The display name of the blueprint.
+     */
+    DisplayName?: String;
+    /**
+     * A description of the blueprint.
+     */
+    DisplayDescription?: String;
+    /**
+     * The name of the service that the blueprint is associated with.
+     */
+    Service?: String;
+    /**
+     * The use case that the blueprint relates to.
+     */
+    UseCase?: String;
   }
   export interface PipelineBlueprintSummary {
     /**
      * The name of the blueprint.
      */
     BlueprintName?: String;
+    /**
+     * The display name of the blueprint.
+     */
+    DisplayName?: String;
+    /**
+     * A description of the blueprint.
+     */
+    DisplayDescription?: String;
+    /**
+     * The name of the service that the blueprint is associated with.
+     */
+    Service?: String;
+    /**
+     * The use case that the blueprint relates to.
+     */
+    UseCase?: String;
   }
   export type PipelineBlueprintsSummaryList = PipelineBlueprintSummary[];
   export type PipelineConfigurationBody = string;
+  export interface PipelineDestination {
+    /**
+     * The name of the service receiving data from the pipeline.
+     */
+    ServiceName?: String;
+    /**
+     * The endpoint receiving data from the pipeline.
+     */
+    Endpoint?: String;
+  }
+  export type PipelineDestinationList = PipelineDestination[];
   export type PipelineName = string;
   export type PipelineStatus = "CREATING"|"ACTIVE"|"UPDATING"|"DELETING"|"CREATE_FAILED"|"UPDATE_FAILED"|"STARTING"|"START_FAILED"|"STOPPING"|"STOPPED"|string;
   export interface PipelineStatusReason {
@@ -414,11 +506,30 @@ declare namespace OSIS {
      * The date and time when the pipeline was last updated.
      */
     LastUpdatedAt?: Timestamp;
+    /**
+     * A list of destinations to which the pipeline writes data.
+     */
+    Destinations?: PipelineDestinationList;
+    /**
+     * A list of tags associated with the given pipeline.
+     */
+    Tags?: TagList;
   }
   export type PipelineSummaryList = PipelineSummary[];
   export type PipelineUnits = number;
   export type SecurityGroupId = string;
   export type SecurityGroupIds = SecurityGroupId[];
+  export interface ServiceVpcEndpoint {
+    /**
+     * The name of the service for which a VPC endpoint was created.
+     */
+    ServiceName?: VpcEndpointServiceName;
+    /**
+     * The unique identifier of the VPC endpoint that was created.
+     */
+    VpcEndpointId?: String;
+  }
+  export type ServiceVpcEndpointsList = ServiceVpcEndpoint[];
   export interface StartPipelineRequest {
     /**
      * The name of the pipeline to start.
@@ -500,6 +611,14 @@ declare namespace OSIS {
      * Key-value pairs to configure log publishing.
      */
     LogPublishingOptions?: LogPublishingOptions;
+    /**
+     * Key-value pairs to configure persistent buffering for the pipeline.
+     */
+    BufferOptions?: BufferOptions;
+    /**
+     * Key-value pairs to configure encryption for data that is written to a persistent buffer.
+     */
+    EncryptionAtRestOptions?: EncryptionAtRestOptions;
   }
   export interface UpdatePipelineResponse {
     /**
@@ -530,6 +649,16 @@ declare namespace OSIS {
     Message?: String;
   }
   export type ValidationMessageList = ValidationMessage[];
+  export interface VpcAttachmentOptions {
+    /**
+     * Whether a VPC is attached to the pipeline.
+     */
+    AttachToVpc: Boolean;
+    /**
+     * The CIDR block to be reserved for OpenSearch Ingestion to create elastic network interfaces (ENIs).
+     */
+    CidrBlock?: CidrBlock;
+  }
   export interface VpcEndpoint {
     /**
      * The unique identifier of the endpoint.
@@ -544,6 +673,8 @@ declare namespace OSIS {
      */
     VpcOptions?: VpcOptions;
   }
+  export type VpcEndpointManagement = "CUSTOMER"|"SERVICE"|string;
+  export type VpcEndpointServiceName = "OPENSEARCH_SERVERLESS"|string;
   export type VpcEndpointsList = VpcEndpoint[];
   export interface VpcOptions {
     /**
@@ -554,6 +685,14 @@ declare namespace OSIS {
      * A list of security groups associated with the VPC endpoint.
      */
     SecurityGroupIds?: SecurityGroupIds;
+    /**
+     * Options for attaching a VPC to a pipeline.
+     */
+    VpcAttachmentOptions?: VpcAttachmentOptions;
+    /**
+     * Defines whether you or Amazon OpenSearch Ingestion service create and manage the VPC endpoint configured for the pipeline.
+     */
+    VpcEndpointManagement?: VpcEndpointManagement;
   }
   /**
    * A string in YYYY-MM-DD format that represents the latest possible API version that can be used in this service. Specify 'latest' to use the latest possible version.

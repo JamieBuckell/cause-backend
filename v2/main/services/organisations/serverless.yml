@@ -56,11 +56,11 @@ provider:
               - "/index/GSI2"
 package:
   individually: true
-  exclude:
-    - "**/*"
-  include:
-    - ../common/**
-    - endpoints/**
+  patterns:
+    - "!**/*"
+    - "../common/**"
+    - "endpoints/**"
+    - "node_modules/**"
 functions:
   create:
     handler: endpoints/create.handler

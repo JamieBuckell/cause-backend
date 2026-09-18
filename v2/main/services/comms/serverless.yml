@@ -100,11 +100,11 @@ provider:
         - "*"
 package:
   individually: true
-  exclude:
-    - "**/*"
-  include:
-    - ../common/**
-    - endpoints/**
+  patterns:
+    - "!**/*"
+    - "../common/**"
+    - "endpoints/**"
+    - "node_modules/**"
 functions:
   processEmail:
     handler: endpoints/process.handler

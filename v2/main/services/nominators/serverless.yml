@@ -14,7 +14,7 @@ custom:
     createRoute53Record: true
 provider:
   name: aws
-  runtime: nodejs14.x
+  runtime: nodejs20.x
   stage: ${sls:stage}
   region: ${self:custom.environment.AWS_ACCOUNT_REGION}
   environment: ${file(../.env.${sls:stage}.yml)}
@@ -78,11 +78,11 @@ provider:
               - ${self:custom.environment.USER_POOL}
 package:
   individually: true
-  exclude:
-    - "**/*"
-  include:
-    - ../common/**
-    - endpoints/**
+  patterns:
+    - "!**/*"
+    - "../common/**"
+    - "endpoints/**"
+    - "node_modules/**"
 functions:
   create:
     handler: endpoints/create.handler

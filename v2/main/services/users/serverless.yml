@@ -78,11 +78,11 @@ provider:
               - ${self:custom.environment.USER_POOL}
 package:
   individually: true
-  exclude:
-    - "**/*"
-  include:
-    - ../common/**
-    - endpoints/**
+  patterns:
+    - "!**/*"
+    - "../common/**"
+    - "endpoints/**"
+    - "node_modules/**"
 functions:
   delete:
     handler: endpoints/delete.handler

@@ -133,6 +133,22 @@ declare class MediaConnect extends Service {
    */
   describeFlow(callback?: (err: AWSError, data: MediaConnect.Types.DescribeFlowResponse) => void): Request<MediaConnect.Types.DescribeFlowResponse, AWSError>;
   /**
+   * Displays details of the flow's source stream. The response contains information about the contents of the stream and its programs.
+   */
+  describeFlowSourceMetadata(params: MediaConnect.Types.DescribeFlowSourceMetadataRequest, callback?: (err: AWSError, data: MediaConnect.Types.DescribeFlowSourceMetadataResponse) => void): Request<MediaConnect.Types.DescribeFlowSourceMetadataResponse, AWSError>;
+  /**
+   * Displays details of the flow's source stream. The response contains information about the contents of the stream and its programs.
+   */
+  describeFlowSourceMetadata(callback?: (err: AWSError, data: MediaConnect.Types.DescribeFlowSourceMetadataResponse) => void): Request<MediaConnect.Types.DescribeFlowSourceMetadataResponse, AWSError>;
+  /**
+   * Displays the thumbnail details of a flow's source stream.
+   */
+  describeFlowSourceThumbnail(params: MediaConnect.Types.DescribeFlowSourceThumbnailRequest, callback?: (err: AWSError, data: MediaConnect.Types.DescribeFlowSourceThumbnailResponse) => void): Request<MediaConnect.Types.DescribeFlowSourceThumbnailResponse, AWSError>;
+  /**
+   * Displays the thumbnail details of a flow's source stream.
+   */
+  describeFlowSourceThumbnail(callback?: (err: AWSError, data: MediaConnect.Types.DescribeFlowSourceThumbnailResponse) => void): Request<MediaConnect.Types.DescribeFlowSourceThumbnailResponse, AWSError>;
+  /**
    * Displays the details of a gateway. The response includes the gateway ARN, name, and CIDR blocks, as well as details about the networks.
    */
   describeGateway(params: MediaConnect.Types.DescribeGatewayRequest, callback?: (err: AWSError, data: MediaConnect.Types.DescribeGatewayResponse) => void): Request<MediaConnect.Types.DescribeGatewayResponse, AWSError>;
@@ -744,6 +760,10 @@ declare namespace MediaConnect {
      * The name of the VPC interface attachment to use for this output.
      */
     VpcInterfaceAttachment?: VpcInterfaceAttachment;
+    /**
+     * An indication of whether the new output should be enabled or disabled as soon as it is created. If you don't specify the outputStatus field in your request, MediaConnect sets it to ENABLED.
+     */
+    OutputStatus?: OutputStatus;
   }
   export type Algorithm = "aes128"|"aes192"|"aes256"|string;
   export interface Bridge {
@@ -927,6 +947,7 @@ declare namespace MediaConnect {
      */
     VpcInterfaces?: __listOfVpcInterfaceRequest;
     Maintenance?: AddMaintenance;
+    SourceMonitoringConfig?: MonitoringConfig;
   }
   export interface CreateFlowResponse {
     Flow?: Flow;
@@ -1026,6 +1047,36 @@ declare namespace MediaConnect {
   export interface DescribeFlowResponse {
     Flow?: Flow;
     Messages?: Messages;
+  }
+  export interface DescribeFlowSourceMetadataRequest {
+    /**
+     * The Amazon Resource Name (ARN) of the flow.
+     */
+    FlowArn: __string;
+  }
+  export interface DescribeFlowSourceMetadataResponse {
+    /**
+     * The ARN of the flow that DescribeFlowSourceMetadata was performed on.
+     */
+    FlowArn?: __string;
+    /**
+     * Provides a status code and message regarding issues found with the flow source metadata.
+     */
+    Messages?: __listOfMessageDetail;
+    /**
+     * The timestamp of the most recent change in metadata for this flow’s source.
+     */
+    Timestamp?: __timestampIso8601;
+    TransportMediaInfo?: TransportMediaInfo;
+  }
+  export interface DescribeFlowSourceThumbnailRequest {
+    /**
+     * The Amazon Resource Name (ARN) of the flow.
+     */
+    FlowArn: __string;
+  }
+  export interface DescribeFlowSourceThumbnailResponse {
+    ThumbnailDetails?: ThumbnailDetails;
   }
   export interface DescribeGatewayInstanceRequest {
     /**
@@ -1259,6 +1310,7 @@ declare namespace MediaConnect {
      */
     VpcInterfaces?: __listOfVpcInterface;
     Maintenance?: Maintenance;
+    SourceMonitoringConfig?: MonitoringConfig;
   }
   export interface Fmtp {
     /**
@@ -1319,6 +1371,16 @@ declare namespace MediaConnect {
      * The transfer characteristic system (TCS) that is used in the video.
      */
     Tcs?: Tcs;
+  }
+  export interface FrameResolution {
+    /**
+     * The number of pixels in the height of the video frame.
+     */
+    FrameHeight: __integer;
+    /**
+     * The number of pixels in the width of the video frame.
+     */
+    FrameWidth: __integer;
   }
   export interface Gateway {
     /**
@@ -1901,6 +1963,12 @@ declare namespace MediaConnect {
      */
     Errors: __listOf__string;
   }
+  export interface MonitoringConfig {
+    /**
+     * The state of thumbnail monitoring.
+     */
+    ThumbnailState?: ThumbnailState;
+  }
   export type NetworkInterfaceType = "ena"|"efa"|string;
   export interface Offering {
     /**
@@ -1997,7 +2065,12 @@ declare namespace MediaConnect {
      * The bridge output ports currently in use.
      */
     BridgePorts?: __listOf__integer;
+    /**
+     * An indication of whether the output is transmitting data or not.
+     */
+    OutputStatus?: OutputStatus;
   }
+  export type OutputStatus = "ENABLED"|"DISABLED"|string;
   export type PriceUnits = "HOURLY"|string;
   export type Protocol = "zixi-push"|"rtp-fec"|"rtp"|"zixi-pull"|"rist"|"st2110-jpegxs"|"cdi"|"srt-listener"|"srt-caller"|"fujitsu-qos"|"udp"|string;
   export interface PurchaseOfferingRequest {
@@ -2419,6 +2492,29 @@ declare namespace MediaConnect {
     Tags: __mapOf__string;
   }
   export type Tcs = "SDR"|"PQ"|"HLG"|"LINEAR"|"BT2100LINPQ"|"BT2100LINHLG"|"ST2065-1"|"ST428-1"|"DENSITY"|string;
+  export interface ThumbnailDetails {
+    /**
+     * The ARN of the flow that DescribeFlowSourceThumbnail was performed on.
+     */
+    FlowArn: __string;
+    /**
+     * Thumbnail Base64 string.
+     */
+    Thumbnail?: __string;
+    /**
+     * Status code and messages about the flow source thumbnail.
+     */
+    ThumbnailMessages: __listOfMessageDetail;
+    /**
+     * Timecode of thumbnail.
+     */
+    Timecode?: __string;
+    /**
+     * The timestamp of when thumbnail was generated.
+     */
+    Timestamp?: __timestampIso8601;
+  }
+  export type ThumbnailState = "ENABLED"|"DISABLED"|string;
   export interface Transport {
     /**
      * The range of IP addresses that should be allowed to initiate output requests to this flow. These IP addresses should be in the form of a Classless Inter-Domain Routing (CIDR) block; for example, 10.0.0.0/16.
@@ -2472,6 +2568,65 @@ declare namespace MediaConnect {
      * The stream ID that you want to use for this transport. This parameter applies only to Zixi and SRT caller-based streams.
      */
     StreamId?: __string;
+  }
+  export interface TransportMediaInfo {
+    /**
+     * The list of transport stream programs in the current flow's source.
+     */
+    Programs: __listOfTransportStreamProgram;
+  }
+  export interface TransportStream {
+    /**
+     * The number of channels in the audio stream.
+     */
+    Channels?: __integer;
+    /**
+     * The codec used by the stream.
+     */
+    Codec?: __string;
+    /**
+     * The frame rate used by the video stream.
+     */
+    FrameRate?: __string;
+    FrameResolution?: FrameResolution;
+    /**
+     * The Packet ID (PID) as it is reported in the Program Map Table.
+     */
+    Pid: __integer;
+    /**
+     * The sample rate used by the audio stream.
+     */
+    SampleRate?: __integer;
+    /**
+     * The sample bit size used by the audio stream.
+     */
+    SampleSize?: __integer;
+    /**
+     * The Stream Type as it is reported in the Program Map Table.
+     */
+    StreamType: __string;
+  }
+  export interface TransportStreamProgram {
+    /**
+     * The Program Clock Reference (PCR) Packet ID (PID) as it is reported in the Program Association Table.
+     */
+    PcrPid: __integer;
+    /**
+     * The program name as it is reported in the Program Association Table.
+     */
+    ProgramName?: __string;
+    /**
+     * The program number as it is reported in the Program Association Table.
+     */
+    ProgramNumber: __integer;
+    /**
+     * The program Packet ID (PID) as it is reported in the Program Association Table.
+     */
+    ProgramPid: __integer;
+    /**
+     * The list of elementary transport streams in the program. The list includes video, audio, and data streams.
+     */
+    Streams: __listOfTransportStream;
   }
   export interface UntagResourceRequest {
     /**
@@ -2806,6 +2961,10 @@ declare namespace MediaConnect {
      * The name of the VPC interface attachment to use for this output.
      */
     VpcInterfaceAttachment?: VpcInterfaceAttachment;
+    /**
+     * An indication of whether the output should transmit data or not. If you don't specify the outputStatus field in your request, MediaConnect leaves the value unchanged.
+     */
+    OutputStatus?: OutputStatus;
   }
   export interface UpdateFlowOutputResponse {
     /**
@@ -2824,6 +2983,7 @@ declare namespace MediaConnect {
     FlowArn: __string;
     SourceFailoverConfig?: UpdateFailoverConfig;
     Maintenance?: UpdateMaintenance;
+    SourceMonitoringConfig?: MonitoringConfig;
   }
   export interface UpdateFlowResponse {
     Flow?: Flow;
@@ -3060,12 +3220,15 @@ declare namespace MediaConnect {
   export type __listOfReservation = Reservation[];
   export type __listOfSetSourceRequest = SetSourceRequest[];
   export type __listOfSource = Source[];
+  export type __listOfTransportStream = TransportStream[];
+  export type __listOfTransportStreamProgram = TransportStreamProgram[];
   export type __listOfVpcInterface = VpcInterface[];
   export type __listOfVpcInterfaceRequest = VpcInterfaceRequest[];
   export type __listOf__integer = __integer[];
   export type __listOf__string = __string[];
   export type __mapOf__string = {[key: string]: __string};
   export type __string = string;
+  export type __timestampIso8601 = Date;
   /**
    * A string in YYYY-MM-DD format that represents the latest possible API version that can be used in this service. Specify 'latest' to use the latest possible version.
    */

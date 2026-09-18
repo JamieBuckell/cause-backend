@@ -20,11 +20,11 @@ declare class StepFunctions extends Service {
    */
   createActivity(callback?: (err: AWSError, data: StepFunctions.Types.CreateActivityOutput) => void): Request<StepFunctions.Types.CreateActivityOutput, AWSError>;
   /**
-   * Creates a state machine. A state machine consists of a collection of states that can do work (Task states), determine to which states to transition next (Choice states), stop an execution with an error (Fail states), and so on. State machines are specified using a JSON-based, structured language. For more information, see Amazon States Language in the Step Functions User Guide. If you set the publish parameter of this API action to true, it publishes version 1 as the first revision of the state machine.  This operation is eventually consistent. The results are best effort and may not reflect very recent updates and changes.    CreateStateMachine is an idempotent API. Subsequent requests won’t create a duplicate resource if it was already created. CreateStateMachine's idempotency check is based on the state machine name, definition, type, LoggingConfiguration, and TracingConfiguration. The check is also based on the publish and versionDescription parameters. If a following request has a different roleArn or tags, Step Functions will ignore these differences and treat it as an idempotent request of the previous. In this case, roleArn and tags will not be updated, even if they are different. 
+   * Creates a state machine. A state machine consists of a collection of states that can do work (Task states), determine to which states to transition next (Choice states), stop an execution with an error (Fail states), and so on. State machines are specified using a JSON-based, structured language. For more information, see Amazon States Language in the Step Functions User Guide. If you set the publish parameter of this API action to true, it publishes version 1 as the first revision of the state machine.  For additional control over security, you can encrypt your data using a customer-managed key for Step Functions state machines. You can configure a symmetric KMS key and data key reuse period when creating or updating a State Machine. The execution history and state machine definition will be encrypted with the key applied to the State Machine.   This operation is eventually consistent. The results are best effort and may not reflect very recent updates and changes.    CreateStateMachine is an idempotent API. Subsequent requests won’t create a duplicate resource if it was already created. CreateStateMachine's idempotency check is based on the state machine name, definition, type, LoggingConfiguration, TracingConfiguration, and EncryptionConfiguration The check is also based on the publish and versionDescription parameters. If a following request has a different roleArn or tags, Step Functions will ignore these differences and treat it as an idempotent request of the previous. In this case, roleArn and tags will not be updated, even if they are different. 
    */
   createStateMachine(params: StepFunctions.Types.CreateStateMachineInput, callback?: (err: AWSError, data: StepFunctions.Types.CreateStateMachineOutput) => void): Request<StepFunctions.Types.CreateStateMachineOutput, AWSError>;
   /**
-   * Creates a state machine. A state machine consists of a collection of states that can do work (Task states), determine to which states to transition next (Choice states), stop an execution with an error (Fail states), and so on. State machines are specified using a JSON-based, structured language. For more information, see Amazon States Language in the Step Functions User Guide. If you set the publish parameter of this API action to true, it publishes version 1 as the first revision of the state machine.  This operation is eventually consistent. The results are best effort and may not reflect very recent updates and changes.    CreateStateMachine is an idempotent API. Subsequent requests won’t create a duplicate resource if it was already created. CreateStateMachine's idempotency check is based on the state machine name, definition, type, LoggingConfiguration, and TracingConfiguration. The check is also based on the publish and versionDescription parameters. If a following request has a different roleArn or tags, Step Functions will ignore these differences and treat it as an idempotent request of the previous. In this case, roleArn and tags will not be updated, even if they are different. 
+   * Creates a state machine. A state machine consists of a collection of states that can do work (Task states), determine to which states to transition next (Choice states), stop an execution with an error (Fail states), and so on. State machines are specified using a JSON-based, structured language. For more information, see Amazon States Language in the Step Functions User Guide. If you set the publish parameter of this API action to true, it publishes version 1 as the first revision of the state machine.  For additional control over security, you can encrypt your data using a customer-managed key for Step Functions state machines. You can configure a symmetric KMS key and data key reuse period when creating or updating a State Machine. The execution history and state machine definition will be encrypted with the key applied to the State Machine.   This operation is eventually consistent. The results are best effort and may not reflect very recent updates and changes.    CreateStateMachine is an idempotent API. Subsequent requests won’t create a duplicate resource if it was already created. CreateStateMachine's idempotency check is based on the state machine name, definition, type, LoggingConfiguration, TracingConfiguration, and EncryptionConfiguration The check is also based on the publish and versionDescription parameters. If a following request has a different roleArn or tags, Step Functions will ignore these differences and treat it as an idempotent request of the previous. In this case, roleArn and tags will not be updated, even if they are different. 
    */
   createStateMachine(callback?: (err: AWSError, data: StepFunctions.Types.CreateStateMachineOutput) => void): Request<StepFunctions.Types.CreateStateMachineOutput, AWSError>;
   /**
@@ -44,11 +44,11 @@ declare class StepFunctions extends Service {
    */
   deleteActivity(callback?: (err: AWSError, data: StepFunctions.Types.DeleteActivityOutput) => void): Request<StepFunctions.Types.DeleteActivityOutput, AWSError>;
   /**
-   * Deletes a state machine. This is an asynchronous operation: It sets the state machine's status to DELETING and begins the deletion process.  A qualified state machine ARN can either refer to a Distributed Map state defined within a state machine, a version ARN, or an alias ARN. The following are some examples of qualified and unqualified state machine ARNs:   The following qualified state machine ARN refers to a Distributed Map state with a label mapStateLabel in a state machine named myStateMachine.  arn:partition:states:region:account-id:stateMachine:myStateMachine/mapStateLabel   If you provide a qualified state machine ARN that refers to a Distributed Map state, the request fails with ValidationException.    The following unqualified state machine ARN refers to a state machine named myStateMachine.  arn:partition:states:region:account-id:stateMachine:myStateMachine    This API action also deletes all versions and aliases associated with a state machine.  For EXPRESS state machines, the deletion happens eventually (usually in less than a minute). Running executions may emit logs after DeleteStateMachine API is called. 
+   * Deletes a state machine. This is an asynchronous operation. It sets the state machine's status to DELETING and begins the deletion process. A state machine is deleted only when all its executions are completed. On the next state transition, the state machine's executions are terminated. A qualified state machine ARN can either refer to a Distributed Map state defined within a state machine, a version ARN, or an alias ARN. The following are some examples of qualified and unqualified state machine ARNs:   The following qualified state machine ARN refers to a Distributed Map state with a label mapStateLabel in a state machine named myStateMachine.  arn:partition:states:region:account-id:stateMachine:myStateMachine/mapStateLabel   If you provide a qualified state machine ARN that refers to a Distributed Map state, the request fails with ValidationException.    The following unqualified state machine ARN refers to a state machine named myStateMachine.  arn:partition:states:region:account-id:stateMachine:myStateMachine    This API action also deletes all versions and aliases associated with a state machine.  For EXPRESS state machines, the deletion happens eventually (usually in less than a minute). Running executions may emit logs after DeleteStateMachine API is called. 
    */
   deleteStateMachine(params: StepFunctions.Types.DeleteStateMachineInput, callback?: (err: AWSError, data: StepFunctions.Types.DeleteStateMachineOutput) => void): Request<StepFunctions.Types.DeleteStateMachineOutput, AWSError>;
   /**
-   * Deletes a state machine. This is an asynchronous operation: It sets the state machine's status to DELETING and begins the deletion process.  A qualified state machine ARN can either refer to a Distributed Map state defined within a state machine, a version ARN, or an alias ARN. The following are some examples of qualified and unqualified state machine ARNs:   The following qualified state machine ARN refers to a Distributed Map state with a label mapStateLabel in a state machine named myStateMachine.  arn:partition:states:region:account-id:stateMachine:myStateMachine/mapStateLabel   If you provide a qualified state machine ARN that refers to a Distributed Map state, the request fails with ValidationException.    The following unqualified state machine ARN refers to a state machine named myStateMachine.  arn:partition:states:region:account-id:stateMachine:myStateMachine    This API action also deletes all versions and aliases associated with a state machine.  For EXPRESS state machines, the deletion happens eventually (usually in less than a minute). Running executions may emit logs after DeleteStateMachine API is called. 
+   * Deletes a state machine. This is an asynchronous operation. It sets the state machine's status to DELETING and begins the deletion process. A state machine is deleted only when all its executions are completed. On the next state transition, the state machine's executions are terminated. A qualified state machine ARN can either refer to a Distributed Map state defined within a state machine, a version ARN, or an alias ARN. The following are some examples of qualified and unqualified state machine ARNs:   The following qualified state machine ARN refers to a Distributed Map state with a label mapStateLabel in a state machine named myStateMachine.  arn:partition:states:region:account-id:stateMachine:myStateMachine/mapStateLabel   If you provide a qualified state machine ARN that refers to a Distributed Map state, the request fails with ValidationException.    The following unqualified state machine ARN refers to a state machine named myStateMachine.  arn:partition:states:region:account-id:stateMachine:myStateMachine    This API action also deletes all versions and aliases associated with a state machine.  For EXPRESS state machines, the deletion happens eventually (usually in less than a minute). Running executions may emit logs after DeleteStateMachine API is called. 
    */
   deleteStateMachine(callback?: (err: AWSError, data: StepFunctions.Types.DeleteStateMachineOutput) => void): Request<StepFunctions.Types.DeleteStateMachineOutput, AWSError>;
   /**
@@ -76,19 +76,19 @@ declare class StepFunctions extends Service {
    */
   describeActivity(callback?: (err: AWSError, data: StepFunctions.Types.DescribeActivityOutput) => void): Request<StepFunctions.Types.DescribeActivityOutput, AWSError>;
   /**
-   * Provides information about a state machine execution, such as the state machine associated with the execution, the execution input and output, and relevant execution metadata. Use this API action to return the Map Run Amazon Resource Name (ARN) if the execution was dispatched by a Map Run. If you specify a version or alias ARN when you call the StartExecution API action, DescribeExecution returns that ARN.  This operation is eventually consistent. The results are best effort and may not reflect very recent updates and changes.  Executions of an EXPRESS state machinearen't supported by DescribeExecution unless a Map Run dispatched them.
+   * Provides information about a state machine execution, such as the state machine associated with the execution, the execution input and output, and relevant execution metadata. If you've redriven an execution, you can use this API action to return information about the redrives of that execution. In addition, you can use this API action to return the Map Run Amazon Resource Name (ARN) if the execution was dispatched by a Map Run. If you specify a version or alias ARN when you call the StartExecution API action, DescribeExecution returns that ARN.  This operation is eventually consistent. The results are best effort and may not reflect very recent updates and changes.  Executions of an EXPRESS state machine aren't supported by DescribeExecution unless a Map Run dispatched them.
    */
   describeExecution(params: StepFunctions.Types.DescribeExecutionInput, callback?: (err: AWSError, data: StepFunctions.Types.DescribeExecutionOutput) => void): Request<StepFunctions.Types.DescribeExecutionOutput, AWSError>;
   /**
-   * Provides information about a state machine execution, such as the state machine associated with the execution, the execution input and output, and relevant execution metadata. Use this API action to return the Map Run Amazon Resource Name (ARN) if the execution was dispatched by a Map Run. If you specify a version or alias ARN when you call the StartExecution API action, DescribeExecution returns that ARN.  This operation is eventually consistent. The results are best effort and may not reflect very recent updates and changes.  Executions of an EXPRESS state machinearen't supported by DescribeExecution unless a Map Run dispatched them.
+   * Provides information about a state machine execution, such as the state machine associated with the execution, the execution input and output, and relevant execution metadata. If you've redriven an execution, you can use this API action to return information about the redrives of that execution. In addition, you can use this API action to return the Map Run Amazon Resource Name (ARN) if the execution was dispatched by a Map Run. If you specify a version or alias ARN when you call the StartExecution API action, DescribeExecution returns that ARN.  This operation is eventually consistent. The results are best effort and may not reflect very recent updates and changes.  Executions of an EXPRESS state machine aren't supported by DescribeExecution unless a Map Run dispatched them.
    */
   describeExecution(callback?: (err: AWSError, data: StepFunctions.Types.DescribeExecutionOutput) => void): Request<StepFunctions.Types.DescribeExecutionOutput, AWSError>;
   /**
-   * Provides information about a Map Run's configuration, progress, and results. For more information, see Examining Map Run in the Step Functions Developer Guide.
+   * Provides information about a Map Run's configuration, progress, and results. If you've redriven a Map Run, this API action also returns information about the redrives of that Map Run. For more information, see Examining Map Run in the Step Functions Developer Guide.
    */
   describeMapRun(params: StepFunctions.Types.DescribeMapRunInput, callback?: (err: AWSError, data: StepFunctions.Types.DescribeMapRunOutput) => void): Request<StepFunctions.Types.DescribeMapRunOutput, AWSError>;
   /**
-   * Provides information about a Map Run's configuration, progress, and results. For more information, see Examining Map Run in the Step Functions Developer Guide.
+   * Provides information about a Map Run's configuration, progress, and results. If you've redriven a Map Run, this API action also returns information about the redrives of that Map Run. For more information, see Examining Map Run in the Step Functions Developer Guide.
    */
   describeMapRun(callback?: (err: AWSError, data: StepFunctions.Types.DescribeMapRunOutput) => void): Request<StepFunctions.Types.DescribeMapRunOutput, AWSError>;
   /**
@@ -140,11 +140,11 @@ declare class StepFunctions extends Service {
    */
   listActivities(callback?: (err: AWSError, data: StepFunctions.Types.ListActivitiesOutput) => void): Request<StepFunctions.Types.ListActivitiesOutput, AWSError>;
   /**
-   * Lists all executions of a state machine or a Map Run. You can list all executions related to a state machine by specifying a state machine Amazon Resource Name (ARN), or those related to a Map Run by specifying a Map Run ARN. You can also provide a state machine alias ARN or version ARN to list the executions associated with a specific alias or version. Results are sorted by time, with the most recent execution first. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an HTTP 400 InvalidToken error.  This operation is eventually consistent. The results are best effort and may not reflect very recent updates and changes.  This API action is not supported by EXPRESS state machines.
+   * Lists all executions of a state machine or a Map Run. You can list all executions related to a state machine by specifying a state machine Amazon Resource Name (ARN), or those related to a Map Run by specifying a Map Run ARN. Using this API action, you can also list all redriven executions. You can also provide a state machine alias ARN or version ARN to list the executions associated with a specific alias or version. Results are sorted by time, with the most recent execution first. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an HTTP 400 InvalidToken error.  This operation is eventually consistent. The results are best effort and may not reflect very recent updates and changes.  This API action is not supported by EXPRESS state machines.
    */
   listExecutions(params: StepFunctions.Types.ListExecutionsInput, callback?: (err: AWSError, data: StepFunctions.Types.ListExecutionsOutput) => void): Request<StepFunctions.Types.ListExecutionsOutput, AWSError>;
   /**
-   * Lists all executions of a state machine or a Map Run. You can list all executions related to a state machine by specifying a state machine Amazon Resource Name (ARN), or those related to a Map Run by specifying a Map Run ARN. You can also provide a state machine alias ARN or version ARN to list the executions associated with a specific alias or version. Results are sorted by time, with the most recent execution first. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an HTTP 400 InvalidToken error.  This operation is eventually consistent. The results are best effort and may not reflect very recent updates and changes.  This API action is not supported by EXPRESS state machines.
+   * Lists all executions of a state machine or a Map Run. You can list all executions related to a state machine by specifying a state machine Amazon Resource Name (ARN), or those related to a Map Run by specifying a Map Run ARN. Using this API action, you can also list all redriven executions. You can also provide a state machine alias ARN or version ARN to list the executions associated with a specific alias or version. Results are sorted by time, with the most recent execution first. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an HTTP 400 InvalidToken error.  This operation is eventually consistent. The results are best effort and may not reflect very recent updates and changes.  This API action is not supported by EXPRESS state machines.
    */
   listExecutions(callback?: (err: AWSError, data: StepFunctions.Types.ListExecutionsOutput) => void): Request<StepFunctions.Types.ListExecutionsOutput, AWSError>;
   /**
@@ -196,27 +196,35 @@ declare class StepFunctions extends Service {
    */
   publishStateMachineVersion(callback?: (err: AWSError, data: StepFunctions.Types.PublishStateMachineVersionOutput) => void): Request<StepFunctions.Types.PublishStateMachineVersionOutput, AWSError>;
   /**
-   * Used by activity workers and task states using the callback pattern to report that the task identified by the taskToken failed.
+   * Restarts unsuccessful executions of Standard workflows that didn't complete successfully in the last 14 days. These include failed, aborted, or timed out executions. When you redrive an execution, it continues the failed execution from the unsuccessful step and uses the same input. Step Functions preserves the results and execution history of the successful steps, and doesn't rerun these steps when you redrive an execution. Redriven executions use the same state machine definition and execution ARN as the original execution attempt. For workflows that include an Inline Map or Parallel state, RedriveExecution API action reschedules and redrives only the iterations and branches that failed or aborted. To redrive a workflow that includes a Distributed Map state whose Map Run failed, you must redrive the parent workflow. The parent workflow redrives all the unsuccessful states, including a failed Map Run. If a Map Run was not started in the original execution attempt, the redriven parent workflow starts the Map Run.  This API action is not supported by EXPRESS state machines. However, you can restart the unsuccessful executions of Express child workflows in a Distributed Map by redriving its Map Run. When you redrive a Map Run, the Express child workflows are rerun using the StartExecution API action. For more information, see Redriving Map Runs.  You can redrive executions if your original execution meets the following conditions:   The execution status isn't SUCCEEDED.   Your workflow execution has not exceeded the redrivable period of 14 days. Redrivable period refers to the time during which you can redrive a given execution. This period starts from the day a state machine completes its execution.   The workflow execution has not exceeded the maximum open time of one year. For more information about state machine quotas, see Quotas related to state machine executions.   The execution event history count is less than 24,999. Redriven executions append their event history to the existing event history. Make sure your workflow execution contains less than 24,999 events to accommodate the ExecutionRedriven history event and at least one other history event.  
+   */
+  redriveExecution(params: StepFunctions.Types.RedriveExecutionInput, callback?: (err: AWSError, data: StepFunctions.Types.RedriveExecutionOutput) => void): Request<StepFunctions.Types.RedriveExecutionOutput, AWSError>;
+  /**
+   * Restarts unsuccessful executions of Standard workflows that didn't complete successfully in the last 14 days. These include failed, aborted, or timed out executions. When you redrive an execution, it continues the failed execution from the unsuccessful step and uses the same input. Step Functions preserves the results and execution history of the successful steps, and doesn't rerun these steps when you redrive an execution. Redriven executions use the same state machine definition and execution ARN as the original execution attempt. For workflows that include an Inline Map or Parallel state, RedriveExecution API action reschedules and redrives only the iterations and branches that failed or aborted. To redrive a workflow that includes a Distributed Map state whose Map Run failed, you must redrive the parent workflow. The parent workflow redrives all the unsuccessful states, including a failed Map Run. If a Map Run was not started in the original execution attempt, the redriven parent workflow starts the Map Run.  This API action is not supported by EXPRESS state machines. However, you can restart the unsuccessful executions of Express child workflows in a Distributed Map by redriving its Map Run. When you redrive a Map Run, the Express child workflows are rerun using the StartExecution API action. For more information, see Redriving Map Runs.  You can redrive executions if your original execution meets the following conditions:   The execution status isn't SUCCEEDED.   Your workflow execution has not exceeded the redrivable period of 14 days. Redrivable period refers to the time during which you can redrive a given execution. This period starts from the day a state machine completes its execution.   The workflow execution has not exceeded the maximum open time of one year. For more information about state machine quotas, see Quotas related to state machine executions.   The execution event history count is less than 24,999. Redriven executions append their event history to the existing event history. Make sure your workflow execution contains less than 24,999 events to accommodate the ExecutionRedriven history event and at least one other history event.  
+   */
+  redriveExecution(callback?: (err: AWSError, data: StepFunctions.Types.RedriveExecutionOutput) => void): Request<StepFunctions.Types.RedriveExecutionOutput, AWSError>;
+  /**
+   * Used by activity workers, Task states using the callback pattern, and optionally Task states using the job run pattern to report that the task identified by the taskToken failed. For an execution with encryption enabled, Step Functions will encrypt the error and cause fields using the KMS key for the execution role. A caller can mark a task as fail without using any KMS permissions in the execution role if the caller provides a null value for both error and cause fields because no data needs to be encrypted.
    */
   sendTaskFailure(params: StepFunctions.Types.SendTaskFailureInput, callback?: (err: AWSError, data: StepFunctions.Types.SendTaskFailureOutput) => void): Request<StepFunctions.Types.SendTaskFailureOutput, AWSError>;
   /**
-   * Used by activity workers and task states using the callback pattern to report that the task identified by the taskToken failed.
+   * Used by activity workers, Task states using the callback pattern, and optionally Task states using the job run pattern to report that the task identified by the taskToken failed. For an execution with encryption enabled, Step Functions will encrypt the error and cause fields using the KMS key for the execution role. A caller can mark a task as fail without using any KMS permissions in the execution role if the caller provides a null value for both error and cause fields because no data needs to be encrypted.
    */
   sendTaskFailure(callback?: (err: AWSError, data: StepFunctions.Types.SendTaskFailureOutput) => void): Request<StepFunctions.Types.SendTaskFailureOutput, AWSError>;
   /**
-   * Used by activity workers and task states using the callback pattern to report to Step Functions that the task represented by the specified taskToken is still making progress. This action resets the Heartbeat clock. The Heartbeat threshold is specified in the state machine's Amazon States Language definition (HeartbeatSeconds). This action does not in itself create an event in the execution history. However, if the task times out, the execution history contains an ActivityTimedOut entry for activities, or a TaskTimedOut entry for for tasks using the job run or callback pattern.  The Timeout of a task, defined in the state machine's Amazon States Language definition, is its maximum allowed duration, regardless of the number of SendTaskHeartbeat requests received. Use HeartbeatSeconds to configure the timeout interval for heartbeats. 
+   * Used by activity workers and Task states using the callback pattern, and optionally Task states using the job run pattern to report to Step Functions that the task represented by the specified taskToken is still making progress. This action resets the Heartbeat clock. The Heartbeat threshold is specified in the state machine's Amazon States Language definition (HeartbeatSeconds). This action does not in itself create an event in the execution history. However, if the task times out, the execution history contains an ActivityTimedOut entry for activities, or a TaskTimedOut entry for tasks using the job run or callback pattern.  The Timeout of a task, defined in the state machine's Amazon States Language definition, is its maximum allowed duration, regardless of the number of SendTaskHeartbeat requests received. Use HeartbeatSeconds to configure the timeout interval for heartbeats. 
    */
   sendTaskHeartbeat(params: StepFunctions.Types.SendTaskHeartbeatInput, callback?: (err: AWSError, data: StepFunctions.Types.SendTaskHeartbeatOutput) => void): Request<StepFunctions.Types.SendTaskHeartbeatOutput, AWSError>;
   /**
-   * Used by activity workers and task states using the callback pattern to report to Step Functions that the task represented by the specified taskToken is still making progress. This action resets the Heartbeat clock. The Heartbeat threshold is specified in the state machine's Amazon States Language definition (HeartbeatSeconds). This action does not in itself create an event in the execution history. However, if the task times out, the execution history contains an ActivityTimedOut entry for activities, or a TaskTimedOut entry for for tasks using the job run or callback pattern.  The Timeout of a task, defined in the state machine's Amazon States Language definition, is its maximum allowed duration, regardless of the number of SendTaskHeartbeat requests received. Use HeartbeatSeconds to configure the timeout interval for heartbeats. 
+   * Used by activity workers and Task states using the callback pattern, and optionally Task states using the job run pattern to report to Step Functions that the task represented by the specified taskToken is still making progress. This action resets the Heartbeat clock. The Heartbeat threshold is specified in the state machine's Amazon States Language definition (HeartbeatSeconds). This action does not in itself create an event in the execution history. However, if the task times out, the execution history contains an ActivityTimedOut entry for activities, or a TaskTimedOut entry for tasks using the job run or callback pattern.  The Timeout of a task, defined in the state machine's Amazon States Language definition, is its maximum allowed duration, regardless of the number of SendTaskHeartbeat requests received. Use HeartbeatSeconds to configure the timeout interval for heartbeats. 
    */
   sendTaskHeartbeat(callback?: (err: AWSError, data: StepFunctions.Types.SendTaskHeartbeatOutput) => void): Request<StepFunctions.Types.SendTaskHeartbeatOutput, AWSError>;
   /**
-   * Used by activity workers and task states using the callback pattern to report that the task identified by the taskToken completed successfully.
+   * Used by activity workers, Task states using the callback pattern, and optionally Task states using the job run pattern to report that the task identified by the taskToken completed successfully.
    */
   sendTaskSuccess(params: StepFunctions.Types.SendTaskSuccessInput, callback?: (err: AWSError, data: StepFunctions.Types.SendTaskSuccessOutput) => void): Request<StepFunctions.Types.SendTaskSuccessOutput, AWSError>;
   /**
-   * Used by activity workers and task states using the callback pattern to report that the task identified by the taskToken completed successfully.
+   * Used by activity workers, Task states using the callback pattern, and optionally Task states using the job run pattern to report that the task identified by the taskToken completed successfully.
    */
   sendTaskSuccess(callback?: (err: AWSError, data: StepFunctions.Types.SendTaskSuccessOutput) => void): Request<StepFunctions.Types.SendTaskSuccessOutput, AWSError>;
   /**
@@ -236,11 +244,11 @@ declare class StepFunctions extends Service {
    */
   startSyncExecution(callback?: (err: AWSError, data: StepFunctions.Types.StartSyncExecutionOutput) => void): Request<StepFunctions.Types.StartSyncExecutionOutput, AWSError>;
   /**
-   * Stops an execution. This API action is not supported by EXPRESS state machines.
+   * Stops an execution. This API action is not supported by EXPRESS state machines. For an execution with encryption enabled, Step Functions will encrypt the error and cause fields using the KMS key for the execution role. A caller can stop an execution without using any KMS permissions in the execution role if the caller provides a null value for both error and cause fields because no data needs to be encrypted.
    */
   stopExecution(params: StepFunctions.Types.StopExecutionInput, callback?: (err: AWSError, data: StepFunctions.Types.StopExecutionOutput) => void): Request<StepFunctions.Types.StopExecutionOutput, AWSError>;
   /**
-   * Stops an execution. This API action is not supported by EXPRESS state machines.
+   * Stops an execution. This API action is not supported by EXPRESS state machines. For an execution with encryption enabled, Step Functions will encrypt the error and cause fields using the KMS key for the execution role. A caller can stop an execution without using any KMS permissions in the execution role if the caller provides a null value for both error and cause fields because no data needs to be encrypted.
    */
   stopExecution(callback?: (err: AWSError, data: StepFunctions.Types.StopExecutionOutput) => void): Request<StepFunctions.Types.StopExecutionOutput, AWSError>;
   /**
@@ -251,6 +259,14 @@ declare class StepFunctions extends Service {
    * Add a tag to a Step Functions resource. An array of key-value pairs. For more information, see Using Cost Allocation Tags in the Amazon Web Services Billing and Cost Management User Guide, and Controlling Access Using IAM Tags. Tags may only contain Unicode letters, digits, white space, or these symbols: _ . : / = + - @.
    */
   tagResource(callback?: (err: AWSError, data: StepFunctions.Types.TagResourceOutput) => void): Request<StepFunctions.Types.TagResourceOutput, AWSError>;
+  /**
+   * Accepts the definition of a single state and executes it. You can test a state without creating a state machine or updating an existing state machine. Using this API, you can test the following:   A state's input and output processing data flow   An Amazon Web Services service integration request and response   An HTTP Task request and response   You can call this API on only one state at a time. The states that you can test include the following:    All Task types except Activity     Pass     Wait     Choice     Succeed     Fail    The TestState API assumes an IAM role which must contain the required IAM permissions for the resources your state is accessing. For information about the permissions a state might need, see IAM permissions to test a state. The TestState API can run for up to five minutes. If the execution of a state exceeds this duration, it fails with the States.Timeout error.  TestState doesn't support Activity tasks, .sync or .waitForTaskToken service integration patterns, Parallel, or Map states.
+   */
+  testState(params: StepFunctions.Types.TestStateInput, callback?: (err: AWSError, data: StepFunctions.Types.TestStateOutput) => void): Request<StepFunctions.Types.TestStateOutput, AWSError>;
+  /**
+   * Accepts the definition of a single state and executes it. You can test a state without creating a state machine or updating an existing state machine. Using this API, you can test the following:   A state's input and output processing data flow   An Amazon Web Services service integration request and response   An HTTP Task request and response   You can call this API on only one state at a time. The states that you can test include the following:    All Task types except Activity     Pass     Wait     Choice     Succeed     Fail    The TestState API assumes an IAM role which must contain the required IAM permissions for the resources your state is accessing. For information about the permissions a state might need, see IAM permissions to test a state. The TestState API can run for up to five minutes. If the execution of a state exceeds this duration, it fails with the States.Timeout error.  TestState doesn't support Activity tasks, .sync or .waitForTaskToken service integration patterns, Parallel, or Map states.
+   */
+  testState(callback?: (err: AWSError, data: StepFunctions.Types.TestStateOutput) => void): Request<StepFunctions.Types.TestStateOutput, AWSError>;
   /**
    * Remove a tag from a Step Functions resource
    */
@@ -268,11 +284,11 @@ declare class StepFunctions extends Service {
    */
   updateMapRun(callback?: (err: AWSError, data: StepFunctions.Types.UpdateMapRunOutput) => void): Request<StepFunctions.Types.UpdateMapRunOutput, AWSError>;
   /**
-   * Updates an existing state machine by modifying its definition, roleArn, or loggingConfiguration. Running executions will continue to use the previous definition and roleArn. You must include at least one of definition or roleArn or you will receive a MissingRequiredParameter error. A qualified state machine ARN refers to a Distributed Map state defined within a state machine. For example, the qualified state machine ARN arn:partition:states:region:account-id:stateMachine:stateMachineName/mapStateLabel refers to a Distributed Map state with a label mapStateLabel in the state machine named stateMachineName. A qualified state machine ARN can either refer to a Distributed Map state defined within a state machine, a version ARN, or an alias ARN. The following are some examples of qualified and unqualified state machine ARNs:   The following qualified state machine ARN refers to a Distributed Map state with a label mapStateLabel in a state machine named myStateMachine.  arn:partition:states:region:account-id:stateMachine:myStateMachine/mapStateLabel   If you provide a qualified state machine ARN that refers to a Distributed Map state, the request fails with ValidationException.    The following qualified state machine ARN refers to an alias named PROD.  arn:&lt;partition&gt;:states:&lt;region&gt;:&lt;account-id&gt;:stateMachine:&lt;myStateMachine:PROD&gt;   If you provide a qualified state machine ARN that refers to a version ARN or an alias ARN, the request starts execution for that version or alias.    The following unqualified state machine ARN refers to a state machine named myStateMachine.  arn:&lt;partition&gt;:states:&lt;region&gt;:&lt;account-id&gt;:stateMachine:&lt;myStateMachine&gt;    After you update your state machine, you can set the publish parameter to true in the same action to publish a new version. This way, you can opt-in to strict versioning of your state machine.  Step Functions assigns monotonically increasing integers for state machine versions, starting at version number 1.   All StartExecution calls within a few seconds use the updated definition and roleArn. Executions started immediately after you call UpdateStateMachine may use the previous state machine definition and roleArn.  
+   * Updates an existing state machine by modifying its definition, roleArn, loggingConfiguration, or EncryptionConfiguration. Running executions will continue to use the previous definition and roleArn. You must include at least one of definition or roleArn or you will receive a MissingRequiredParameter error. A qualified state machine ARN refers to a Distributed Map state defined within a state machine. For example, the qualified state machine ARN arn:partition:states:region:account-id:stateMachine:stateMachineName/mapStateLabel refers to a Distributed Map state with a label mapStateLabel in the state machine named stateMachineName. A qualified state machine ARN can either refer to a Distributed Map state defined within a state machine, a version ARN, or an alias ARN. The following are some examples of qualified and unqualified state machine ARNs:   The following qualified state machine ARN refers to a Distributed Map state with a label mapStateLabel in a state machine named myStateMachine.  arn:partition:states:region:account-id:stateMachine:myStateMachine/mapStateLabel   If you provide a qualified state machine ARN that refers to a Distributed Map state, the request fails with ValidationException.    The following qualified state machine ARN refers to an alias named PROD.  arn:&lt;partition&gt;:states:&lt;region&gt;:&lt;account-id&gt;:stateMachine:&lt;myStateMachine:PROD&gt;   If you provide a qualified state machine ARN that refers to a version ARN or an alias ARN, the request starts execution for that version or alias.    The following unqualified state machine ARN refers to a state machine named myStateMachine.  arn:&lt;partition&gt;:states:&lt;region&gt;:&lt;account-id&gt;:stateMachine:&lt;myStateMachine&gt;    After you update your state machine, you can set the publish parameter to true in the same action to publish a new version. This way, you can opt-in to strict versioning of your state machine.  Step Functions assigns monotonically increasing integers for state machine versions, starting at version number 1.   All StartExecution calls within a few seconds use the updated definition and roleArn. Executions started immediately after you call UpdateStateMachine may use the previous state machine definition and roleArn.  
    */
   updateStateMachine(params: StepFunctions.Types.UpdateStateMachineInput, callback?: (err: AWSError, data: StepFunctions.Types.UpdateStateMachineOutput) => void): Request<StepFunctions.Types.UpdateStateMachineOutput, AWSError>;
   /**
-   * Updates an existing state machine by modifying its definition, roleArn, or loggingConfiguration. Running executions will continue to use the previous definition and roleArn. You must include at least one of definition or roleArn or you will receive a MissingRequiredParameter error. A qualified state machine ARN refers to a Distributed Map state defined within a state machine. For example, the qualified state machine ARN arn:partition:states:region:account-id:stateMachine:stateMachineName/mapStateLabel refers to a Distributed Map state with a label mapStateLabel in the state machine named stateMachineName. A qualified state machine ARN can either refer to a Distributed Map state defined within a state machine, a version ARN, or an alias ARN. The following are some examples of qualified and unqualified state machine ARNs:   The following qualified state machine ARN refers to a Distributed Map state with a label mapStateLabel in a state machine named myStateMachine.  arn:partition:states:region:account-id:stateMachine:myStateMachine/mapStateLabel   If you provide a qualified state machine ARN that refers to a Distributed Map state, the request fails with ValidationException.    The following qualified state machine ARN refers to an alias named PROD.  arn:&lt;partition&gt;:states:&lt;region&gt;:&lt;account-id&gt;:stateMachine:&lt;myStateMachine:PROD&gt;   If you provide a qualified state machine ARN that refers to a version ARN or an alias ARN, the request starts execution for that version or alias.    The following unqualified state machine ARN refers to a state machine named myStateMachine.  arn:&lt;partition&gt;:states:&lt;region&gt;:&lt;account-id&gt;:stateMachine:&lt;myStateMachine&gt;    After you update your state machine, you can set the publish parameter to true in the same action to publish a new version. This way, you can opt-in to strict versioning of your state machine.  Step Functions assigns monotonically increasing integers for state machine versions, starting at version number 1.   All StartExecution calls within a few seconds use the updated definition and roleArn. Executions started immediately after you call UpdateStateMachine may use the previous state machine definition and roleArn.  
+   * Updates an existing state machine by modifying its definition, roleArn, loggingConfiguration, or EncryptionConfiguration. Running executions will continue to use the previous definition and roleArn. You must include at least one of definition or roleArn or you will receive a MissingRequiredParameter error. A qualified state machine ARN refers to a Distributed Map state defined within a state machine. For example, the qualified state machine ARN arn:partition:states:region:account-id:stateMachine:stateMachineName/mapStateLabel refers to a Distributed Map state with a label mapStateLabel in the state machine named stateMachineName. A qualified state machine ARN can either refer to a Distributed Map state defined within a state machine, a version ARN, or an alias ARN. The following are some examples of qualified and unqualified state machine ARNs:   The following qualified state machine ARN refers to a Distributed Map state with a label mapStateLabel in a state machine named myStateMachine.  arn:partition:states:region:account-id:stateMachine:myStateMachine/mapStateLabel   If you provide a qualified state machine ARN that refers to a Distributed Map state, the request fails with ValidationException.    The following qualified state machine ARN refers to an alias named PROD.  arn:&lt;partition&gt;:states:&lt;region&gt;:&lt;account-id&gt;:stateMachine:&lt;myStateMachine:PROD&gt;   If you provide a qualified state machine ARN that refers to a version ARN or an alias ARN, the request starts execution for that version or alias.    The following unqualified state machine ARN refers to a state machine named myStateMachine.  arn:&lt;partition&gt;:states:&lt;region&gt;:&lt;account-id&gt;:stateMachine:&lt;myStateMachine&gt;    After you update your state machine, you can set the publish parameter to true in the same action to publish a new version. This way, you can opt-in to strict versioning of your state machine.  Step Functions assigns monotonically increasing integers for state machine versions, starting at version number 1.   All StartExecution calls within a few seconds use the updated definition and roleArn. Executions started immediately after you call UpdateStateMachine may use the previous state machine definition and roleArn.  
    */
   updateStateMachine(callback?: (err: AWSError, data: StepFunctions.Types.UpdateStateMachineOutput) => void): Request<StepFunctions.Types.UpdateStateMachineOutput, AWSError>;
   /**
@@ -283,6 +299,14 @@ declare class StepFunctions extends Service {
    * Updates the configuration of an existing state machine alias by modifying its description or routingConfiguration. You must specify at least one of the description or routingConfiguration parameters to update a state machine alias.   UpdateStateMachineAlias is an idempotent API. Step Functions bases the idempotency check on the stateMachineAliasArn, description, and routingConfiguration parameters. Requests with the same parameters return an idempotent response.   This operation is eventually consistent. All StartExecution requests made within a few seconds use the latest alias configuration. Executions started immediately after calling UpdateStateMachineAlias may use the previous routing configuration.   Related operations:     CreateStateMachineAlias     DescribeStateMachineAlias     ListStateMachineAliases     DeleteStateMachineAlias   
    */
   updateStateMachineAlias(callback?: (err: AWSError, data: StepFunctions.Types.UpdateStateMachineAliasOutput) => void): Request<StepFunctions.Types.UpdateStateMachineAliasOutput, AWSError>;
+  /**
+   * Validates the syntax of a state machine definition. You can validate that a state machine definition is correct without creating a state machine resource. Step Functions will implicitly perform the same syntax check when you invoke CreateStateMachine and UpdateStateMachine. State machine definitions are specified using a JSON-based, structured language. For more information on Amazon States Language see Amazon States Language (ASL).  Suggested uses for ValidateStateMachineDefinition:   Integrate automated checks into your code review or Continuous Integration (CI) process to validate state machine definitions before starting deployments.   Run the validation from a Git pre-commit hook to check your state machine definitions before committing them to your source repository.    Errors found in the state machine definition will be returned in the response as a list of diagnostic elements, rather than raise an exception. 
+   */
+  validateStateMachineDefinition(params: StepFunctions.Types.ValidateStateMachineDefinitionInput, callback?: (err: AWSError, data: StepFunctions.Types.ValidateStateMachineDefinitionOutput) => void): Request<StepFunctions.Types.ValidateStateMachineDefinitionOutput, AWSError>;
+  /**
+   * Validates the syntax of a state machine definition. You can validate that a state machine definition is correct without creating a state machine resource. Step Functions will implicitly perform the same syntax check when you invoke CreateStateMachine and UpdateStateMachine. State machine definitions are specified using a JSON-based, structured language. For more information on Amazon States Language see Amazon States Language (ASL).  Suggested uses for ValidateStateMachineDefinition:   Integrate automated checks into your code review or Continuous Integration (CI) process to validate state machine definitions before starting deployments.   Run the validation from a Git pre-commit hook to check your state machine definitions before committing them to your source repository.    Errors found in the state machine definition will be returned in the response as a list of diagnostic elements, rather than raise an exception. 
+   */
+  validateStateMachineDefinition(callback?: (err: AWSError, data: StepFunctions.Types.ValidateStateMachineDefinitionOutput) => void): Request<StepFunctions.Types.ValidateStateMachineDefinitionOutput, AWSError>;
 }
 declare namespace StepFunctions {
   export interface ActivityFailedEventDetails {
@@ -383,6 +407,7 @@ declare namespace StepFunctions {
     billedDurationInMilliseconds?: BilledDuration;
   }
   export type CharacterRestrictedName = string;
+  export type ClientToken = string;
   export interface CloudWatchEventsExecutionDataDetails {
     /**
      * Indicates whether input or output was included in the response. Always true for API calls. 
@@ -405,6 +430,10 @@ declare namespace StepFunctions {
      * The list of tags to add to a resource. An array of key-value pairs. For more information, see Using Cost Allocation Tags in the Amazon Web Services Billing and Cost Management User Guide, and Controlling Access Using IAM Tags. Tags may only contain Unicode letters, digits, white space, or these symbols: _ . : / = + - @.
      */
     tags?: TagList;
+    /**
+     * Settings to configure server-side encryption.
+     */
+    encryptionConfiguration?: EncryptionConfiguration;
   }
   export interface CreateActivityOutput {
     /**
@@ -477,6 +506,10 @@ declare namespace StepFunctions {
      * Sets description about the state machine version. You can only set the description if the publish parameter is set to true. Otherwise, if you set versionDescription, but publish to false, this API action throws ValidationException.
      */
     versionDescription?: VersionDescription;
+    /**
+     * Settings to configure server-side encryption.
+     */
+    encryptionConfiguration?: EncryptionConfiguration;
   }
   export interface CreateStateMachineOutput {
     /**
@@ -544,12 +577,20 @@ declare namespace StepFunctions {
      * The date the activity is created.
      */
     creationDate: Timestamp;
+    /**
+     * Settings for configured server-side encryption.
+     */
+    encryptionConfiguration?: EncryptionConfiguration;
   }
   export interface DescribeExecutionInput {
     /**
      * The Amazon Resource Name (ARN) of the execution to describe.
      */
     executionArn: Arn;
+    /**
+     * If your state machine definition is encrypted with a KMS key, callers must have kms:Decrypt permission to decrypt the definition. Alternatively, you can call DescribeStateMachine API with includedData = METADATA_ONLY to get a successful response without the encrypted definition.
+     */
+    includedData?: IncludedData;
   }
   export interface DescribeExecutionOutput {
     /**
@@ -610,6 +651,22 @@ declare namespace StepFunctions {
      * The Amazon Resource Name (ARN) of the state machine alias associated with the execution. The alias ARN is a combination of state machine ARN and the alias name separated by a colon (:). For example, stateMachineARN:PROD. If you start an execution from a StartExecution request with a state machine version ARN, this field will be null.
      */
     stateMachineAliasArn?: Arn;
+    /**
+     * The number of times you've redriven an execution. If you have not yet redriven an execution, the redriveCount is 0. This count is only updated if you successfully redrive an execution.
+     */
+    redriveCount?: RedriveCount;
+    /**
+     * The date the execution was last redriven. If you have not yet redriven an execution, the redriveDate is null. The redriveDate is unavailable if you redrive a Map Run that starts child workflow executions of type EXPRESS.
+     */
+    redriveDate?: Timestamp;
+    /**
+     * Indicates whether or not an execution can be redriven at a given point in time.   For executions of type STANDARD, redriveStatus is NOT_REDRIVABLE if calling the RedriveExecution API action would return the ExecutionNotRedrivable error.   For a Distributed Map that includes child workflows of type STANDARD, redriveStatus indicates whether or not the Map Run can redrive child workflow executions.   For a Distributed Map that includes child workflows of type EXPRESS, redriveStatus indicates whether or not the Map Run can redrive child workflow executions. You can redrive failed or timed out EXPRESS workflows only if they're a part of a Map Run. When you redrive the Map Run, these workflows are restarted using the StartExecution API action.  
+     */
+    redriveStatus?: ExecutionRedriveStatus;
+    /**
+     * When redriveStatus is NOT_REDRIVABLE, redriveStatusReason specifies the reason why an execution cannot be redriven.   For executions of type STANDARD, or for a Distributed Map that includes child workflows of type STANDARD, redriveStatusReason can include one of the following reasons:    State machine is in DELETING status.    Execution is RUNNING and cannot be redriven.    Execution is SUCCEEDED and cannot be redriven.    Execution was started before the launch of RedriveExecution.    Execution history event limit exceeded.    Execution has exceeded the max execution time.    Execution redrivable period exceeded.     For a Distributed Map that includes child workflows of type EXPRESS, redriveStatusReason is only returned if the child workflows are not redrivable. This happens when the child workflow executions have completed successfully.  
+     */
+    redriveStatusReason?: SensitiveData;
   }
   export interface DescribeMapRunInput {
     /**
@@ -658,6 +715,14 @@ declare namespace StepFunctions {
      * A JSON object that contains information about the total number of child workflow executions for the Map Run, and the count of child workflow executions for each status, such as failed and succeeded.
      */
     executionCounts: MapRunExecutionCounts;
+    /**
+     * The number of times you've redriven a Map Run. If you have not yet redriven a Map Run, the redriveCount is 0. This count is only updated if you successfully redrive a Map Run.
+     */
+    redriveCount?: RedriveCount;
+    /**
+     * The date a Map Run was last redriven. If you have not yet redriven a Map Run, the redriveDate is null.
+     */
+    redriveDate?: Timestamp;
   }
   export interface DescribeStateMachineAliasInput {
     /**
@@ -696,6 +761,10 @@ declare namespace StepFunctions {
      * The Amazon Resource Name (ARN) of the execution you want state machine information for.
      */
     executionArn: Arn;
+    /**
+     * If your state machine definition is encrypted with a KMS key, callers must have kms:Decrypt permission to decrypt the definition. Alternatively, you can call the API with includedData = METADATA_ONLY to get a successful response without the encrypted definition.
+     */
+    includedData?: IncludedData;
   }
   export interface DescribeStateMachineForExecutionOutput {
     /**
@@ -735,12 +804,20 @@ declare namespace StepFunctions {
      * The revision identifier for the state machine. The first revision ID when you create the state machine is null. Use the state machine revisionId parameter to compare the revision of a state machine with the configuration of the state machine used for executions without performing a diff of the properties, such as definition and roleArn.
      */
     revisionId?: RevisionId;
+    /**
+     * Settings to configure server-side encryption. 
+     */
+    encryptionConfiguration?: EncryptionConfiguration;
   }
   export interface DescribeStateMachineInput {
     /**
      * The Amazon Resource Name (ARN) of the state machine for which you want the information. If you specify a state machine version ARN, this API returns details about that version. The version ARN is a combination of state machine ARN and the version number separated by a colon (:). For example, stateMachineARN:1.
      */
     stateMachineArn: Arn;
+    /**
+     * If your state machine definition is encrypted with a KMS key, callers must have kms:Decrypt permission to decrypt the definition. Alternatively, you can call the API with includedData = METADATA_ONLY to get a successful response without the encrypted definition.   When calling a labelled ARN for an encrypted state machine, the includedData = METADATA_ONLY parameter will not apply because Step Functions needs to decrypt the entire state machine definition to get the Distributed Map state’s definition. In this case, the API caller needs to have kms:Decrypt permission.  
+     */
+    includedData?: IncludedData;
   }
   export interface DescribeStateMachineOutput {
     /**
@@ -756,7 +833,7 @@ declare namespace StepFunctions {
      */
     status?: StateMachineStatus;
     /**
-     * The Amazon States Language definition of the state machine. See Amazon States Language.
+     * The Amazon States Language definition of the state machine. See Amazon States Language. If called with includedData = METADATA_ONLY, the returned definition will be {}.
      */
     definition: Definition;
     /**
@@ -788,8 +865,27 @@ declare namespace StepFunctions {
      * The description of the state machine version.
      */
     description?: VersionDescription;
+    /**
+     * Settings to configure server-side encryption. 
+     */
+    encryptionConfiguration?: EncryptionConfiguration;
   }
   export type Enabled = boolean;
+  export interface EncryptionConfiguration {
+    /**
+     * An alias, alias ARN, key ID, or key ARN of a symmetric encryption KMS key to encrypt data. To specify a KMS key in a different Amazon Web Services account, you must use the key ARN or alias ARN.
+     */
+    kmsKeyId?: KmsKeyId;
+    /**
+     * Maximum duration that Step Functions will reuse data keys. When the period expires, Step Functions will call GenerateDataKey. Only applies to customer managed keys.
+     */
+    kmsDataKeyReusePeriodSeconds?: KmsDataKeyReusePeriodSeconds;
+    /**
+     * Encryption type
+     */
+    type: EncryptionType;
+  }
+  export type EncryptionType = "AWS_OWNED_KEY"|"CUSTOMER_MANAGED_KMS_KEY"|string;
   export type EventId = number;
   export interface ExecutionAbortedEventDetails {
     /**
@@ -853,6 +949,22 @@ declare namespace StepFunctions {
      * The Amazon Resource Name (ARN) of the state machine alias used to start an execution. If the state machine execution was started with an unqualified ARN or a version ARN, it returns null.
      */
     stateMachineAliasArn?: Arn;
+    /**
+     * The number of times you've redriven an execution. If you have not yet redriven an execution, the redriveCount is 0. This count is only updated when you successfully redrive an execution.
+     */
+    redriveCount?: RedriveCount;
+    /**
+     * The date the execution was last redriven.
+     */
+    redriveDate?: Timestamp;
+  }
+  export type ExecutionRedriveFilter = "REDRIVEN"|"NOT_REDRIVEN"|string;
+  export type ExecutionRedriveStatus = "REDRIVABLE"|"NOT_REDRIVABLE"|"REDRIVABLE_BY_MAP_RUN"|string;
+  export interface ExecutionRedrivenEventDetails {
+    /**
+     * The number of times you've redriven an execution. If you have not yet redriven an execution, the redriveCount is 0. This count is not updated for redrives that failed to start or are pending to be redriven.
+     */
+    redriveCount?: RedriveCount;
   }
   export interface ExecutionStartedEventDetails {
     /**
@@ -876,7 +988,7 @@ declare namespace StepFunctions {
      */
     stateMachineVersionArn?: Arn;
   }
-  export type ExecutionStatus = "RUNNING"|"SUCCEEDED"|"FAILED"|"TIMED_OUT"|"ABORTED"|string;
+  export type ExecutionStatus = "RUNNING"|"SUCCEEDED"|"FAILED"|"TIMED_OUT"|"ABORTED"|"PENDING_REDRIVE"|string;
   export interface ExecutionSucceededEventDetails {
     /**
      * The JSON data output by the execution. Length constraints apply to the payload size, and are expressed as bytes in UTF-8 encoding.
@@ -949,6 +1061,12 @@ declare namespace StepFunctions {
      */
     nextToken?: PageToken;
   }
+  export type HTTPBody = string;
+  export type HTTPHeaders = string;
+  export type HTTPMethod = string;
+  export type HTTPProtocol = string;
+  export type HTTPStatusCode = string;
+  export type HTTPStatusMessage = string;
   export interface HistoryEvent {
     /**
      * The date and time the event occurred.
@@ -1013,6 +1131,10 @@ declare namespace StepFunctions {
     executionAbortedEventDetails?: ExecutionAbortedEventDetails;
     executionTimedOutEventDetails?: ExecutionTimedOutEventDetails;
     /**
+     * Contains details about the redrive attempt of an execution.
+     */
+    executionRedrivenEventDetails?: ExecutionRedrivenEventDetails;
+    /**
      * Contains details about Map state that was started.
      */
     mapStateStartedEventDetails?: MapStateStartedEventDetails;
@@ -1054,6 +1176,10 @@ declare namespace StepFunctions {
      * Contains error and cause details about a Map Run that failed.
      */
     mapRunFailedEventDetails?: MapRunFailedEventDetails;
+    /**
+     * Contains details about the redrive attempt of a Map Run.
+     */
+    mapRunRedrivenEventDetails?: MapRunRedrivenEventDetails;
   }
   export interface HistoryEventExecutionDataDetails {
     /**
@@ -1062,10 +1188,92 @@ declare namespace StepFunctions {
     truncated?: truncated;
   }
   export type HistoryEventList = HistoryEvent[];
-  export type HistoryEventType = "ActivityFailed"|"ActivityScheduled"|"ActivityScheduleFailed"|"ActivityStarted"|"ActivitySucceeded"|"ActivityTimedOut"|"ChoiceStateEntered"|"ChoiceStateExited"|"ExecutionAborted"|"ExecutionFailed"|"ExecutionStarted"|"ExecutionSucceeded"|"ExecutionTimedOut"|"FailStateEntered"|"LambdaFunctionFailed"|"LambdaFunctionScheduled"|"LambdaFunctionScheduleFailed"|"LambdaFunctionStarted"|"LambdaFunctionStartFailed"|"LambdaFunctionSucceeded"|"LambdaFunctionTimedOut"|"MapIterationAborted"|"MapIterationFailed"|"MapIterationStarted"|"MapIterationSucceeded"|"MapStateAborted"|"MapStateEntered"|"MapStateExited"|"MapStateFailed"|"MapStateStarted"|"MapStateSucceeded"|"ParallelStateAborted"|"ParallelStateEntered"|"ParallelStateExited"|"ParallelStateFailed"|"ParallelStateStarted"|"ParallelStateSucceeded"|"PassStateEntered"|"PassStateExited"|"SucceedStateEntered"|"SucceedStateExited"|"TaskFailed"|"TaskScheduled"|"TaskStarted"|"TaskStartFailed"|"TaskStateAborted"|"TaskStateEntered"|"TaskStateExited"|"TaskSubmitFailed"|"TaskSubmitted"|"TaskSucceeded"|"TaskTimedOut"|"WaitStateAborted"|"WaitStateEntered"|"WaitStateExited"|"MapRunAborted"|"MapRunFailed"|"MapRunStarted"|"MapRunSucceeded"|string;
+  export type HistoryEventType = "ActivityFailed"|"ActivityScheduled"|"ActivityScheduleFailed"|"ActivityStarted"|"ActivitySucceeded"|"ActivityTimedOut"|"ChoiceStateEntered"|"ChoiceStateExited"|"ExecutionAborted"|"ExecutionFailed"|"ExecutionStarted"|"ExecutionSucceeded"|"ExecutionTimedOut"|"FailStateEntered"|"LambdaFunctionFailed"|"LambdaFunctionScheduled"|"LambdaFunctionScheduleFailed"|"LambdaFunctionStarted"|"LambdaFunctionStartFailed"|"LambdaFunctionSucceeded"|"LambdaFunctionTimedOut"|"MapIterationAborted"|"MapIterationFailed"|"MapIterationStarted"|"MapIterationSucceeded"|"MapStateAborted"|"MapStateEntered"|"MapStateExited"|"MapStateFailed"|"MapStateStarted"|"MapStateSucceeded"|"ParallelStateAborted"|"ParallelStateEntered"|"ParallelStateExited"|"ParallelStateFailed"|"ParallelStateStarted"|"ParallelStateSucceeded"|"PassStateEntered"|"PassStateExited"|"SucceedStateEntered"|"SucceedStateExited"|"TaskFailed"|"TaskScheduled"|"TaskStarted"|"TaskStartFailed"|"TaskStateAborted"|"TaskStateEntered"|"TaskStateExited"|"TaskSubmitFailed"|"TaskSubmitted"|"TaskSucceeded"|"TaskTimedOut"|"WaitStateAborted"|"WaitStateEntered"|"WaitStateExited"|"MapRunAborted"|"MapRunFailed"|"MapRunStarted"|"MapRunSucceeded"|"ExecutionRedriven"|"MapRunRedriven"|string;
   export type Identity = string;
   export type IncludeExecutionData = boolean;
   export type IncludeExecutionDataGetExecutionHistory = boolean;
+  export type IncludedData = "ALL_DATA"|"METADATA_ONLY"|string;
+  export interface InspectionData {
+    /**
+     * The raw state input.
+     */
+    input?: SensitiveData;
+    /**
+     * The input after Step Functions applies the InputPath filter.
+     */
+    afterInputPath?: SensitiveData;
+    /**
+     * The effective input after Step Functions applies the Parameters filter.
+     */
+    afterParameters?: SensitiveData;
+    /**
+     * The state's raw result.
+     */
+    result?: SensitiveData;
+    /**
+     * The effective result after Step Functions applies the ResultSelector filter.
+     */
+    afterResultSelector?: SensitiveData;
+    /**
+     * The effective result combined with the raw state input after Step Functions applies the ResultPath filter.
+     */
+    afterResultPath?: SensitiveData;
+    /**
+     * The raw HTTP request that is sent when you test an HTTP Task.
+     */
+    request?: InspectionDataRequest;
+    /**
+     * The raw HTTP response that is returned when you test an HTTP Task.
+     */
+    response?: InspectionDataResponse;
+  }
+  export interface InspectionDataRequest {
+    /**
+     * The protocol used to make the HTTP request.
+     */
+    protocol?: HTTPProtocol;
+    /**
+     * The HTTP method used for the HTTP request.
+     */
+    method?: HTTPMethod;
+    /**
+     * The API endpoint used for the HTTP request.
+     */
+    url?: URL;
+    /**
+     * The request headers associated with the HTTP request.
+     */
+    headers?: HTTPHeaders;
+    /**
+     * The request body for the HTTP request.
+     */
+    body?: HTTPBody;
+  }
+  export interface InspectionDataResponse {
+    /**
+     * The protocol used to return the HTTP response.
+     */
+    protocol?: HTTPProtocol;
+    /**
+     * The HTTP response status code for the HTTP response.
+     */
+    statusCode?: HTTPStatusCode;
+    /**
+     * The message associated with the HTTP status code.
+     */
+    statusMessage?: HTTPStatusMessage;
+    /**
+     * The response headers associated with the HTTP response.
+     */
+    headers?: HTTPHeaders;
+    /**
+     * The HTTP response returned.
+     */
+    body?: HTTPBody;
+  }
+  export type InspectionLevel = "INFO"|"DEBUG"|"TRACE"|string;
+  export type KmsDataKeyReusePeriodSeconds = number;
+  export type KmsKeyId = string;
   export interface LambdaFunctionFailedEventDetails {
     /**
      * The error code of the failure.
@@ -1179,6 +1387,10 @@ declare namespace StepFunctions {
      * The Amazon Resource Name (ARN) of the Map Run that started the child workflow executions. If the mapRunArn field is specified, a list of all of the child workflow executions started by a Map Run is returned. For more information, see Examining Map Run in the Step Functions Developer Guide. You can specify either a mapRunArn or a stateMachineArn, but not both.
      */
     mapRunArn?: LongArn;
+    /**
+     * Sets a filter to list executions based on whether or not they have been redriven. For a Distributed Map, redriveFilter sets a filter to list child workflow executions based on whether or not they have been redriven. If you do not provide a redriveFilter, Step Functions returns a list of both redriven and non-redriven executions. If you provide a state machine ARN in redriveFilter, the API returns a validation exception.
+     */
+    redriveFilter?: ExecutionRedriveFilter;
   }
   export interface ListExecutionsOutput {
     /**
@@ -1315,6 +1527,7 @@ declare namespace StepFunctions {
     destinations?: LogDestinationList;
   }
   export type LongArn = string;
+  export type LongObject = number;
   export interface MapIterationEventDetails {
     /**
      * The name of the iteration’s parent Map state.
@@ -1358,6 +1571,14 @@ declare namespace StepFunctions {
      * Returns the count of child workflow executions whose results were written by ResultWriter. For more information, see ResultWriter in the Step Functions Developer Guide.
      */
     resultsWritten: UnsignedLong;
+    /**
+     * The number of FAILED, ABORTED, or TIMED_OUT child workflow executions that cannot be redriven because their execution status is terminal. For example, child workflows with an execution status of FAILED, ABORTED, or TIMED_OUT and a redriveStatus of NOT_REDRIVABLE.
+     */
+    failuresNotRedrivable?: LongObject;
+    /**
+     * The number of unsuccessful child workflow executions currently waiting to be redriven. The status of these child workflow executions could be FAILED, ABORTED, or TIMED_OUT in the original execution attempt or a previous redrive attempt.
+     */
+    pendingRedrive?: LongObject;
   }
   export interface MapRunFailedEventDetails {
     /**
@@ -1402,6 +1623,14 @@ declare namespace StepFunctions {
      * Returns the count of items whose results were written by ResultWriter. For more information, see ResultWriter in the Step Functions Developer Guide.
      */
     resultsWritten: UnsignedLong;
+    /**
+     * The number of FAILED, ABORTED, or TIMED_OUT items in child workflow executions that cannot be redriven because the execution status of those child workflows is terminal. For example, child workflows with an execution status of FAILED, ABORTED, or TIMED_OUT and a redriveStatus of NOT_REDRIVABLE.
+     */
+    failuresNotRedrivable?: LongObject;
+    /**
+     * The number of unsuccessful items in child workflow executions currently waiting to be redriven.
+     */
+    pendingRedrive?: LongObject;
   }
   export type MapRunLabel = string;
   export type MapRunList = MapRunListItem[];
@@ -1426,6 +1655,16 @@ declare namespace StepFunctions {
      * The date on which the Map Run stopped.
      */
     stopDate?: Timestamp;
+  }
+  export interface MapRunRedrivenEventDetails {
+    /**
+     * The Amazon Resource Name (ARN) of a Map Run that was redriven.
+     */
+    mapRunArn?: LongArn;
+    /**
+     * The number of times the Map Run has been redriven at this point in the execution's history including this event. The redrive count for a redriven Map Run is always greater than 0.
+     */
+    redriveCount?: RedriveCount;
   }
   export interface MapRunStartedEventDetails {
     /**
@@ -1469,6 +1708,24 @@ declare namespace StepFunctions {
      */
     stateMachineVersionArn: Arn;
   }
+  export type RedriveCount = number;
+  export interface RedriveExecutionInput {
+    /**
+     * The Amazon Resource Name (ARN) of the execution to be redriven.
+     */
+    executionArn: Arn;
+    /**
+     * A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If you don’t specify a client token, the Amazon Web Services SDK automatically generates a client token and uses it for the request to ensure idempotency. The API will return idempotent responses for the last 10 client tokens used to successfully redrive the execution. These client tokens are valid for up to 15 minutes after they are first used.
+     */
+    clientToken?: ClientToken;
+  }
+  export interface RedriveExecutionOutput {
+    /**
+     * The date the execution was last redriven.
+     */
+    redriveDate: Timestamp;
+  }
+  export type RevealSecrets = boolean;
   export type ReverseOrder = boolean;
   export type RevisionId = string;
   export type RoutingConfigurationList = RoutingConfigurationListItem[];
@@ -1478,7 +1735,7 @@ declare namespace StepFunctions {
      */
     stateMachineVersionArn: Arn;
     /**
-     * The percentage of traffic you want to route to the second state machine version. The sum of the weights in the routing configuration must be equal to 100.
+     * The percentage of traffic you want to route to a state machine version. The sum of the weights in the routing configuration must be equal to 100.
      */
     weight: VersionWeight;
   }
@@ -1528,7 +1785,7 @@ declare namespace StepFunctions {
      */
     stateMachineArn: Arn;
     /**
-     * Optional name of the execution. This name must be unique for your Amazon Web Services account, Region, and state machine for 90 days. For more information, see  Limits Related to State Machine Executions in the Step Functions Developer Guide. A name must not contain:   white space   brackets &lt; &gt; { } [ ]    wildcard characters ? *    special characters " # % \ ^ | ~ ` $ &amp; , ; : /    control characters (U+0000-001F, U+007F-009F)   To enable logging with CloudWatch Logs, the name should only contain 0-9, A-Z, a-z, - and _.
+     * Optional name of the execution. This name must be unique for your Amazon Web Services account, Region, and state machine for 90 days. For more information, see  Limits Related to State Machine Executions in the Step Functions Developer Guide. If you don't provide a name for the execution, Step Functions automatically generates a universally unique identifier (UUID) as the execution name. A name must not contain:   white space   brackets &lt; &gt; { } [ ]    wildcard characters ? *    special characters " # % \ ^ | ~ ` $ &amp; , ; : /    control characters (U+0000-001F, U+007F-009F)   To enable logging with CloudWatch Logs, the name should only contain 0-9, A-Z, a-z, - and _.
      */
     name?: Name;
     /**
@@ -1567,6 +1824,10 @@ declare namespace StepFunctions {
      * Passes the X-Ray trace header. The trace header can also be passed in the request payload.
      */
     traceHeader?: TraceHeader;
+    /**
+     * If your state machine definition is encrypted with a KMS key, callers must have kms:Decrypt permission to decrypt the definition. Alternatively, you can call the API with includedData = METADATA_ONLY to get a successful response without the encrypted definition.
+     */
+    includedData?: IncludedData;
   }
   export interface StartSyncExecutionOutput {
     /**
@@ -1691,6 +1952,7 @@ declare namespace StepFunctions {
      */
     creationDate: Timestamp;
   }
+  export type StateName = string;
   export interface StopExecutionInput {
     /**
      * The Amazon Resource Name (ARN) of the execution to stop.
@@ -1893,6 +2155,55 @@ declare namespace StepFunctions {
     cause?: SensitiveCause;
   }
   export type TaskToken = string;
+  export type TestExecutionStatus = "SUCCEEDED"|"FAILED"|"RETRIABLE"|"CAUGHT_ERROR"|string;
+  export interface TestStateInput {
+    /**
+     * The Amazon States Language (ASL) definition of the state.
+     */
+    definition: Definition;
+    /**
+     * The Amazon Resource Name (ARN) of the execution role with the required IAM permissions for the state.
+     */
+    roleArn: Arn;
+    /**
+     * A string that contains the JSON input data for the state.
+     */
+    input?: SensitiveData;
+    /**
+     * Determines the values to return when a state is tested. You can specify one of the following types:    INFO: Shows the final state output. By default, Step Functions sets inspectionLevel to INFO if you don't specify a level.    DEBUG: Shows the final state output along with the input and output data processing result.    TRACE: Shows the HTTP request and response for an HTTP Task. This level also shows the final state output along with the input and output data processing result.   Each of these levels also provide information about the status of the state execution and the next state to transition to.
+     */
+    inspectionLevel?: InspectionLevel;
+    /**
+     * Specifies whether or not to include secret information in the test result. For HTTP Tasks, a secret includes the data that an EventBridge connection adds to modify the HTTP request headers, query parameters, and body. Step Functions doesn't omit any information included in the state definition or the HTTP response. If you set revealSecrets to true, you must make sure that the IAM user that calls the TestState API has permission for the states:RevealSecrets action. For an example of IAM policy that sets the states:RevealSecrets permission, see IAM permissions to test a state. Without this permission, Step Functions throws an access denied error. By default, revealSecrets is set to false.
+     */
+    revealSecrets?: RevealSecrets;
+  }
+  export interface TestStateOutput {
+    /**
+     * The JSON output data of the state. Length constraints apply to the payload size, and are expressed as bytes in UTF-8 encoding.
+     */
+    output?: SensitiveData;
+    /**
+     * The error returned when the execution of a state fails.
+     */
+    error?: SensitiveError;
+    /**
+     * A detailed explanation of the cause for the error when the execution of a state fails.
+     */
+    cause?: SensitiveCause;
+    /**
+     * Returns additional details about the state's execution, including its input and output data processing flow, and HTTP request and response information. The inspectionLevel request parameter specifies which details are returned.
+     */
+    inspectionData?: InspectionData;
+    /**
+     * The name of the next state to transition to. If you haven't defined a next state in your definition or if the execution of the state fails, this ﬁeld doesn't contain a value.
+     */
+    nextState?: StateName;
+    /**
+     * The execution status of the state.
+     */
+    status?: TestExecutionStatus;
+  }
   export type TimeoutInSeconds = number;
   export type Timestamp = Date;
   export type ToleratedFailureCount = number;
@@ -1904,6 +2215,7 @@ declare namespace StepFunctions {
      */
     enabled?: Enabled;
   }
+  export type URL = string;
   export type UnsignedInteger = number;
   export type UnsignedLong = number;
   export interface UntagResourceInput {
@@ -1987,6 +2299,10 @@ declare namespace StepFunctions {
      * An optional description of the state machine version to publish. You can only specify the versionDescription parameter if you've set publish to true.
      */
     versionDescription?: VersionDescription;
+    /**
+     * Settings to configure server-side encryption. 
+     */
+    encryptionConfiguration?: EncryptionConfiguration;
   }
   export interface UpdateStateMachineOutput {
     /**
@@ -2002,6 +2318,64 @@ declare namespace StepFunctions {
      */
     stateMachineVersionArn?: Arn;
   }
+  export type ValidateStateMachineDefinitionCode = string;
+  export interface ValidateStateMachineDefinitionDiagnostic {
+    /**
+     * A value of ERROR means that you cannot create or update a state machine with this definition.
+     */
+    severity: ValidateStateMachineDefinitionSeverity;
+    /**
+     * Identifying code for the diagnostic.
+     */
+    code: ValidateStateMachineDefinitionCode;
+    /**
+     * Message describing the diagnostic condition.
+     */
+    message: ValidateStateMachineDefinitionMessage;
+    /**
+     * Location of the issue in the state machine, if available. For errors specific to a field, the location could be in the format: /States/&lt;StateName&gt;/&lt;FieldName&gt;, for example: /States/FailState/ErrorPath.
+     */
+    location?: ValidateStateMachineDefinitionLocation;
+  }
+  export type ValidateStateMachineDefinitionDiagnosticList = ValidateStateMachineDefinitionDiagnostic[];
+  export interface ValidateStateMachineDefinitionInput {
+    /**
+     * The Amazon States Language definition of the state machine. For more information, see Amazon States Language (ASL).
+     */
+    definition: Definition;
+    /**
+     * The target type of state machine for this definition. The default is STANDARD.
+     */
+    type?: StateMachineType;
+    /**
+     * Minimum level of diagnostics to return. ERROR returns only ERROR diagnostics, whereas WARNING returns both WARNING and ERROR diagnostics. The default is ERROR. 
+     */
+    severity?: ValidateStateMachineDefinitionSeverity;
+    /**
+     * The maximum number of diagnostics that are returned per call. The default and maximum value is 100. Setting the value to 0 will also use the default of 100. If the number of diagnostics returned in the response exceeds maxResults, the value of the truncated field in the response will be set to true.
+     */
+    maxResults?: ValidateStateMachineDefinitionMaxResult;
+  }
+  export type ValidateStateMachineDefinitionLocation = string;
+  export type ValidateStateMachineDefinitionMaxResult = number;
+  export type ValidateStateMachineDefinitionMessage = string;
+  export interface ValidateStateMachineDefinitionOutput {
+    /**
+     * The result value will be OK when no syntax errors are found, or FAIL if the workflow definition does not pass verification.
+     */
+    result: ValidateStateMachineDefinitionResultCode;
+    /**
+     * If the result is OK, this field will be empty. When there are errors, this field will contain an array of Diagnostic objects to help you troubleshoot.
+     */
+    diagnostics: ValidateStateMachineDefinitionDiagnosticList;
+    /**
+     * The result value will be true if the number of diagnostics found in the workflow definition exceeds maxResults. When all diagnostics results are returned, the value will be false.
+     */
+    truncated?: ValidateStateMachineDefinitionTruncated;
+  }
+  export type ValidateStateMachineDefinitionResultCode = "OK"|"FAIL"|string;
+  export type ValidateStateMachineDefinitionSeverity = "ERROR"|"WARNING"|string;
+  export type ValidateStateMachineDefinitionTruncated = boolean;
   export type VersionDescription = string;
   export type VersionWeight = number;
   export type includedDetails = boolean;
