@@ -7,7 +7,12 @@ const Notifications = require("../common/Notifications");
 const moment = require("moment-timezone");
 exports.handler = async (event, context, cb) => {
   try {
-    const { emailAddress } = event.pathParameters;
+    const rawEmailAddress = event.pathParameters.emailAddress;
+    // API Gateway can pass the URL-encoded path through to Lambda. Decode
+    // once, preserving literal percent sequences in already-decoded emails.
+    const emailAddress = rawEmailAddress.includes("@")
+      ? rawEmailAddress
+      : decodeURIComponent(rawEmailAddress);
     let { v, campaignId } = event.queryStringParameters;
 
     const isAdmin = Functions.hasPermission(event, "Admin");
