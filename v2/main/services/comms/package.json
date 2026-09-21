@@ -4,8 +4,7 @@
   "description": "API calls and services for the CAUSE Foundation portal communications",
   "main": "handler.js",
   "dependencies": {
-    "crypto": "^1.0.1",
-    "serverless-pseudo-parameters": "^2.6.1"
+    "crypto": "^1.0.1"
   },
   "devDependencies": {
     "aws-sdk": "^2.1494.0",
