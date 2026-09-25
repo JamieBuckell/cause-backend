@@ -1,7 +1,8 @@
 var warning = [
-  'We are formalizing our plans to enter AWS SDK for JavaScript (v2) into maintenance mode in 2023.\n',
+  'The AWS SDK for JavaScript (v2) has reached end-of-support.',
+  'It will no longer receive updates or releases.\n',
   'Please migrate your code to use AWS SDK for JavaScript (v3).',
-  'For more information, check the migration guide at https://a.co/7PzMCcy'
+  'For more information, check the blog post at https://a.co/cUPnyil'
 ].join('\n');
 
 module.exports = {

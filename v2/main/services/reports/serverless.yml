@@ -51,11 +51,11 @@ provider:
               - ${self:custom.environment.SUBSCRIBERS_TABLE}
 package:
   individually: true
-  exclude:
-    - "**/*"
-  include:
-    - ../common/**
-    - endpoints/**
+  patterns:
+    - "!**/*"
+    - "../common/**"
+    - "endpoints/**"
+    - "node_modules/**"
 functions:
   dropOffs:
     handler: endpoints/dropOffs.handler

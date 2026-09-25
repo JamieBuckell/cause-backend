@@ -10,6 +10,7 @@
   "devDependencies": {
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.34",
+    "serverless": "^3.40.0",
     "serverless-domain-manager": "^7.4.0"
   },
   "scripts": {

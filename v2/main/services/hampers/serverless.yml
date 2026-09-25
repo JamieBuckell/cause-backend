@@ -1,12 +1,13 @@
 service: causef-api-v2-hampers
 
-frameworkVersion: "4"
+frameworkVersion: "3"
 
 plugins:
   - serverless-domain-manager
 custom:
   environment: ${file(../.env.${sls:stage}.yml)}
   customDomain:
+    enabled: ${param:customDomainEnabled, true}
     domainName: ${self:custom.environment.CUSTOM_DOMAIN}
     basePath: hampers
     stage: ${sls:stage}
@@ -14,8 +15,7 @@ custom:
 
 provider:
   name: aws
-  runtime: nodejs14.x
-  profile: jamiebuckell
+  runtime: nodejs20.x
   stage: ${sls:stage}
   region: ${self:custom.environment.AWS_ACCOUNT_REGION}
   environment: ${file(../.env.${sls:stage}.yml)}
@@ -60,11 +60,11 @@ provider:
         - arn:aws:lambda:eu-west-2:988218197909:function:PdfGeneratorV2Stack-HtmlToPdfLambdaB7443488-LJXTgl6nvBE2
 package:
   individually: true
-  exclude:
-    - "**/*"
-  include:
-    - ../common/**
-    - endpoints/**
+  patterns:
+    - "!**/*"
+    - "../common/**"
+    - "endpoints/**"
+    - "node_modules/**"
 functions:
   check:
     handler: endpoints/check.handler

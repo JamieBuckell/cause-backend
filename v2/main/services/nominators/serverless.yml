@@ -1,20 +1,20 @@
 service: causef-api-v2-nominators
 
-frameworkVersion: "4"
+frameworkVersion: "3"
 
 plugins:
   - serverless-domain-manager
 custom:
   environment: ${file(../.env.${sls:stage}.yml)}
   customDomain:
+    enabled: ${param:customDomainEnabled, true}
     domainName: ${self:custom.environment.CUSTOM_DOMAIN}
     basePath: nominators
     stage: ${sls:stage}
     createRoute53Record: true
 provider:
   name: aws
-  runtime: nodejs14.x
-  profile: jamiebuckell
+  runtime: nodejs20.x
   stage: ${sls:stage}
   region: ${self:custom.environment.AWS_ACCOUNT_REGION}
   environment: ${file(../.env.${sls:stage}.yml)}
@@ -78,11 +78,11 @@ provider:
               - ${self:custom.environment.USER_POOL}
 package:
   individually: true
-  exclude:
-    - "**/*"
-  include:
-    - ../common/**
-    - endpoints/**
+  patterns:
+    - "!**/*"
+    - "../common/**"
+    - "endpoints/**"
+    - "node_modules/**"
 functions:
   create:
     handler: endpoints/create.handler
@@ -153,6 +153,22 @@ functions:
       - http:
           method: post
           path: reset-password/{nominatorId}
+          cors: true
+          request:
+            parameters:
+              paths:
+                nominatorId: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.environment.USER_POOL_ARN}
+  delete:
+    handler: endpoints/delete.handler
+    events:
+      - http:
+          method: post
+          path: delete/{nominatorId}
           cors: true
           request:
             parameters:

@@ -84,11 +84,11 @@ provider:
               - ":table/cause-family-members-live"
 package:
   individually: true
-  exclude:
-    - "**/*"
-  include:
-    - ../common/**
-    - endpoints/**
+  patterns:
+    - "!**/*"
+    - "../common/**"
+    - "endpoints/**"
+    - "node_modules/**"
 functions:
   donors:
     handler: endpoints/donors.handler

@@ -1,12 +1,13 @@
 service: causef-api-v2-donors
 
-frameworkVersion: "4"
+frameworkVersion: "3"
 
 plugins:
   - serverless-domain-manager
 custom:
   environment: ${file(../.env.${sls:stage}.yml)}
   customDomain:
+    enabled: ${param:customDomainEnabled, true}
     domainName: ${self:custom.environment.CUSTOM_DOMAIN}
     basePath: donors
     stage: ${sls:stage}
@@ -14,7 +15,6 @@ custom:
 provider:
   name: aws
   runtime: nodejs16.x
-  profile: jamiebuckell
   stage: ${sls:stage}
   region: ${self:custom.environment.AWS_ACCOUNT_REGION}
   environment: ${file(../.env.${sls:stage}.yml)}
@@ -102,11 +102,11 @@ provider:
         - arn:aws:s3:::pdfgeneratorv2stack-pdfss3bucketddbbf369-c95xtwuskgpv/*
 package:
   individually: true
-  exclude:
-    - "**/*"
-  include:
-    - ../common/**
-    - endpoints/**
+  patterns:
+    - "!**/*"
+    - "../common/**"
+    - "endpoints/**"
+    - "node_modules/**"
 functions:
   register:
     handler: endpoints/register.handler
