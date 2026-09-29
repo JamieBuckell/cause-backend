@@ -118,9 +118,13 @@ exports.handler = async (event, context, cb) => {
       let count = 1;
       const newData = [];
       for (const [i, family] of nominatorsFamilies.entries()) {
-        const newRef = `${organisationData.SK}${
+        const activeRef = `${organisationData.SK}${
           nominatorData.nominatorDetails.reference
         }-${count.toString().padStart(3, "0")}`;
+        const isDeleted = family.status === "deleted";
+        const newRef = isDeleted
+          ? `${(family.GSI2SK || `SK#${activeRef}`).replace(/^SK#/, "").replace(/(?:-DELETED)+$/, "")}-DELETED`
+          : activeRef;
         if (`SK#${newRef}` != family.GSI2SK) {
           console.log(`NominatorId: ${family.GSI3SK}`);
           console.log(`Previous Ref: ${family.GSI2SK.replace("SK#", "")}`);
@@ -149,7 +153,7 @@ exports.handler = async (event, context, cb) => {
         }
         newData.push({ ...family });
 
-        count++;
+        if (!isDeleted) count++;
       }
     }
 
