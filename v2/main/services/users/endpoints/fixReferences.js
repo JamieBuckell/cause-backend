@@ -2,6 +2,7 @@ const Responses = require("../common/API_Responses");
 const Dynamo = require("../common/Dynamo");
 const Hashing = require("../common/Hashing");
 const Functions = require("../common/Functions");
+const NominatorReferences = require("../common/NominatorReferences");
 
 const AWS = require("aws-sdk");
 const cognito = new AWS.CognitoIdentityServiceProvider({
@@ -69,6 +70,7 @@ exports.handler = async (event, context, cb) => {
 
     console.log("Get Campaign data", campaignId);
     const campaignParams = {
+      ConsistentRead: true,
       TableName: mainTableName,
       FilterExpression: "#pk = :pk",
       ExpressionAttributeNames: {
@@ -107,6 +109,8 @@ exports.handler = async (event, context, cb) => {
       return Responses._400({ message: "Failed to retrieve org by ID" });
     }
 
+    await NominatorReferences.repair(nominatorData, allCampaignData, mainTableName);
+
     const nominatorsFamilies = allCampaignData.filter(
       (cd) => cd?.GSI3SK === nominatorData?.GSI2PK && cd.type === "family"
     );
@@ -136,12 +140,7 @@ exports.handler = async (event, context, cb) => {
           }
 
           // Update family
-          const newRequest = await Dynamo.write(family, mainTableName).catch(
-            (err) => {
-              console.log("error in dynamo write", err);
-              return Responses._400({ messages: err });
-            }
-          );
+          const newRequest = await Dynamo.write(family, mainTableName);
 
           if (!newRequest) {
             return Responses._400({
@@ -158,7 +157,7 @@ exports.handler = async (event, context, cb) => {
     }
 
     return Responses._200({
-      messages: { success: "References updated queued" },
+      messages: { success: "References updated successfully" },
     });
   } catch (e) {
     console.log(`An unexpected error occurred ${e}`);

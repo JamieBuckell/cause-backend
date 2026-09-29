@@ -2,6 +2,7 @@ const Responses = require("../common/API_Responses");
 const Dynamo = require("../common/Dynamo");
 const Hashing = require("../common/Hashing");
 const Functions = require("../common/Functions");
+const NominatorReferences = require("../common/NominatorReferences");
 const Notifications = require("../common/Notifications");
 
 const AWS = require("aws-sdk");
@@ -99,6 +100,7 @@ exports.handler = async (event, context, cb) => {
     }
 
     const campaignParams = {
+      ConsistentRead: true,
       TableName: mainTableName,
       FilterExpression: "#pk = :pk",
       ExpressionAttributeNames: {
@@ -215,23 +217,14 @@ exports.handler = async (event, context, cb) => {
           }
         }
 
-        const userInitials = Functions.getUsersUniqueReference(validName);
-        let userReference = userInitials;
-
-        const existingReference = allCampaignData.filter(
-          (o) =>
-            o?.GSI3PK === validOrganisationId &&
-            o?.nominatorDetails?.reference === userReference
-        );
-        if (existingReference.length > 0) {
-          console.log(validOrganisationId, userReference);
-          console.log(existingReference);
-          console.log(existingReference.length);
-          const userCount = existingReference.length + 1;
-          userReference = `${userReference}${Functions.numToSSColumn(
-            userCount
-          )}`;
-        }
+        const userReference = await NominatorReferences.allocate({
+          campaignId,
+          organisationId: validOrganisationId,
+          owner: `EMAIL#${validEmail}`,
+          name: validName,
+          rows: allCampaignData,
+          tableName: mainTableName,
+        });
 
         const timezone = process.env.TIMEZONE;
         const dateFormat = process.env.DATE_FORMAT;

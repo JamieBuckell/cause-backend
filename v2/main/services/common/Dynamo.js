@@ -7,6 +7,26 @@ AWS.config.update({
 const documentClient = new AWS.DynamoDB.DocumentClient();
 
 const Dynamo = {
+  async reserveNominatorReference({ campaignId, organisationId, reference, owner }, TableName) {
+    try {
+      await documentClient.put({
+        TableName,
+        Item: {
+          PK: `NOMINATOR_REFERENCE#${JSON.stringify([campaignId, organisationId])}`,
+          SK: reference,
+          type: "nominator-reference-reservation",
+          owner,
+        },
+        ConditionExpression: "attribute_not_exists(PK) OR #owner = :owner",
+        ExpressionAttributeNames: { "#owner": "owner" },
+        ExpressionAttributeValues: { ":owner": owner },
+      }).promise();
+      return true;
+    } catch (error) {
+      if (error.code === "ConditionalCheckFailedException") return false;
+      throw error;
+    }
+  },
   async query(params, TableName) {
     params.TableName = TableName;
 
