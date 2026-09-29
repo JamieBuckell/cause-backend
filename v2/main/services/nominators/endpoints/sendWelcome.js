@@ -63,7 +63,8 @@ exports.handler = async (event, context, cb) => {
     const userFirstName = nominatorData?.nominatorDetails?.firstName ?? "";
     const nominatorType = nominatorData?.type ?? "nominator";
 
-    if (nominatorData?.emailVerification?.sent) {
+    const resend = JSON.parse(event.body || "{}")?.resend === true;
+    if (nominatorData?.emailVerification?.sent && !resend) {
       return Responses._400({
         message: "Email has already been sent",
         result: false,
