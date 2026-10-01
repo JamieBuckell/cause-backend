@@ -10,7 +10,12 @@ var sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
 
 exports.handler = async (event, context, cb) => {
   try {
-    const { emailAddress } = event.pathParameters;
+    const rawEmailAddress = event.pathParameters.emailAddress;
+    // API Gateway can leave path parameters encoded. Decode once, preserving
+    // literal percent sequences when the address is already decoded.
+    const emailAddress = rawEmailAddress.includes("@")
+      ? rawEmailAddress
+      : decodeURIComponent(rawEmailAddress);
     const { v, c } = event.queryStringParameters;
     const envSalt = process.env.HASHING_SALT;
 
