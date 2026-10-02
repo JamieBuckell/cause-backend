@@ -12,12 +12,12 @@ const cognito = new AWS.CognitoIdentityServiceProvider({
 
 exports.handler = async (event, context, cb) => {
   try {
-    const { emailAddress, verificationHash } = {
+    const { verificationHash } = event.pathParameters;
+    const { emailAddress } = {
       emailAddress: (event.pathParameters.emailAddress || "")
-        .replace(escapeRegEx, "")
+        .replace(/(<([^>]+)>)/gi, "")
         .toLowerCase(),
     };
-    const nomTableName = process.env.NOMINATORS_TABLE;
     const mainTableName = process.env.MAIN_DYNAMO_TABLE;
     const appURL = process.env.APP_URL;
     const envSalt = process.env.HASHING_SALT;
@@ -37,10 +37,7 @@ exports.handler = async (event, context, cb) => {
         ":sk": `EMAIL#${emailAddress}`,
       },
     };
-    nominatorData = await Dynamo.scan(params).catch((err) => {
-      console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
-    });
+    const nominatorData = await Dynamo.scan(params);
 
     if (nominatorData[0]?.nominatorDetails?.cognitoId) {
       if (nominatorData[0]?.emailVerification?.resetPasswordHash) {
@@ -74,14 +71,10 @@ exports.handler = async (event, context, cb) => {
             ToAddresses: [nominator.nominatorDetails.email],
             ...emailAccountTemplateParams,
           };
-          console.log("Send email", emailTemplate, jsonAccountParameters);
           await Notifications.sendTransactionalEmail(jsonAccountParameters);
 
           nominator.emailVerification.resetPasswordHash = "";
-          await Dynamo.write(nominator, nomTableName).catch((err) => {
-            console.log("error in dynamo write", err);
-            return Responses._400({ messages: err });
-          });
+          await Dynamo.write(nominator, mainTableName);
         } else {
           console.log(`Invalid hash: ${verificationHash}`);
           return Responses._400({
@@ -90,7 +83,7 @@ exports.handler = async (event, context, cb) => {
         }
       } else {
         console.log(
-          `No password reset hash: ${nominatorData[0]?.emailVerification.resetPasswordHash}`
+          `No password reset hash: ${nominatorData[0]?.emailVerification?.resetPasswordHash}`
         );
         return Responses._400({
           messages: { error: "Your password reset link has expired" },

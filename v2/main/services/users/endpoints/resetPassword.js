@@ -8,7 +8,7 @@ exports.handler = async (event, context, cb) => {
   try {
     const { emailAddress } = {
       emailAddress: (event.pathParameters.emailAddress || "")
-        .replace(escapeRegEx, "")
+        .replace(/(<([^>]+)>)/gi, "")
         .toLowerCase(),
     };
     const mainTableName = process.env.MAIN_DYNAMO_TABLE;
@@ -27,20 +27,14 @@ exports.handler = async (event, context, cb) => {
         ":sk": `EMAIL#${emailAddress}`,
       },
     };
-    nominatorData = await Dynamo.scan(params).catch((err) => {
-      console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
-    });
+    const nominatorData = await Dynamo.scan(params);
 
     console.log(nominatorData);
     if (nominatorData[0]?.nominatorDetails?.cognitoId) {
       const nominator = nominatorData[0];
       nominator.emailVerification.resetPasswordHash =
         Hashing.generateSalt(14) + "-" + Hashing.generateSalt(14);
-      await Dynamo.write(nominator, mainTableName).catch((err) => {
-        console.log("error in dynamo write", err);
-        return Responses._400({ messages: err });
-      });
+      await Dynamo.write(nominator, mainTableName);
 
       const urlHash = Hashing.hash(
         nominator.GSI2PK,
