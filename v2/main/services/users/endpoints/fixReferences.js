@@ -83,7 +83,7 @@ exports.handler = async (event, context, cb) => {
 
     let allCampaignData = await Dynamo.scan(campaignParams).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
     console.log(
       "campaign data recieved...",
@@ -131,7 +131,7 @@ exports.handler = async (event, context, cb) => {
           : activeRef;
         if (`SK#${newRef}` != family.GSI2SK) {
           console.log(`NominatorId: ${family.GSI3SK}`);
-          console.log(`Previous Ref: ${family.GSI2SK.replace("SK#", "")}`);
+          console.log(`Previous Ref: ${(family.GSI2SK ?? "").replace("SK#", "")}`);
           console.log(`New Ref: ${newRef}`);
           family.GSI2SK = `SK#${newRef}`;
           family.status = family.status ?? "unallocated";

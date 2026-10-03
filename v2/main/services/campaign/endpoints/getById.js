@@ -34,7 +34,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allCampaignData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     let allSubscribers = [];
@@ -42,7 +42,7 @@ exports.handler = async (event, context, cb) => {
       const subscriberParams = { TableName: subscribersTableName };
       allSubscribers = await Dynamo.scan(subscriberParams).catch((err) => {
         console.log("error in dynamo query", err);
-        return Responses._400({ messages: err });
+        throw err;
       });
     }
 

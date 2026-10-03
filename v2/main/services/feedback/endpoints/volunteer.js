@@ -78,7 +78,7 @@ exports.handler = async (event, context, cb) => {
 
         await Dynamo.write(feedbackObj, feedbackTableName).catch(err => {
             console.log('error in dynamo write', err);
-            return Responses._400({ messages: err });
+            throw err;
         });
 
         return Responses._200({ success: true });

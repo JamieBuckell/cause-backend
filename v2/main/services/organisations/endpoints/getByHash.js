@@ -27,7 +27,7 @@ exports.handler = async (event, context, cb) => {
     const matchedOrgs = await Dynamo.query(orgsQueryData, mainTableName).catch(
       (err) => {
         console.log("error in dynamo query", err);
-        return Responses._400({ messages: err });
+        throw err;
       }
     );
 

@@ -20,7 +20,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allEmailTemplates = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     console.log("All templates", allEmailTemplates.length);

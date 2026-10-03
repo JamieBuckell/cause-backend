@@ -74,7 +74,7 @@ exports.handler = async (event, context, cb) => {
       emailTemplatesQueryData
     ).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
     if (matchedEmailTemplates.length) {
       const emailTemplateData = matchedEmailTemplates.find(
@@ -84,10 +84,10 @@ exports.handler = async (event, context, cb) => {
         emailTemplateData.subject = parsed.subject
           .toString()
           .replace(escapeRegEx, "");
-        emailTemplateData.description = parsed.description
+        emailTemplateData.description = (parsed.description ?? "")
           .toString()
           .replace(escapeRegEx, "");
-        emailTemplateData.pageTitle = parsed.pageTitle
+        emailTemplateData.pageTitle = (parsed.pageTitle ?? "")
           .toString()
           .replace(escapeRegEx, "");
         emailTemplateData.pageContent = parsed.pageContent;
@@ -95,7 +95,7 @@ exports.handler = async (event, context, cb) => {
         await Dynamo.write(emailTemplateData, emailTemplatesTableName).catch(
           (err) => {
             console.log("error in dynamo query", err);
-            return Responses._400({ messages: err });
+            throw err;
           }
         );
 
@@ -109,7 +109,6 @@ exports.handler = async (event, context, cb) => {
     } else {
       console.log(
         "Email Template not found",
-        emailTemplateData,
         matchedEmailTemplates,
         emailTemplateKey
       );

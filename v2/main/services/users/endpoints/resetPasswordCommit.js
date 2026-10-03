@@ -13,8 +13,10 @@ const cognito = new AWS.CognitoIdentityServiceProvider({
 exports.handler = async (event, context, cb) => {
   try {
     const { verificationHash } = event.pathParameters;
+    const rawEmail = event.pathParameters?.emailAddress ?? "";
+    const decodedEmail = rawEmail.includes("@") ? rawEmail : decodeURIComponent(rawEmail);
     const { emailAddress } = {
-      emailAddress: (event.pathParameters.emailAddress || "")
+      emailAddress: decodedEmail
         .replace(/(<([^>]+)>)/gi, "")
         .toLowerCase(),
     };

@@ -95,11 +95,11 @@ exports.handler = async (event, context, cb) => {
           TableName: subscriberTableName,
         }).catch((err) => {
           console.log("error in dynamo query", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
         // Make sure they are still subscribed and verified
         emailRecipients = emailSubscribers
-          .filter((s) => s.subscribed === true && s.verified === true)
+          .filter((s) => s.subscribed === true && s.verified === true && s.status !== "deleted")
           .map((sub) => ({
             email: sub.PK,
             SK: sub.SK,
@@ -107,7 +107,8 @@ exports.handler = async (event, context, cb) => {
 
         if (parsed.options.excludePledged) {
           const queryData = {
-            KeyConditionExpression: "#pk= :pk AND #type = :type",
+            KeyConditionExpression: "#pk= :pk",
+            FilterExpression: "#type = :type",
             ExpressionAttributeValues: {
               ":pk": campaignId,
               ":type": "donor",
@@ -122,7 +123,7 @@ exports.handler = async (event, context, cb) => {
             mainTableName
           ).catch((err) => {
             console.log("error in dynamo query", err);
-            return Responses._400({ messages: err });
+            throw err;
           });
 
           const pledgedEmails = campaignDonors.flatMap((d) => d.GSI3PK);
@@ -135,7 +136,7 @@ exports.handler = async (event, context, cb) => {
       case "donors":
       case "nominators":
       case "teamleads":
-        const itemType = recipientType.replace(/s+$/, "");
+        const itemType = recipientType === "teamleads" ? "team-lead" : recipientType.replace(/s+$/, "");
         const queryData = {
           KeyConditionExpression: "#pk= :pk AND begins_with(#sk, :sk)",
           ExpressionAttributeValues: {
@@ -151,14 +152,14 @@ exports.handler = async (event, context, cb) => {
         let campaignDonors = await Dynamo.query(queryData, mainTableName).catch(
           (err) => {
             console.log("error in dynamo query", err);
-            return Responses._400({ messages: err });
+            throw err;
           }
         );
 
         if (campaignDonors.length) {
           campaignDonors = campaignDonors;
         }
-        campaignDonors.filter((d) => d?.type === itemType);
+        campaignDonors = campaignDonors.filter((d) => d?.type === itemType && d.status !== "deleted");
 
         if (parsed?.options?.excludeSubscribers && recipientType === "donors") {
           console.log(
@@ -169,7 +170,7 @@ exports.handler = async (event, context, cb) => {
             TableName: subscriberTableName,
           }).catch((err) => {
             console.log("error in dynamo query", err);
-            return Responses._400({ messages: err });
+            throw err;
           });
 
           campaignDonors = campaignDonors.filter(
@@ -181,10 +182,11 @@ exports.handler = async (event, context, cb) => {
         }
 
         emailRecipients = campaignDonors.map((d) => ({
-          email: d.GSI3PK,
+          email: d.type === "donor" ? d.GSI3PK : d.nominatorDetails?.email,
         }));
         break;
     }
+    emailRecipients = emailRecipients.filter((r, i, all) => r.email && all.findIndex(other => other.email === r.email) === i);
     console.log(`Total subscribers: ${emailRecipients.length}`);
 
     /* */
@@ -193,7 +195,7 @@ exports.handler = async (event, context, cb) => {
       PK: "EMAIL",
       SK: `SORT#${moment(new Date().getTime())
         .tz(timezone)
-        .format("YYYYMMDDHHmmss")}`,
+        .format("YYYYMMDDHHmmss")}#${emailId}`,
       GSI1PK: emailId,
       dateAdded: moment(new Date().getTime()).tz(timezone).format(dateFormat),
       email: {
@@ -211,30 +213,25 @@ exports.handler = async (event, context, cb) => {
     if (!existingEmailId) {
       await Dynamo.write(emailData, commsTableName).catch((err) => {
         console.log("error in dynamo write", err);
-        return Responses._400({ messages: err });
+        throw err;
       });
     } else {
       if (!parsed.options?.ignorePreviouslySent) {
         const queryData = {
-          KeyConditionExpression: "#pk= :pk AND #type = :type",
-          ExpressionAttributeValues: {
-            ":pk": campaignId,
-            ":type": "recipient",
-          },
-          ExpressionAttributeNames: {
-            "#pk": "PK",
-            "#type": "type",
-          },
+          KeyConditionExpression: "#pk = :pk",
+          FilterExpression: "#mail = :mail AND #type = :type",
+          ExpressionAttributeValues: { ":pk": "RECIPIENT", ":mail": existingEmailId, ":type": "recipient" },
+          ExpressionAttributeNames: { "#pk": "PK", "#mail": "GSI1PK", "#type": "type" },
         };
         const receivedSubscribers = await Dynamo.query(
           queryData,
           commsTableName
         ).catch((err) => {
           console.log("error in dynamo query", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
 
-        receivedSubscriberEmails = receivedSubscribers.flatMap(
+        const receivedSubscriberEmails = receivedSubscribers.flatMap(
           (d) => d.emailAddress
         );
         emailRecipients = emailRecipients.filter(

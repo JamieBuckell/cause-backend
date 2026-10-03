@@ -96,12 +96,12 @@ functions:
     events:
       - http:
           method: post
-          path: delete/{campaignId}
+          path: delete/{key}
           cors: true
           request:
             parameters:
               paths:
-                campaignId: true
+                key: true
           integration: lambda-proxy
           authorizer:
             name: PrivateAuthorizerV2

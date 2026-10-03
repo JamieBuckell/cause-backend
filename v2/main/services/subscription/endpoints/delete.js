@@ -14,7 +14,8 @@ exports.handler = async (event, context, cb) => {
       });
     }
 
-    const { emailAddress } = event.pathParameters;
+    const { emailAddress: rawEmail } = event.pathParameters;
+    const emailAddress = (rawEmail.includes("@") ? rawEmail : decodeURIComponent(rawEmail)).toLowerCase();
     const subscriberTableName = process.env.SUBSCRIBERS_TABLE;
     const envHashPrefix = process.env.HASHING_PREFIX;
 
@@ -37,7 +38,7 @@ exports.handler = async (event, context, cb) => {
       subscriberTableName
     ).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     if (existingSubscriber.length) {
@@ -47,7 +48,7 @@ exports.handler = async (event, context, cb) => {
         subscriberTableName
       ).catch((err) => {
         console.log("error in dynamo query", err);
-        return Responses._400({ messages: err });
+        throw err;
       });
       return Responses._200({ messages: { success: "Subscriber deleted" } });
     } else {

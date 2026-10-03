@@ -17,30 +17,30 @@ exports.handler = async (event, context, cb) => {
         "#pk": "PK",
       },
       ExpressionAttributeValues: {
-        ":pk": Functions.defaultCampaign(),
+        ":pk": Functions.requireCampaign(event.campaignId),
       },
     };
     let allCampaignData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     params.TableName = "cause-portal-v2-live-restored-17Oct";
     let backup17CampaignData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     params.TableName = "cause-portal-v2-live-restored-18Oct";
     let backup18CampaignData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     params.TableName = "cause-portal-v2-live-restored-19Oct";
     let backup19CampaignData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const batchData = [];
@@ -103,7 +103,7 @@ exports.handler = async (event, context, cb) => {
 
         await Dynamo.batchWrite(chunk, mainTableName).catch((err) => {
           console.log("error in dynamo write", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
       }
       console.log("Item Import Fin.");

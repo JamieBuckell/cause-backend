@@ -60,13 +60,13 @@ exports.handler = async (event, context, cb) => {
     };
     let allDonorData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const updateData = allDonorData.find((d) => d.GSI2PK === parsed.donorId);
-    const previousData = { ...updateData };
+    const previousData = updateData ? JSON.parse(JSON.stringify(updateData)) : {};
 
-    if (!updateData.PK) {
+    if (!updateData?.PK) {
       return Responses._400({ messages: { error: "Donor not found" } });
     }
 
@@ -77,7 +77,7 @@ exports.handler = async (event, context, cb) => {
       familyDetails: previousData?.familyDetails ?? {},
       dateAdded: previousData.dateAdded,
     };
-    const existingHistory = previousData.history ?? [];
+    const existingHistory = Array.isArray(previousData.history) ? previousData.history : [];
     updateData.history = [historicData, ...existingHistory];
     updateData.totalChanges = previousData?.totalChanges
       ? previousData?.totalChanges + 1
@@ -89,7 +89,7 @@ exports.handler = async (event, context, cb) => {
     /* */
     await Dynamo.write(updateData, mainTableName).catch((err) => {
       console.log("error in dynamo write", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
     /* */
 

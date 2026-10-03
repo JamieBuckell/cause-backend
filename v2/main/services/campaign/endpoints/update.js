@@ -72,7 +72,7 @@ exports.handler = async (event, context, cb) => {
     let matchedCampaigns = await Dynamo.scan(campaignsQueryData).catch(
       (err) => {
         console.log("error in dynamo query", err);
-        return Responses._400({ messages: err });
+        throw err;
       }
     );
     if (matchedCampaigns.length) {
@@ -101,7 +101,7 @@ exports.handler = async (event, context, cb) => {
 
         await Dynamo.write(campaignData, mainTableName).catch((err) => {
           console.log("error in dynamo query", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
 
         return Responses._200({
@@ -114,7 +114,6 @@ exports.handler = async (event, context, cb) => {
     } else {
       console.log(
         "Campaign not found",
-        campaignData,
         matchedCampaigns,
         campaignId
       );

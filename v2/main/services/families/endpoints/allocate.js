@@ -67,12 +67,12 @@ exports.handler = async (event, context, cb) => {
     };
     var hamperData = await Dynamo.scan(hamperQueryData).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     if (hamperData.length) {
       hamperData = hamperData.find(
-        (h) => h.type === "family" && h.GSI2SK === `SK#${parsed.hamperId}`
+        (h) => h.type === "family" && h.status !== "deleted" && h.GSI2SK === `SK#${parsed.hamperId}`
       );
     }
     if (hamperData?.SK) {
@@ -107,18 +107,24 @@ exports.handler = async (event, context, cb) => {
       var donorData = await Dynamo.query(donorQueryData, mainTableName).catch(
         (err) => {
           console.log("error in dynamo query", err);
-          return Responses._400({ messages: err });
+          throw err;
         }
       );
 
+      donorData = donorData.filter(d => d.PK === parsed.campaignId && d.type === "donor" && d.status !== "deleted");
       if (donorData && donorData[0]) {
+        const targetRequest = donorData[0].familyDetails?.request?.find(r => r.requestId === parsed.requestId);
+        if (!targetRequest) return Responses._400({ messages: { error: "Donor request not found" } });
+        if (remove && hamperData.allocatedTo !== parsed.donorId) {
+          return Responses._400({ messages: { error: "Family is not allocated to this donor" } });
+        }
         hamperData.allocatedTo = remove ? "unallocated" : parsed.donorId;
         hamperData.status = remove ? "unallocated" : "allocated-unconfirmed";
 
         console.log("hamperData", hamperData);
         await Dynamo.write(hamperData, mainTableName).catch((err) => {
           console.log("error in dynamo write", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
 
         donorData = donorData[0];
@@ -150,7 +156,7 @@ exports.handler = async (event, context, cb) => {
           const indexToDelete = donorData.familyDetails.request[
             requestIndex
           ].allocation.findIndex((a) => a.hamperId === parsed.hamperId);
-          donorData.familyDetails.request[requestIndex].allocation.splice(
+          if (indexToDelete >= 0) donorData.familyDetails.request[requestIndex].allocation.splice(
             indexToDelete,
             1
           );
@@ -164,7 +170,7 @@ exports.handler = async (event, context, cb) => {
         console.log("donorData", donorData);
         await Dynamo.write(donorData, mainTableName).catch((err) => {
           console.log("error in dynamo write", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
 
         return Responses._200({

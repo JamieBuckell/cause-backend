@@ -39,17 +39,17 @@ exports.handler = async (event, context, cb) => {
     };
     let allCampaignData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const timeData = allCampaignData
       .filter(
         (cd) =>
-          cd?.type === "family" &&
+          cd?.type === "family" && cd.status !== "deleted" &&
           cd?.receiveStatus === "hamper-received" &&
           moment(cd?.receivedDate).format("YYYYMMDD") === date
       )
-      .map((h) => parseFloat(moment(h?.receivedDate).format("HH.mm")));
+      .map((h) => moment(h?.receivedDate).format("HH.mm"));
 
     const finalTimeData = [
       { x: "0800", y: 0 },
@@ -96,7 +96,7 @@ exports.handler = async (event, context, cb) => {
       { x: "1815", y: 0 },
       { x: "1830", y: 0 },
     ];
-    for (time of timeData) {
+    for (const time of timeData) {
       let decimalValue = time.toString().indexOf(".");
       let minutes = time.toString().substring(decimalValue + 1);
       let hours = time.toString().substring(0, decimalValue);
@@ -111,7 +111,7 @@ exports.handler = async (event, context, cb) => {
       } else if (minutes >= 38 && minutes < 53) {
         key = `${hours}45`;
       } else if (minutes >= 53) {
-        key = `${(parseInt(hours) + 1).toString()}00`;
+        key = `${(parseInt(hours) + 1).toString().padStart(2, "0")}00`;
       }
 
       const foundIndex = finalTimeData.findIndex((td) => td.x === key);

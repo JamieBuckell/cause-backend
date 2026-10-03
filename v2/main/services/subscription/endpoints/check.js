@@ -6,7 +6,8 @@ const Notifications = require("../common/Notifications");
 
 exports.handler = async (event, context, cb) => {
   try {
-    const { emailAddress, hash } = event.pathParameters;
+    const { emailAddress: rawEmail, hash } = event.pathParameters;
+    const emailAddress = (rawEmail.includes("@") ? rawEmail : decodeURIComponent(rawEmail)).toLowerCase();
 
     const envSalt = process.env.HASHING_SALT;
     const envHashPrefix = process.env.HASHING_PREFIX;
@@ -31,7 +32,7 @@ exports.handler = async (event, context, cb) => {
       subscriberTableName
     ).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     console.log("subscriber found?", subscribers.length, subscribers);

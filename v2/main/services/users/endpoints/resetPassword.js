@@ -6,8 +6,10 @@ const Notifications = require("../common/Notifications");
 
 exports.handler = async (event, context, cb) => {
   try {
+    const rawEmail = event.pathParameters?.emailAddress ?? "";
+    const decodedEmail = rawEmail.includes("@") ? rawEmail : decodeURIComponent(rawEmail);
     const { emailAddress } = {
-      emailAddress: (event.pathParameters.emailAddress || "")
+      emailAddress: decodedEmail
         .replace(/(<([^>]+)>)/gi, "")
         .toLowerCase(),
     };
@@ -32,6 +34,7 @@ exports.handler = async (event, context, cb) => {
     console.log(nominatorData);
     if (nominatorData[0]?.nominatorDetails?.cognitoId) {
       const nominator = nominatorData[0];
+      nominator.emailVerification = nominator.emailVerification ?? {};
       nominator.emailVerification.resetPasswordHash =
         Hashing.generateSalt(14) + "-" + Hashing.generateSalt(14);
       await Dynamo.write(nominator, mainTableName);

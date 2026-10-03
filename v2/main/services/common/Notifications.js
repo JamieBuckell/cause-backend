@@ -4,10 +4,10 @@ const SES = new AWS.SES();
 // Outputs timezone offset in format ZZ
 const getOffset = (date) => {
   var offset = -date.getTimezoneOffset();
-  var offsetHours = Math.abs(Math.floor(offset / 60));
+  var offsetHours = Math.floor(Math.abs(offset) / 60);
   var offsetMinutes = Math.abs(offset) - offsetHours * 60;
 
-  var offsetSign = offset > 0 ? "+" : "-";
+  var offsetSign = offset >= 0 ? "+" : "-";
 
   return (
     offsetSign + ("0" + offsetHours).slice(-2) + ("0" + offsetMinutes).slice(-2)
@@ -19,7 +19,7 @@ const leadingZero = (input) => ("0" + input).slice(-2);
 
 // Formats date in ddd, DD MMM YYYY HH:MM:SS ZZ
 const formatDate = (date) => {
-  var weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  var weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   var months = [
     "Jan",
@@ -64,12 +64,8 @@ const Notifications = {
     return sesTemplate?.Template?.HtmlPart;
   },
   sendTransactionalEmailDelayed: async (data, ms) => {
-    return new Promise((resolve) => {
-      setTimeout(async () => {
-        await sendTransactionalEmail(data);
-        resolve;
-      }, ms);
-    });
+    await new Promise(resolve => setTimeout(resolve, ms));
+    return Notifications.sendTransactionalEmail(data);
   },
   sendTransactionalEmail: async (data) => {
     let ToAddresses = [process.env.INTERNAL_ADDRESS];
@@ -159,101 +155,54 @@ const Notifications = {
     return sendResult;
   },
   sendRawEmail: async (data) => {
-    if (!data.subject) {
-      data.subject = "CAUSE Foundation";
-    }
-    if (!data.pageContent) {
-      data.pageContent = "";
-    }
-    if (!data.ToAddress) {
-      data.ToAddress = "email@jamiebuckell.co.uk";
-    }
-
-    if (!data.htmlContent) {
-      data.htmlContent = "";
-    }
-    if (!data.plainContent) {
-      data.plainContent = data.htmlContent
-        .replace(/\n+/g, "")
-        .replace(/\<br \/\>/g, "\n")
-        .replace(/(<([^>]+)>)/gi, "")
-        .replace(/\s\s+/g, "")
-        .replace(/^[,]+/g, "")
-        .replace(/[,]+$/g, "");
-    }
-
-    const pdfAttachment = data.pdfAttachment ? data.pdfAttachment : "";
-    const csvAttachment = data.csvAttachment ? data.csvAttachment : "";
-    var date = new Date();
-
-    message_id = "test";
-
-    let bccAddress =
-      "email@jamiebuckell.co.uk, " + process.env.INTERNAL_ADDRESS; // process.env.INTERNAL_ADDRESS;
-
-    var boundary = `----=_Part${Math.random().toString().substr(2)}`;
-    var rawMessage = [];
-    rawMessage.push(
-      `From: <${process.env.FROM_ADDRESS}>`, // Can be just the email as well without <>
-      `To: ${data.ToAddress}`,
-      `Bcc: ${bccAddress}`,
-      `Subject: ${data.subject}`,
-      `MIME-Version: 1.0`,
-      `Message-ID: <${message_id}@eu-west-1.amazonses.com>`, // Will be replaced by SES
-      `Date: ${formatDate(date)}`, // Will be replaced by SES
-      `Return-Path: <${process.env.FROM_ADDRESS}>`, // Will be replaced by SES
-      `Content-Type: multipart/alternative; boundary="${boundary}"`, // For sending both plaintext & html content
-      // ... you can add more headers here as decribed in https://docs.aws.amazon.com/ses/latest/DeveloperGuide/header-fields.html
-      `\n`
-    );
-    if (pdfAttachment) {
-      rawMessage.push(
-        `--${boundary}`,
-        `Content-Type: application/octet-stream; name=\"${data.pdfAttachmentFilename}\"`,
-        `Content-Transfer-Encoding: base64`,
-        `Content-Disposition: attachment\n`,
-        pdfAttachment,
-        `\n`
-      );
-    }
-    if (csvAttachment) {
-      rawMessage.push(
-        `--${boundary}`,
-        `Content-Type: application/octet-stream; name=\"${data.csvAttachmentFilename}\"`,
-        `Content-Transfer-Encoding: base64`,
-        `Content-Disposition: attachment\n`,
-        csvAttachment,
-        `\n`
-      );
-    }
-
-    rawMessage.push(
-      `--${boundary}`,
-      `Content-Type: text/plain; charset=UTF-8`,
-      `Content-Transfer-Encoding: 7bit`,
-      `\n`,
-      data.plainContent,
-      `--${boundary}`,
-      `Content-Type: text/html; charset=UTF-8`,
-      `Content-Transfer-Encoding: 7bit`,
-      `\n`,
-      data.htmlContent,
-      `\n`,
-      `--${boundary}--`
-    );
-
-    // set email parameters
-    const emailParams = {
-      Source: process.env.FROM_ADDRESS,
-      RawMessage: {
-        Data: rawMessage.join("\n"),
-      },
+    const header = value => {
+      const text = String(value ?? "");
+      if (/[\r\n]/.test(text)) throw new Error("Invalid email header");
+      return text;
     };
-
-    // send the email using new validated params
-    const sendResult = await SES.sendRawEmail(emailParams).promise();
-    console.log(sendResult, emailParams);
-    return sendResult;
+    const filename = value => header(value).replace(/["\\]/g, "_");
+    const wrapBase64 = value => (value.match(/.{1,76}/g) ?? []).join("\r\n");
+    const encodeText = value => wrapBase64(Buffer.from(value, "utf8").toString("base64"));
+    const html = data.htmlContent ?? "";
+    const plain = data.plainContent ?? html.replace(/<br\s*\/?\s*>/gi, "\r\n").replace(/<[^>]*>/g, "");
+    const to = header(data.ToAddress);
+    if (!to) throw new Error("Email recipient is required");
+    const subject = header(data.subject ?? "CAUSE Foundation");
+    const boundary = `cause_mixed_${require("crypto").randomBytes(12).toString("hex")}`;
+    const alternative = `${boundary}_alternative`;
+    const raw = [
+      `From: <${header(process.env.FROM_ADDRESS)}>`,
+      `To: ${to}`,
+      `Bcc: email@jamiebuckell.co.uk, ${header(process.env.INTERNAL_ADDRESS)}`,
+      `Subject: ${/[^\x20-\x7e]/.test(subject) ? "=?UTF-8?B?" + Buffer.from(subject).toString("base64") + "?=" : subject}`,
+      "MIME-Version: 1.0",
+      `Date: ${formatDate(new Date())}`,
+      `Content-Type: multipart/mixed; boundary="${boundary}"`,
+      "",
+      `--${boundary}`,
+      `Content-Type: multipart/alternative; boundary="${alternative}"`,
+      "",
+    ];
+    for (const [type, content] of [["text/plain", plain], ["text/html", html]]) {
+      raw.push(`--${alternative}`, `Content-Type: ${type}; charset=UTF-8`,
+        "Content-Transfer-Encoding: base64", "", encodeText(content));
+    }
+    raw.push(`--${alternative}--`);
+    if (data.pdfAttachment) {
+      // PDF callers supply base64 text; accept binary buffers without double encoding.
+      const payload = Buffer.isBuffer(data.pdfAttachment)
+        ? data.pdfAttachment.toString("base64") : String(data.pdfAttachment).replace(/\s/g, "");
+      const name = filename(data.pdfAttachmentFilename ?? "attachment.pdf");
+      raw.push(`--${boundary}`, `Content-Type: application/pdf; name="${name}"`,
+        "Content-Transfer-Encoding: base64", `Content-Disposition: attachment; filename="${name}"`, "", wrapBase64(payload));
+    }
+    if (data.csvAttachment) {
+      const name = filename(data.csvAttachmentFilename ?? "attachment.csv");
+      raw.push(`--${boundary}`, `Content-Type: text/csv; charset=UTF-8; name="${name}"`,
+        "Content-Transfer-Encoding: base64", `Content-Disposition: attachment; filename="${name}"`, "", encodeText(data.csvAttachment));
+    }
+    raw.push(`--${boundary}--`, "");
+    return SES.sendRawEmail({ Source: process.env.FROM_ADDRESS, RawMessage: { Data: raw.join("\r\n") } }).promise();
   },
   sendTransactionalEmailSync: (data) => {
     let ToAddresses = [process.env.INTERNAL_ADDRESS];
@@ -286,7 +235,7 @@ const Notifications = {
       TemplateData: JSON.stringify(data),
     };
     // send the email using new validated params
-    SES.sendTemplatedEmail(emailParams);
+    return SES.sendTemplatedEmail(emailParams).promise();
   },
 };
 

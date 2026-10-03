@@ -23,13 +23,13 @@ exports.handler = async (event, context, cb) => {
     const batchData = [];
     const batchSubscriberData = [];
 
-    const campaignId = Functions.defaultCampaign();
+    const campaignId = Functions.requireCampaign(event.campaignId);
 
     const legacyDonorData = await Dynamo.scan({
       TableName: legacyDonorsTable,
     }).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     /* */
@@ -49,7 +49,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allDonorData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     console.log("Get Campaign data");
@@ -57,7 +57,7 @@ exports.handler = async (event, context, cb) => {
       TableName: legacyCampaignDonorsTable,
     }).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
     /* *
     if (legacyDonorData.length) {
@@ -189,7 +189,7 @@ exports.handler = async (event, context, cb) => {
 
         await Dynamo.batchWrite(chunk, mainTableName).catch((err) => {
           console.log("error in dynamo write", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
       }
       console.log("Donors Import Fin.");
@@ -208,7 +208,7 @@ exports.handler = async (event, context, cb) => {
 
         await Dynamo.batchWrite(chunk, subscriberTableName).catch((err) => {
           console.log("error in dynamo write", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
       }
       console.log("Subscribers Import Fin.");

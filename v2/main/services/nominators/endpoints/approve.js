@@ -39,7 +39,7 @@ exports.handler = async (event, context, cb) => {
     };
     const nomSearchData = await Dynamo.scan(nomParams).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
     if (!nomSearchData.length) {
       console.log(organisationId, "Organisation not found");
@@ -48,7 +48,7 @@ exports.handler = async (event, context, cb) => {
 
     let lead = {};
 
-    if (Functions.hasPermission(event, "TeamLead")) {
+    if (!Functions.hasPermission(event, "Admin") && Functions.hasPermission(event, "TeamLead")) {
       lead = nomSearchData.find(
         (n) => n.SK === `EMAIL#${userEmail}` && n?.type === "team-lead"
       );
@@ -75,7 +75,7 @@ exports.handler = async (event, context, cb) => {
     nominatorData.status = "Approved";
     await Dynamo.write(nominatorData, mainTableName).catch((err) => {
       console.log("error in dynamo write", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     console.log("Success", nominatorData);

@@ -18,7 +18,7 @@ exports.handler = async (event, context, cb) => {
     const params = { TableName: tableName };
     const allSubscribers = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     if (!allSubscribers) {

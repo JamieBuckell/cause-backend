@@ -36,6 +36,10 @@ exports.handler = async (event, context, cb) => {
       return Responses._400({ messages: valid });
     }
 
+    if (!Number.isInteger(Number(parsed.noBags)) || Number(parsed.noBags) <= 0) {
+      return Responses._400({ messages: { noBags: "Number of bags must be a positive integer" } });
+    }
+    parsed.noBags = Number(parsed.noBags);
     const campaignQueryData = {
       TableName: mainTableName,
       FilterExpression: "#pk= :pk AND begins_with(#sk, :sk)",
@@ -50,7 +54,7 @@ exports.handler = async (event, context, cb) => {
     };
     var campaignData = await Dynamo.scan(campaignQueryData).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const hamper = campaignData.find(
@@ -79,7 +83,7 @@ exports.handler = async (event, context, cb) => {
 
         await Dynamo.write(hamper, mainTableName).catch((err) => {
           console.log("error in dynamo write", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
 
         return Responses._200({ success: true });

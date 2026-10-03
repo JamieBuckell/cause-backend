@@ -40,26 +40,17 @@ exports.handler = async (event, context, cb) => {
     };
     let allComms = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
     const batchData = [];
 
-    const emailAddresses = allComms.filter((d) => d?.type === "email");
+    const emailAddresses = allComms.filter((d) => d?.type === "email" && d.PK !== "EMAIL");
     for (const [i, entry] of emailAddresses.entries()) {
-      await Dynamo.delete({ PK: entry.PK, SK: entry.SK }, commsTableName).catch(
-        (err) => {
-          console.log("error in donors dynamo delete", err);
-          return Responses._400({ messages: err });
-        }
-      );
-
-      (entry.GSI1PK = `${entry.PK}`), (entry.PK = "EMAIL");
-
-      batchData.push({
-        PutRequest: {
-          Item: entry,
-        },
-      });
+      const oldKey = { PK: entry.PK, SK: entry.SK };
+      const updated = { ...entry, GSI1PK: entry.PK, PK: "EMAIL" };
+      await Dynamo.write(updated, commsTableName);
+      // Never remove the original until its replacement is durable.
+      await Dynamo.delete(oldKey, commsTableName);
     }
 
     if (batchData && batchData.length) {
@@ -75,7 +66,7 @@ exports.handler = async (event, context, cb) => {
 
         await Dynamo.batchWrite(chunk, commsTableName).catch((err) => {
           console.log("error in dynamo write", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
         console.log("Completed Batch ", i);
       }

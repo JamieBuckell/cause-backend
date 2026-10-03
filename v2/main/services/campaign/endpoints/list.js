@@ -33,7 +33,7 @@ exports.handler = async (event, context, cb) => {
       };
       usersCampaigns = await Dynamo.scan(params).catch((err) => {
         console.log("error in dynamo query", err);
-        return Responses._400({ messages: err });
+        throw err;
       });
 
       usersCampaigns = usersCampaigns.map((u) => u?.PK);
@@ -51,13 +51,13 @@ exports.handler = async (event, context, cb) => {
     };
     let allCampaigns = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     if (!Functions.hasPermission(event, "Admin")) {
       allCampaigns = allCampaigns.filter((c) => usersCampaigns.includes(c?.PK));
     }
-    allCampaigns = allCampaigns.filter((c) => !("status" in c) || c.status);
+    allCampaigns = allCampaigns.filter((c) => c.status !== "deleted");
 
     if (!allCampaigns) {
       return Responses._400({ message: "Failed to find campaign data" });

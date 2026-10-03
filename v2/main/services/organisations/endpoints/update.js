@@ -64,7 +64,7 @@ exports.handler = async (event, context, cb) => {
     };
     const activeCampaigns = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     if (!activeCampaigns.length) {
@@ -90,7 +90,7 @@ exports.handler = async (event, context, cb) => {
     const matchedOrgs = await Dynamo.query(orgsQueryData, mainTableName).catch(
       (err) => {
         console.log("error in dynamo query", err);
-        return Responses._400({ messages: err });
+        throw err;
       }
     );
     if (matchedOrgs.length) {
@@ -105,7 +105,7 @@ exports.handler = async (event, context, cb) => {
 
         await Dynamo.write(organisationData, mainTableName).catch((err) => {
           console.log("error in dynamo query", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
 
         return Responses._200({
@@ -118,7 +118,6 @@ exports.handler = async (event, context, cb) => {
     } else {
       console.log(
         "Organisation not found",
-        organisationData,
         matchedOrgs,
         campaignId
       );

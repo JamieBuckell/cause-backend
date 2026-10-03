@@ -17,7 +17,7 @@ exports.handler = async (event, context, cb) => {
     const legacyNominatorsTable = "cause-nominators-live";
     const legacyOrganisationsTable = "cause-organisations-live-restored";
 
-    const campaignId = Functions.defaultCampaign();
+    const campaignId = Functions.requireCampaign(event.campaignId);
 
     const params = {
       TableName: mainTableName,
@@ -31,7 +31,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allCurrentCampaignData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     console.log("Get Donors");
@@ -39,7 +39,7 @@ exports.handler = async (event, context, cb) => {
       TableName: legacyDonorsTable,
     }).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     console.log("Get Nominators");
@@ -47,7 +47,7 @@ exports.handler = async (event, context, cb) => {
       TableName: legacyNominatorsTable,
     }).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     console.log("Get Organisations");
@@ -55,7 +55,7 @@ exports.handler = async (event, context, cb) => {
       TableName: legacyOrganisationsTable,
     }).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     console.log("Get Families");
@@ -63,7 +63,7 @@ exports.handler = async (event, context, cb) => {
       TableName: legacyFamiliesTable,
     }).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     console.log("Get Family Members");
@@ -71,7 +71,7 @@ exports.handler = async (event, context, cb) => {
       TableName: legacyFamilyMembersTable,
     }).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const batchData = [];
@@ -146,7 +146,7 @@ exports.handler = async (event, context, cb) => {
             console.log("ID not found... could be a duplicate...");
 
             currentDonor = allCurrentCampaignData.find(
-              (n) => n.type === "donor" && n.GSI3PK === legacyDonor.email
+              (n) => n.type === "donor" && n.GSI3PK === legacyDonor?.email
             );
             if (!currentDonor?.GSI2PK) {
               console.log(

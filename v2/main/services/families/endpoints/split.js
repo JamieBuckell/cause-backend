@@ -30,7 +30,8 @@ const checkValidReference = async (reference, existingFamiliesData) => {
     );
 
     const referenceMatch = reference.match(/(.*)-/);
-    const usersReference = referenceMatch[1];
+    if (!referenceMatch) throw new Error("Invalid hamper reference");
+  const usersReference = referenceMatch[1];
     let validHamperId = reference.replace(referenceMatch[0], "");
     if (existingRef) {
         console.log(reference, "already exists!");
@@ -44,10 +45,6 @@ const checkValidReference = async (reference, existingFamiliesData) => {
                 (f) => f?.GSI2SK === `SK#${usersReference}-${checkIncrement}`
             );
             isUnique = existingRefCheck === undefined;
-
-            if (hamperIncrement >= 100) {
-                isUnique = true;
-            }
         }
         validHamperId = hamperIncrement.toString().padStart(3, "0");
         console.log(`Rolling with: ${usersReference}-${validHamperId}`);
@@ -88,7 +85,7 @@ exports.handler = async (event, context, cb) => {
         };
         let allCampaignData = await Dynamo.scan(campaignParams).catch((err) => {
             console.log("error in dynamo query", err);
-            return Responses._400({ messages: err });
+            throw err;
         });
         console.log("campaign data recieved...", allCampaignData.length);
 
@@ -121,6 +118,7 @@ exports.handler = async (event, context, cb) => {
         console.log(existingFamiliesData.length, "Existing families");
 
         let updateHamperData = [];
+        const splitGroups = new Map();
 
         const timezone = process.env.TIMEZONE;
         const dateFormat = process.env.DATE_FORMAT;
@@ -128,14 +126,21 @@ exports.handler = async (event, context, cb) => {
             .tz(timezone)
             .format(dateFormat);
 
+        if (!Array.isArray(parsed.members) || !parsed.members.length || !parsed.members.some(m => Number(m.familyNumber) === 1) || parsed.members.some(m => !Number.isInteger(Number(m.familyNumber)) || Number(m.familyNumber) < 1 || (Number(m.familyNumber) > 1 && !m.hamperId))) {
+            return Responses._400({ messages: { members: "Valid split groups including the original family are required" } });
+        }
         familyData.members = [];
         familyData.familyDetail = '';
 
         if (parsed.members && parsed.members.length) {
             for (const [i, m] of parsed.members.entries()) {
-                if (m.familyNumber === 1) {
+                if (Number(m.familyNumber) === 1) {
                     familyData.members.push(m);
                 } else {
+                    if (splitGroups.has(m.familyNumber)) {
+                        splitGroups.get(m.familyNumber).members.push(m);
+                        continue;
+                    }
                     const validReference = await checkValidReference(
                         m.hamperId.toString().replace(escapeRegEx, ""),
                         existingFamiliesData
@@ -146,7 +151,7 @@ exports.handler = async (event, context, cb) => {
                     if (existingFamilyIndex >= 0 && updateHamperData[existingFamilyIndex]) {
                         updateHamperData[existingFamilyIndex].members.push(m);
                     } else {
-                        existingFamily = { ...familyData };
+                        const existingFamily = { ...familyData };
 
                         const familyId = nanoid(12);
                         existingFamily.SK = `REF#${familyId}`;
@@ -162,7 +167,12 @@ exports.handler = async (event, context, cb) => {
 
                         existingFamily.members.push(m);
 
+                        delete existingFamily.bagsReceived;
+                        delete existingFamily.receivedDate;
+                        delete existingFamily.receiveStatus;
                         updateHamperData.push(existingFamily);
+                        existingFamiliesData.push(existingFamily);
+                        splitGroups.set(m.familyNumber, existingFamily);
                     }
                 }
             }
@@ -189,7 +199,7 @@ exports.handler = async (event, context, cb) => {
 
                 await Dynamo.batchWrite(chunk, mainTableName).catch((err) => {
                     console.log("error in dynamo write", err);
-                    return Responses._400({ messages: err });
+                    throw err;
                 });
             }
             /* */

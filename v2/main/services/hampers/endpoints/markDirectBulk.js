@@ -24,7 +24,7 @@ exports.handler = async (event, context, cb) => {
     const timezone = process.env.TIMEZONE;
     const dateFormat = process.env.DATE_FORMAT;
 
-    const parsed = event.hamperId ? event : JSON.parse(event.body);
+    const parsed = event.hamperIds ? event : JSON.parse(event.body);
 
     const valid = await Functions.validateSubmission(parsed, validations);
     if (Object.keys(valid).length > 0) {
@@ -45,11 +45,11 @@ exports.handler = async (event, context, cb) => {
     };
     var campaignData = await Dynamo.scan(campaignQueryData).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     console.log("hamperIds", parsed.hamperIds);
-    if (parsed.hamperIds.length) {
+    if (Array.isArray(parsed.hamperIds) && parsed.hamperIds.length) {
       const errors = [];
       const batchData = [];
       for (const hamperId of parsed.hamperIds) {
@@ -70,8 +70,8 @@ exports.handler = async (event, context, cb) => {
             },
           });
         } else {
-          let error = [];
-          error[hamperId] = "Hamper ID not founds";
+          let error = {};
+          error[hamperId] = "Hamper ID not found";
           errors.push(error);
         }
       }

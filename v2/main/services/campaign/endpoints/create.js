@@ -81,7 +81,7 @@ exports.handler = async (event, context, cb) => {
     const newRequest = await Dynamo.write(campaignData, mainTableName).catch(
       (err) => {
         console.log("error in dynamo write", err);
-        return Responses._400({ messages: err });
+        throw err;
       }
     );
 

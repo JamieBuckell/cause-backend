@@ -37,7 +37,7 @@ exports.handler = async (event, context, cb) => {
     var donorData = await Dynamo.query(donorQueryData, mainTableName).catch(
       (err) => {
         console.log("error in dynamo query", err);
-        return Responses._400({ messages: err });
+        throw err;
       }
     );
 
@@ -67,14 +67,14 @@ exports.handler = async (event, context, cb) => {
         const allFamiliesData = await Dynamo.scan(familiesQueryData).catch(
           (err) => {
             console.log("error in dynamo query", err);
-            return Responses._400({ messages: err });
+            throw err;
           }
         );
 
         const unconfirmedFamilies = allFamiliesData.filter(
           (f) =>
             f.allocatedTo === existingDonor.GSI2PK &&
-            f.status !== "allocated-confirmed"
+            ["allocated", "allocated-unconfirmed"].includes(f.status)
         );
 
         if (unconfirmedFamilies.length) {
@@ -95,7 +95,7 @@ exports.handler = async (event, context, cb) => {
 
               await Dynamo.batchWrite(chunk, mainTableName).catch((err) => {
                 console.log("error in dynamo write", err);
-                return Responses._400({ messages: err });
+                throw err;
               });
             }
           }

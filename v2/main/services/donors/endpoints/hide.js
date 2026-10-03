@@ -37,7 +37,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allDonorData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const donor = allDonorData.find((d) => d.GSI2PK === parsed.donorId);
@@ -52,7 +52,7 @@ exports.handler = async (event, context, cb) => {
     donor.donorDetails["hidden"] = !donor.donorDetails?.hidden;
     await Dynamo.write(donor, mainTableName).catch((err) => {
       console.log("error in dynamo write (hide)", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     return Responses._200({

@@ -21,7 +21,7 @@ exports.handler = async (event, context, cb) => {
       commsTableName
     ).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     for (const [i, entry] of recipientsToFix.entries()) {

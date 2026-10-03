@@ -44,8 +44,11 @@ exports.handler = async (event, context, cb) => {
       };
       currentUser = await Dynamo.query(params, mainTableName).catch((err) => {
         console.log("error in dynamo query", err);
-        return Responses._400({ messages: err });
+        throw err;
       });
+      if (!currentUser.length || !currentUser[0].GSI3PK || currentUser[0].status === "deleted") {
+        return Responses._401({ messages: { unauthorized: "Campaign membership is required" } });
+      }
       if (currentUser.length) {
         currentUser = currentUser[0];
       }
@@ -63,7 +66,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allCampaignData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     let donors = [

@@ -17,7 +17,7 @@ exports.handler = async (event, context, cb) => {
     const legacyNominatorsTable = "cause-nominators-live";
     const legacyOrganisationsTable = "cause-organisations-live-restored";
 
-    const campaignId = Functions.defaultCampaign(); // 2022 Campaign
+    const campaignId = Functions.requireCampaign(event.campaignId); // 2022 Campaign
 
     const params = {
       TableName: mainTableName,
@@ -31,7 +31,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allCurrentCampaignData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
     const currentDonors = allCurrentCampaignData.filter(
       (n) => n.type === "donor"
@@ -80,7 +80,7 @@ exports.handler = async (event, context, cb) => {
                     donor.familyDetails.request[0].allocation.find(
                       (a) => a.hamperId === hamperId
                     );
-                  if (isFamilyAllocated && isFamilyAllocated.length) {
+                  if (isFamilyAllocated) {
                     console.log(hamperId, "already allocated");
                   } else {
                     if (!addToBatch) {

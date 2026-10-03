@@ -48,7 +48,7 @@ exports.handler = async (event, context, cb) => {
     var donorData = await Dynamo.query(donorQueryData, mainTableName).catch(
       (err) => {
         console.log("error in dynamo query", err);
-        return Responses._400({ messages: err });
+        throw err;
       }
     );
 

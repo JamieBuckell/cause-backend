@@ -57,7 +57,7 @@ exports.handler = async (event, context, cb) => {
     var donorData = await Dynamo.query(donorQueryData, mainTableName).catch(
       (err) => {
         console.log("error in dynamo query", err);
-        return Responses._400({ messages: err });
+        throw err;
       }
     );
 
@@ -81,7 +81,7 @@ exports.handler = async (event, context, cb) => {
       let batchData = [];
       const familyData = [];
       for (const request of donorData.familyDetails.request) {
-        for (const allocation of request.allocation) {
+        for (const allocation of request.allocation ?? []) {
           hamperCount++;
           csvContent += '"Hamper ' + hamperCount + '"' + "\r\n";
           csvContent +=
@@ -145,7 +145,7 @@ exports.handler = async (event, context, cb) => {
 
           await Dynamo.batchWrite(chunk, mainTableName).catch((err) => {
             console.log("error in dynamo write", err);
-            return Responses._400({ messages: err });
+            throw err;
           });
         }
       }

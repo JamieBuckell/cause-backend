@@ -18,14 +18,14 @@ exports.handler = async (event, context, cb) => {
     const envSalt = process.env.HASHING_SALT;
     const envHashPrefix = process.env.HASHING_PREFIX;
 
-    const campaignId = Functions.defaultCampaign();
+    const campaignId = Functions.requireCampaign(event.campaignId);
 
     console.log("Get Nominators");
     const nominatorsnsData = await Dynamo.scan({
       TableName: legacyNominatorsTable,
     }).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     console.log("Get Curent Orgs");
@@ -43,7 +43,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allOrganisationsData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const batchData = [];
@@ -120,7 +120,7 @@ exports.handler = async (event, context, cb) => {
 
         await Dynamo.batchWrite(chunk, mainTableName).catch((err) => {
           console.log("error in dynamo write", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
       }
       console.log("Nominators Import Fin.");

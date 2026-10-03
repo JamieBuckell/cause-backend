@@ -42,13 +42,13 @@ exports.handler = async (event, context, cb) => {
     };
     var campaignData = await Dynamo.scan(campaignQueryData).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
-    const allFamilies = campaignData.filter((cd) => cd?.type === "family");
+    const allFamilies = campaignData.filter((cd) => cd?.type === "family" && cd.status !== "deleted");
 
     counts.allocatedConfirmed = allFamilies.filter(
-      (f) => f.status.indexOf("allocated-confirmed") >= 0
+      (f) => f.status === "allocated-confirmed"
     ).length;
     counts.hampersDropped = allFamilies.filter(
       (f) => f?.receiveStatus && f.receiveStatus.indexOf("hamper-received") >= 0

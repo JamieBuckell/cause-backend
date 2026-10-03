@@ -20,7 +20,7 @@ exports.handler = async (event, context, cb) => {
     const envSalt = process.env.HASHING_SALT;
     const envHashPrefix = process.env.HASHING_PREFIX;
 
-    const campaignId = Functions.defaultCampaign();
+    const campaignId = Functions.requireCampaign(event.campaignId);
 
     const params = {
       TableName: mainTableName,
@@ -36,7 +36,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allCurrentDonorsData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     console.log("Get Donors");
@@ -44,7 +44,7 @@ exports.handler = async (event, context, cb) => {
       TableName: legacyDonorsTable,
     }).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     console.log("Get Donor campaign data");
@@ -52,7 +52,7 @@ exports.handler = async (event, context, cb) => {
       TableName: legacyCampaignDonorsTable,
     }).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     console.log("Get Subscribers data");
@@ -60,7 +60,7 @@ exports.handler = async (event, context, cb) => {
       TableName: subscriberTableName,
     }).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const batchData = [];
@@ -104,7 +104,7 @@ exports.handler = async (event, context, cb) => {
           console.log("Campaign Data found...");
           const existingDonor = batchData.find(
             (bd) => bd.PutRequest.Item.SK === donorSK
-          );
+          )?.PutRequest.Item;
 
           if (existingDonor) {
             console.log("This dood already exists!", existingDonor);
@@ -262,7 +262,7 @@ exports.handler = async (event, context, cb) => {
 
         await Dynamo.batchWrite(chunk, mainTableName).catch((err) => {
           console.log("error in dynamo write", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
         await Functions.timer(3000);
       }
@@ -282,7 +282,7 @@ exports.handler = async (event, context, cb) => {
 
         await Dynamo.batchWrite(chunk, subscriberTableName).catch((err) => {
           console.log("error in dynamo write", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
         await Functions.timer(1000);
       }

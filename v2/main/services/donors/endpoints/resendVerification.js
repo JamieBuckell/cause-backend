@@ -51,7 +51,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allDonorData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const donorData = allDonorData.find((d) => d.GSI2PK === parsed.donorId);
@@ -88,7 +88,7 @@ exports.handler = async (event, context, cb) => {
       subscriberTableName
     ).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     if (subscribers.length) {
@@ -98,7 +98,7 @@ exports.handler = async (event, context, cb) => {
         donorData.emailVerification.hash = existingSubscriber.SK;
       }
     } else {
-      console.log("Subscriber not found?", emailAddress);
+      console.log("Subscriber not found?", donorData.GSI3PK);
     }
 
     const donorHash = Hashing.hash(
@@ -112,7 +112,7 @@ exports.handler = async (event, context, cb) => {
 
     await Dynamo.write(donorData, mainTableName).catch((err) => {
       console.log("error in dynamo write", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const emailTemplate = {

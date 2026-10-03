@@ -74,9 +74,10 @@ exports.handler = async (event, context, cb) => {
       });
     }
 
+    const requestValidations = [...validations];
     //Nominators must provide a telephone number
     if (nominatorType === "nominator") {
-      validations.push({
+      requestValidations.push({
         key: "telephone",
         required: true,
         pattern: new RegExp(/[0-9+()\-\s]{8,30}/),
@@ -84,7 +85,7 @@ exports.handler = async (event, context, cb) => {
       });
     }
 
-    const valid = await Functions.validateSubmission(parsed, validations);
+    const valid = await Functions.validateSubmission(parsed, requestValidations);
     if (Object.keys(valid).length > 0) {
       return Responses._400({ messages: valid });
     }
@@ -112,7 +113,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allCampaignData = await Dynamo.scan(campaignParams).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const organisationData = allCampaignData.find(
@@ -152,15 +153,14 @@ exports.handler = async (event, context, cb) => {
           .toString()
           .replace(escapeRegEx, "")
           .toLowerCase();
-        const validPhone = parsed.telephone.toString().replace(escapeRegEx, "");
+        const validPhone = (parsed.telephone ?? "").toString().replace(escapeRegEx, "");
 
         const validOrganisationId = parsed.organisationId;
         const validCompany = organisationData?.organisation?.name;
 
         const existingUser = allCampaignData.find(
           (o) =>
-            o?.nominatorDetails?.email === validEmail &&
-            o?.GSI3PK === validOrganisationId
+            o?.nominatorDetails?.email === validEmail
         );
 
         if (existingUser?.PK) {
@@ -187,18 +187,7 @@ exports.handler = async (event, context, cb) => {
           if (existingCognitoUser) {
             /* */
             cognitoId = existingCognitoUser.Username;
-            const passwordSetParams = {
-              Password: userPassword,
-              Permanent: false,
-              Username: cognitoId,
-              UserPoolId: userPoolId,
-            };
-            await cognito.adminSetUserPassword(passwordSetParams).promise();
-
-            console.log(
-              "We have reset the password for the email address",
-              validEmail
-            );
+            // Joining another campaign must not reset an existing account's password.
             /* *
             console.log("Email address in use - cognito", existingCognitoUser);
             return Responses._400({
@@ -213,7 +202,7 @@ exports.handler = async (event, context, cb) => {
               break;
             default:
               console.log(`Cognito User Check Error! - ${e}`);
-              break;
+              throw e;
           }
         }
 
@@ -262,7 +251,7 @@ exports.handler = async (event, context, cb) => {
           mainTableName
         ).catch((err) => {
           console.log("error in dynamo write", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
 
         if (!newRequest) {
@@ -320,7 +309,7 @@ exports.handler = async (event, context, cb) => {
           };
           await Dynamo.write(nominatorData, mainTableName).catch((err) => {
             console.log("error in dynamo write", err);
-            return Responses._400({ messages: err });
+            throw err;
           });
           console.log("Updated cognito id against user in dynamo");
 

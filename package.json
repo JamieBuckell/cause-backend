@@ -1,5 +1,8 @@
 {
   "devDependencies": {
     "serverless": "^3.40.0"
+  },
+  "scripts": {
+    "test": "node v2/main/services/tests/run.js"
   }
 }

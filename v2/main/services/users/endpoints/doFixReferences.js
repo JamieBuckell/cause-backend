@@ -6,12 +6,14 @@ const NominatorReferences = require("../common/NominatorReferences");
 
 exports.handler = async (event, context, cb) => {
   try {
+    if (!event?.Records?.length) throw new Error("Queue records are required");
     if (event?.Records) {
       const mainTableName = process.env.MAIN_DYNAMO_TABLE;
       console.log("Checking Table", mainTableName);
       for (const r of event?.Records) {
         console.log(`Running message: ${r.body}`);
 
+        if (!r?.messageAttributes?.campaign || !r?.messageAttributes?.nominatorId) throw new Error("Invalid reference repair message");
         if (
           r?.messageAttributes?.campaign &&
           r?.messageAttributes?.nominatorId
@@ -35,7 +37,7 @@ exports.handler = async (event, context, cb) => {
           let allCampaignData = await Dynamo.scan(campaignParams).catch(
             (err) => {
               console.log("error in dynamo query", err);
-              return Responses._400({ messages: err });
+              throw err;
             }
           );
           console.log(
@@ -51,7 +53,7 @@ exports.handler = async (event, context, cb) => {
           );
           if (!nominatorData) {
             console.log(nominatorId, nominatorData);
-            return Responses._400({ message: "Failed to retrieve nom by ID" });
+            throw new Error("Failed to retrieve nom by ID");
           }
 
           console.log("Get Organisation", nominatorData?.GSI3PK);
@@ -60,7 +62,7 @@ exports.handler = async (event, context, cb) => {
               cd.GSI2PK === nominatorData?.GSI3PK && cd.type === "organisation"
           );
           if (!organisationData) {
-            return Responses._400({ message: "Failed to retrieve org by ID" });
+            throw new Error("Failed to retrieve org by ID");
           }
 
           await NominatorReferences.repair(nominatorData, allCampaignData, mainTableName);
@@ -86,7 +88,7 @@ exports.handler = async (event, context, cb) => {
               if (`SK#${newRef}` != family.GSI2SK) {
                 console.log(`NominatorId: ${family.GSI3SK}`);
                 console.log(
-                  `Previous Ref: ${family.GSI2SK.replace("SK#", "")}`
+                  `Previous Ref: ${(family.GSI2SK ?? "").replace("SK#", "")}`
                 );
                 console.log(`New Ref: ${newRef}`);
                 family.GSI2SK = `SK#${newRef}`;
@@ -99,9 +101,7 @@ exports.handler = async (event, context, cb) => {
                 const newRequest = await Dynamo.write(family, mainTableName);
 
                 if (!newRequest) {
-                  return Responses._400({
-                    message: "Failed to write family to db by ID",
-                  });
+                  throw new Error("Failed to write family to db by ID");
                 }
               } else {
                 console.log(`Sticking with reference: ${newRef}`);
@@ -120,8 +120,6 @@ exports.handler = async (event, context, cb) => {
     });
   } catch (e) {
     console.log(`An unexpected error occurred ${e}`);
-    return Responses._400({
-      messages: { unexpected: "An unexpected error occurred" },
-    });
+    throw e;
   }
 };

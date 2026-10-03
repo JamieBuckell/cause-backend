@@ -45,7 +45,7 @@ exports.handler = async (event, context, cb) => {
     };
     var campaignData = await Dynamo.scan(campaignQueryData).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const hamper = campaignData.find(
@@ -61,7 +61,7 @@ exports.handler = async (event, context, cb) => {
 
       await Dynamo.write(hamper, mainTableName).catch((err) => {
         console.log("error in dynamo write", err);
-        return Responses._400({ messages: err });
+        throw err;
       });
 
       return Responses._200({ success: true });

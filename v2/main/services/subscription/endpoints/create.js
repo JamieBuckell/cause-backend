@@ -79,7 +79,7 @@ exports.handler = async (event, context, cb) => {
       subscriberTableName
     ).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     if (subscribers.length) {
@@ -131,7 +131,7 @@ exports.handler = async (event, context, cb) => {
       subscriberTableName
     ).catch((err) => {
       console.log("error in dynamo write", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     if (!subscriberRequest) {

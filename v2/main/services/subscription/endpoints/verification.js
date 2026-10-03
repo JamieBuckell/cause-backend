@@ -1,238 +1,76 @@
-const Responses = require("../common/API_Responses");
-const Dynamo = require("../common/Dynamo");
-const Hashing = require("../common/Hashing");
-const Functions = require("../common/Functions");
-const Notifications = require("../common/Notifications");
+const Responses = require('../common/API_Responses');
+const Dynamo = require('../common/Dynamo');
+const Hashing = require('../common/Hashing');
+const Functions = require('../common/Functions');
+const Notifications = require('../common/Notifications');
+const moment = require('moment-timezone');
 
-const moment = require("moment-timezone");
-exports.handler = async (event, context, cb) => {
+exports.handler = async event => {
   try {
-    const rawEmailAddress = event.pathParameters.emailAddress;
-    // API Gateway can pass the URL-encoded path through to Lambda. Decode
-    // once, preserving literal percent sequences in already-decoded emails.
-    const emailAddress = rawEmailAddress.includes("@")
-      ? rawEmailAddress
-      : decodeURIComponent(rawEmailAddress);
-    let { v, campaignId } = event.queryStringParameters;
-
-    const isAdmin = Functions.hasPermission(event, "Admin");
-
-    console.log("Verification attempt for", emailAddress);
-    if (isAdmin) {
-      console.log("User is Admin...", event);
+    const raw = event.pathParameters?.emailAddress ?? '';
+    const emailAddress = (raw.includes('@') ? raw : decodeURIComponent(raw)).toLowerCase();
+    const { v, campaignId } = event.queryStringParameters ?? {};
+    const admin = Functions.hasPermission(event, 'Admin');
+    if (!emailAddress || (!admin && !v)) return Responses._400({ messages: { error: 'Invalid verification link' } });
+    const salt = process.env.HASHING_SALT;
+    const prefix = process.env.HASHING_PREFIX;
+    const table = process.env.SUBSCRIBERS_TABLE;
+    const subscribers = await Dynamo.query({
+      KeyConditionExpression: '#pk= :pk AND begins_with(#sk, :sk)',
+      ExpressionAttributeNames: { '#pk': 'PK', '#sk': 'SK' },
+      ExpressionAttributeValues: { ':pk': emailAddress, ':sk': prefix },
+    }, table);
+    const subscriber = subscribers[0];
+    const subscriberAuthorized = !!subscriber && (admin || Hashing.compare(subscriber.SK.slice(prefix.length), { salt, hashedpassword: v }));
+    let verified = false;
+    const timestamp = moment().tz(process.env.TIMEZONE).format(process.env.DATE_FORMAT);
+    if (subscriberAuthorized) {
+      if (!subscriber.verified || subscriber.pendingSubscription) {
+        subscriber.verified = true;
+        subscriber.dateVerified = timestamp;
+        if (subscriber.pendingSubscription) {
+          subscriber.subscribed = true;
+          subscriber.dateSubscribed = timestamp;
+          subscriber.dateUnsubscribed = '';
+          delete subscriber.pendingSubscription;
+          delete subscriber.status;
+        }
+        await Dynamo.write(subscriber, table);
+      }
+      verified = true;
     }
-
-    if (!campaignId || campaignId === "undefined") {
-      campaignId = Functions.defaultCampaign();
-    }
-
-    const envSalt = process.env.HASHING_SALT;
-    const envHashPrefix = process.env.HASHING_PREFIX;
-    const mainTableName = process.env.MAIN_DYNAMO_TABLE;
-    const subscriberTableName = process.env.SUBSCRIBERS_TABLE;
-
-    const currentCampaign = await Dynamo.get(
-      {
-        PK: campaignId,
-        SK: "A",
-      },
-      mainTableName
-    ).catch((err) => {
-      console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
-    });
-
-    if (currentCampaign?.PK) {
-      const registrationClosed = new Date(
-        currentCampaign.campaignDetails.registrationClosed
-      );
-      const now = new Date();
-      const campaignActive = now <= registrationClosed;
-
-      var hashVerified = false;
-
-      // Specifically Verify any subscriptions
-      const subscriberQueryData = {
-        KeyConditionExpression: "#pk= :pk And begins_with(#sk, :sk)",
-        ExpressionAttributeValues: {
-          ":pk": emailAddress,
-          ":sk": envHashPrefix,
-        },
-        ExpressionAttributeNames: {
-          "#pk": "PK",
-          "#sk": "SK",
-        },
-      };
-      const subscribers = await Dynamo.query(
-        subscriberQueryData,
-        subscriberTableName
-      ).catch((err) => {
-        console.log("error in dynamo query", err);
-        return Responses._400({ messages: err });
-      });
-
-      if (subscribers.length) {
-        const existingSubscriber = subscribers[0];
-
-        var verificationSuccess = false;
-
-        if (!existingSubscriber?.verified) {
-          const subscriberHash = existingSubscriber.SK.replace(
-            envHashPrefix,
-            ""
-          );
-          const hashCompare = Hashing.compare(subscriberHash, {
-            salt: envSalt,
-            hashedpassword: v,
+    // Standalone subscriptions do not need a campaign. Donor verification only
+    // touches the explicitly named campaign and exact email key.
+    if (campaignId && campaignId !== 'undefined') {
+      const mainTable = process.env.MAIN_DYNAMO_TABLE;
+      const campaign = await Dynamo.get({ PK: campaignId, SK: 'A' }, mainTable);
+      if (campaign.status !== 'deleted' && new Date() <= new Date(campaign.campaignDetails?.registrationClosed)) {
+        const donors = await Dynamo.query({
+          KeyConditionExpression: '#pk= :pk AND #sk= :sk',
+          ExpressionAttributeNames: { '#pk': 'PK', '#sk': 'SK' },
+          ExpressionAttributeValues: { ':pk': campaignId, ':sk': `EMAIL#D#${emailAddress}` },
+        }, mainTable);
+        for (const donor of donors) {
+          if (donor.status === 'deleted') continue;
+          const donorToken = donor.emailVerification?.hash;
+          const authorized = admin || subscriberAuthorized || (donorToken && Hashing.compare(donorToken.startsWith(prefix) ? donorToken.slice(prefix.length) : donorToken, { salt, hashedpassword: v }));
+          if (!authorized) continue;
+          verified = true;
+          if (donor.emailVerification?.verified) continue;
+          donor.emailVerification = { ...donor.emailVerification, verified: true, dateVerified: timestamp };
+          await Dynamo.write(donor, mainTable);
+          const template = await Functions.getEmailTemplate('donorVerified', {
+            familyData: donor.familyDetails.request, donorData: { ...donor.donorDetails, email: emailAddress },
           });
-
-          if (hashCompare || isAdmin) {
-            hashVerified = true;
-            const timezone = process.env.TIMEZONE;
-            const dateFormat = process.env.DATE_FORMAT;
-            const timeStamp = moment(new Date().getTime())
-              .tz(timezone)
-              .format(dateFormat);
-
-            existingSubscriber.verified = true;
-            existingSubscriber.dateVerified = timeStamp;
-
-            await Dynamo.write(existingSubscriber, subscriberTableName).catch(
-              (err) => {
-                console.log("error in dynamo write", err);
-                return Responses._400({
-                  messages: {
-                    error:
-                      "An unexpected error occurred. Please try again later",
-                  },
-                });
-              }
-            );
-
-            verificationSuccess = true;
-          } else {
-            console.log("Hash not matched...", hashCompare, subscriberHash, {
-              salt: envSalt,
-              hashedpassword: v,
-            });
-          }
-        } else {
-          console.log("Already verified...");
-          verificationSuccess = true;
+          await Notifications.sendTransactionalEmail({ ...template, ToAddresses: [emailAddress] });
         }
-      } else {
-        console.log("Subscriber not found?", emailAddress, envHashPrefix);
       }
-
-      if (campaignActive) {
-        // Verification process completed, send the hamper confirmation email...
-        const queryData = {
-          KeyConditionExpression: "#pk= :pk And begins_with(#sk, :sk)",
-          ExpressionAttributeValues: {
-            ":pk": currentCampaign.PK,
-            ":sk": `EMAIL#D#${emailAddress}`,
-          },
-          ExpressionAttributeNames: {
-            "#pk": "PK",
-            "#sk": "SK",
-          },
-        };
-        const donors = await Dynamo.query(queryData, mainTableName).catch(
-          (err) => {
-            console.log("error in dynamo query", err);
-            return Responses._400({ messages: err });
-          }
-        );
-
-        if (donors.length) {
-          for (const [i, existingDonor] of donors.entries()) {
-            console.log("verifying", existingDonor.GSI3PK);
-            if (!existingDonor?.emailVerification) {
-              existingDonor.emailVerification = {
-                bounced: false,
-                bouncedDetail: "",
-                dateVerified: "",
-                verified: false,
-              };
-            }
-
-            const timezone = process.env.TIMEZONE;
-            const dateFormat = process.env.DATE_FORMAT;
-            const timeStamp = moment(new Date().getTime())
-              .tz(timezone)
-              .format(dateFormat);
-
-            existingDonor.emailVerification.verified = true;
-            existingDonor.emailVerification.dateVerified = timeStamp;
-
-            await Dynamo.write(existingDonor, mainTableName).catch((err) => {
-              console.log("error in dynamo write", err);
-              return Responses._400({
-                messages: {
-                  error: "An unexpected error occurred. Please try again later",
-                },
-              });
-            });
-
-            verificationSuccess = true;
-
-            const emailTemplate = {
-              familyData: existingDonor.familyDetails.request,
-              donorData: {
-                ...existingDonor.donorDetails,
-                email: emailAddress,
-              },
-            };
-            const emailTemplateParams = await Functions.getEmailTemplate(
-              "donorVerified",
-              emailTemplate
-            );
-            const jsonParameters = {
-              ToAddresses: [emailAddress],
-              ...emailTemplateParams,
-            };
-            await Notifications.sendTransactionalEmail(jsonParameters);
-          }
-        } else {
-          console.log("Donor not found...", currentCampaign?.PK, emailAddress);
-        }
-      } else {
-        console.log(
-          "We finished because the campaign is no longer active...",
-          now,
-          registrationClosed
-        );
-      }
-      if (verificationSuccess) {
-        return Responses._200({
-          messages: {
-            success:
-              'Your email address has successfully been verified.<br /><br /><a href="https://www.cause-foundation.org.uk/">Click here to go to the website.</a>',
-          },
-        });
-      } else {
-        return Responses._400({
-          messages: {
-            error:
-              'There was an error verifying your email address, please try the link again or <a href="https://www.cause-foundation.org.uk/contact-us-i3">Contact Us</a> if the problem persists.',
-          },
-        });
-      }
-    } else {
-      console.log("Campaign not found.", campaignId);
     }
-    return Responses._400({
-      messages: {
-        error:
-          'There was an error verifying your email address, please try the link again or <a href="https://www.cause-foundation.org.uk/contact-us-i3">Contact Us</a> if the problem persists.',
-      },
-    });
-  } catch (e) {
-    console.log(`An unexpected error occurred ${e}`);
-    return Responses._400({
-      messages: {
-        unexpected: "An unexpected error occurred. Please try again later",
-      },
-    });
+    return verified
+      ? Responses._200({ messages: { success: 'Your email address has successfully been verified.' } })
+      : Responses._400({ messages: { error: 'Invalid verification link' } });
+  } catch (error) {
+    console.log('Verification failed', error);
+    return Responses._400({ messages: { unexpected: 'An unexpected error occurred. Please try again later' } });
   }
 };

@@ -40,7 +40,7 @@ exports.handler = async (event, context, cb) => {
     };
     const nomSearchData = await Dynamo.scan(nomParams).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
     const nominatorData = nomSearchData.find((o) => o.GSI2PK === nominatorId);
 
@@ -84,7 +84,7 @@ exports.handler = async (event, context, cb) => {
       nominatorData.nominatorDetails.cognitoId = cognitoId;
       await Dynamo.write(nominatorData, mainTableName).catch((err) => {
         console.log("error in dynamo write", err);
-        return Responses._400({ messages: err });
+        throw err;
       });
     }
 

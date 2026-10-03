@@ -13,6 +13,7 @@ const checkValidReference = async (reference, existingFamiliesData) => {
   );
 
   const referenceMatch = reference.match(/(.*)-/);
+  if (!referenceMatch) throw new Error("Invalid hamper reference");
   const usersReference = referenceMatch[1];
   let validHamperId = reference.replace(referenceMatch[0], "");
   if (existingRef) {
@@ -27,10 +28,6 @@ const checkValidReference = async (reference, existingFamiliesData) => {
         (f) => f?.GSI2SK === `SK#${usersReference}-${checkIncrement}`
       );
       isUnique = existingRefCheck === undefined;
-
-      if (hamperIncrement >= 100) {
-        isUnique = true;
-      }
     }
     validHamperId = hamperIncrement.toString().padStart(3, "0");
   }
@@ -82,7 +79,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allCampaignData = await Dynamo.scan(campaignParams).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
     console.log("campaign data recieved...", allCampaignData.length);
 
@@ -113,6 +110,15 @@ exports.handler = async (event, context, cb) => {
 
     const nominatorId = nominatorData.GSI2PK;
     const organisationId = nominatorData.GSI3PK;
+    if (!Functions.hasPermission(event, "Admin")) {
+      const actor = allCampaignData.find(row => row.SK === `EMAIL#${userEmail}` &&
+        ["nominator", "team-lead"].includes(row.type) && row.status !== "deleted");
+      if (!actor?.GSI3PK || actor.GSI3PK !== organisationId ||
+          (!Functions.hasPermission(event, "TeamLead") && actor.GSI2PK !== nominatorId)) {
+        return Responses._401({ messages: { unauthorized: "You cannot manage these nominations" } });
+      }
+    }
+
 
     const organisationData = allCampaignData.find(
       (o) => o?.type === "organisation" && o.GSI2PK === organisationId
@@ -225,7 +231,7 @@ exports.handler = async (event, context, cb) => {
         const newRequest = await Dynamo.write(familyData, mainTableName).catch(
           (err) => {
             console.log("error in dynamo write", err);
-            return Responses._400({ messages: err });
+            throw err;
           }
         );
 

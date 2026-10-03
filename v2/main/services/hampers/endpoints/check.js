@@ -41,7 +41,7 @@ exports.handler = async (event, context, cb) => {
     };
     var campaignData = await Dynamo.scan(campaignQueryData).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     let hamperId = parsed.hamperId;
@@ -67,7 +67,7 @@ exports.handler = async (event, context, cb) => {
       mainTableName
     ).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const campaignDonorsMapped = campaignDonors.map((d) => ({

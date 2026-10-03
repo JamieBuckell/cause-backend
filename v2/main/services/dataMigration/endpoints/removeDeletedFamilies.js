@@ -16,7 +16,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const familyData = allData.filter(
@@ -26,7 +26,7 @@ exports.handler = async (event, context, cb) => {
     if (familyData.length) {
       console.log("Data to delete", familyData.length);
       for (const [i, entry] of familyData.entries()) {
-        if (!entry?.SK || !entry?.SK) {
+        if (!entry?.PK || !entry?.SK) {
           console.log("Invalid Entry", entry);
           continue;
         }
@@ -37,7 +37,7 @@ exports.handler = async (event, context, cb) => {
           mainTableName
         ).catch((err) => {
           console.log("error in dynamo query", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
 
         /* */

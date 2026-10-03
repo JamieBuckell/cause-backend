@@ -7,7 +7,8 @@ const Notifications = require("../common/Notifications");
 const moment = require("moment-timezone");
 exports.handler = async (event, context, cb) => {
   try {
-    const { emailAddress, hash } = event.pathParameters;
+    const { emailAddress: rawEmail, hash } = event.pathParameters;
+    const emailAddress = (rawEmail.includes("@") ? rawEmail : decodeURIComponent(rawEmail)).toLowerCase();
 
     const envSalt = process.env.HASHING_SALT;
     const envHashPrefix = process.env.HASHING_PREFIX;
@@ -32,7 +33,7 @@ exports.handler = async (event, context, cb) => {
       subscriberTableName
     ).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     console.log("subscriber found?", subscribers.length, subscribers);
@@ -61,11 +62,7 @@ exports.handler = async (event, context, cb) => {
         await Dynamo.write(existingSubscriber, subscriberTableName).catch(
           (err) => {
             console.log("error in dynamo write", err);
-            return Responses._400({
-              messages: {
-                error: "An unexpected error occurred. Please try again later",
-              },
-            });
+            throw err;
           }
         );
 

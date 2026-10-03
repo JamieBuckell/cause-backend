@@ -13,7 +13,7 @@ exports.handler = async (event, context, cb) => {
     const familiesTableName = process.env.FAMILIES_TABLE;
 
     const { hamperRef } = event.pathParameters;
-    const campaignId = Functions.defaultCampaign();
+    const campaignId = Functions.requireCampaign(event.queryStringParameters?.campaignId);
 
     const campaignQueryData = {
       TableName: mainTableName,
@@ -29,7 +29,7 @@ exports.handler = async (event, context, cb) => {
     };
     var campaignData = await Dynamo.scan(campaignQueryData).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const hamper = campaignData.find(

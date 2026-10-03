@@ -49,7 +49,7 @@ exports.handler = async (event, context, cb) => {
     };
     const nomSearchData = await Dynamo.scan(nomParams).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
     const nominatorData = nomSearchData.find((o) => o.GSI2PK === userId);
 
@@ -86,7 +86,7 @@ exports.handler = async (event, context, cb) => {
     };
     const orgSearchData = await Dynamo.scan(orgParams).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
     const organisationData = orgSearchData.find(
       (o) => o.GSI2PK === nominatorData?.GSI3PK
@@ -140,7 +140,7 @@ exports.handler = async (event, context, cb) => {
           break;
         default:
           console.log(`Cognito User Check Error! - ${e}`);
-          break;
+          throw e;
       }
     }
 
@@ -192,7 +192,7 @@ exports.handler = async (event, context, cb) => {
     };
     await Dynamo.write(nominatorData, mainTableName).catch((err) => {
       console.log("error in dynamo write", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
     console.log("Updated cognito id against user in dynamo");
 

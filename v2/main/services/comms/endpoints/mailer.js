@@ -35,7 +35,7 @@ exports.handler = async (event, context, cb) => {
 
           if (!recipient) {
             console.log("recipient not found ", r.messageAttributes);
-            continue;
+            throw new Error("Recipient is required");
           }
 
           let unsubscribeLink = "";

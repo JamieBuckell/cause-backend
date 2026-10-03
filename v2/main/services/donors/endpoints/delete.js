@@ -41,7 +41,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allDonorData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const donor = allDonorData.find((d) => d.GSI2PK === parsed.donorId);
@@ -53,6 +53,16 @@ exports.handler = async (event, context, cb) => {
       });
     }
 
+    const families = await Dynamo.query({
+      KeyConditionExpression: "#pk = :pk AND begins_with(#sk, :sk)",
+      ExpressionAttributeNames: { "#pk": "PK", "#sk": "SK" },
+      ExpressionAttributeValues: { ":pk": campaignId, ":sk": "REF#" },
+    }, mainTableName);
+    const allocatedFamilies = families.filter(f => f.type === "family" && f.status !== "deleted" && f.allocatedTo === donor.GSI2PK);
+    // Release families first so a failed release never removes their donor.
+    await Functions.doBatchImport(allocatedFamilies.map(f => ({ PutRequest: { Item: {
+      ...f, allocatedTo: "unallocated", status: "unallocated",
+    } } })), mainTableName);
     const donorToDelete = { ...donor };
     console.log(`Attempting the delete write to ${mainTableName}...`, donor);
     donor.status = "deleted";
@@ -71,7 +81,7 @@ exports.handler = async (event, context, cb) => {
 
     const test = await Dynamo.write(donor, mainTableName).catch((err) => {
       console.log("error in dynamo write (deleted)", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
     console.log("write res...", test);
 
@@ -84,14 +94,14 @@ exports.handler = async (event, context, cb) => {
       mainTableName
     ).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
-    //Todo: Unallocate families
-    //Todo: Unallocate family members
+
 
     return Responses._200({
-      messages: { success: "Donor deleted successfully" },
+      messages: { success: `Donor deleted; ${allocatedFamilies.length} families have been unallocated` },
+      unallocatedFamilies: allocatedFamilies.length,
     });
   } catch (e) {
     console.log(`An unexpected error occurred ${e}`);

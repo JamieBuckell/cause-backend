@@ -21,7 +21,10 @@ exports.handler = async (event, context, cb) => {
     }
 
     const userPoolId = process.env.USER_POOL;
-    const { userType } = event.pathParameters;
+    const { userType } = event.pathParameters ?? {};
+    if (!["admin", "team-lead", "nominator"].includes(userType?.toLowerCase())) {
+      return Responses._400({ messages: { userType: "Invalid user type" } });
+    }
 
     switch (userType.toLowerCase()) {
       case "team-lead":
@@ -45,18 +48,23 @@ exports.handler = async (event, context, cb) => {
         break;
     }
 
-    const congitoGroupUsers = await cognito.listUsersInGroup(params).promise();
+    const congitoGroupUsers = { Users: [] };
+    do {
+      const page = await cognito.listUsersInGroup(params).promise();
+      congitoGroupUsers.Users.push(...(page.Users ?? []));
+      params.NextToken = page.NextToken;
+    } while (params.NextToken);
     let rtnUsers = [];
     if (congitoGroupUsers.Users && congitoGroupUsers.Users.length) {
       console.log(congitoGroupUsers.Users);
 
       rtnUsers = congitoGroupUsers.Users.map((u) => {
-        const emailObject = u.Attributes.find((a) => a.Name === "email").Value;
+        const emailObject = u.Attributes.find((a) => a.Name === "email")?.Value ?? "";
         console.log(emailObject);
         const fullNameObj = u.Attributes.find((a) => a.Name === "name");
         console.log(fullNameObj);
-        var firstName = fullNameObj.Value.split(" ").slice(0, -1).join(" ");
-        var lastName = fullNameObj.Value.split(" ").slice(-1).join(" ");
+        var firstName = (fullNameObj?.Value ?? "").split(" ").slice(0, -1).join(" ");
+        var lastName = (fullNameObj?.Value ?? "").split(" ").slice(-1).join(" ");
         return {
           email: emailObject,
           firstName: firstName,

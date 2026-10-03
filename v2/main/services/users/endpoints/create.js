@@ -42,7 +42,10 @@ exports.handler = async (event, context, cb) => {
     const parsed = event.email ? event : JSON.parse(event.body);
     const userPoolId = process.env.USER_POOL;
 
-    const { userType } = event.pathParameters;
+    const { userType } = event.pathParameters ?? {};
+    if (!["admin", "team-lead", "nominator"].includes(userType?.toLowerCase())) {
+      return Responses._400({ messages: { userType: "Invalid user type" } });
+    }
 
     if (!parsed) {
       return Responses._400({

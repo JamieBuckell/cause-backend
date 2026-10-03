@@ -25,6 +25,9 @@ exports.handler = async (event, context, cb) => {
 
     const { organisationId, emailAddress } = event.pathParameters;
     const userType = event.pathParameters?.userType ?? false;
+    if (userType === "admin" && !Functions.hasPermission(event, "Admin")) {
+      return Responses._401({ messages: { unauthorized: "Admin access is required" } });
+    }
     const userEmail = event.requestContext.authorizer.claims.email;
     const mainTableName = process.env.MAIN_DYNAMO_TABLE;
     const userPoolId = process.env.USER_POOL;
@@ -54,7 +57,7 @@ exports.handler = async (event, context, cb) => {
     };
     let orgsSearchData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const organisationData = orgsSearchData.find(
@@ -78,10 +81,10 @@ exports.handler = async (event, context, cb) => {
         };
         let allCampaignData = await Dynamo.scan(campaignParams).catch((err) => {
           console.log("error in dynamo query", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
 
-        if (Functions.hasPermission(event, "TeamLead")) {
+        if (!Functions.hasPermission(event, "Admin") && Functions.hasPermission(event, "TeamLead")) {
           const leadData = allCampaignData.find(
             (o) =>
               o?.GSI3PK === organisationId &&
@@ -89,7 +92,7 @@ exports.handler = async (event, context, cb) => {
               o?.type === "team-lead"
           );
 
-          if (!leadData || !leadData.length) {
+          if (!leadData?.PK) {
             console.log("Lead not found");
             return Responses._401({
               messages: {
@@ -111,7 +114,7 @@ exports.handler = async (event, context, cb) => {
             mainTableName
           ).catch((err) => {
             console.log("error in dynamo query 2", err, nominatorData.GSI2PK);
-            return Responses._400({ messages: err });
+            throw err;
           });
 
           // Todo: Figure out how we delete this once the data is in...
@@ -202,7 +205,7 @@ exports.handler = async (event, context, cb) => {
         }
       } catch (e) {
         console.log(`Cognito Auth Error! - ${e}`);
-        return Responses._200({ success: true });
+        if (e.code !== "UserNotFoundException") throw e;
       }
 
       return Responses._200({ success: true });

@@ -16,7 +16,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const batchData = [];
@@ -26,7 +26,7 @@ exports.handler = async (event, context, cb) => {
     if (familyData.length) {
       console.log("Data to migrate", familyData.length);
       for (const [i, entry] of familyData.entries()) {
-        if (entry.totalUnit !== entry.members.length) {
+        if (Array.isArray(entry.members) && entry.totalUnit !== entry.members.length) {
           console.log("updating", entry.totalUnit, "to", entry.members.length);
           entry.totalUnit = entry.members.length;
 
@@ -56,7 +56,7 @@ exports.handler = async (event, context, cb) => {
 
         await Dynamo.batchWrite(chunk, mainTableName).catch((err) => {
           console.log("error in dynamo write", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
       }
       console.log("Item Import Fin.");

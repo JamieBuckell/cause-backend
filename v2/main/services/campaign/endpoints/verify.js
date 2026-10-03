@@ -24,7 +24,7 @@ exports.handler = async (event, context, cb) => {
     let allCampaignData = await Dynamo.query(params, mainTableName).catch(
       (err) => {
         console.log("error in dynamo query", err);
-        return Responses._400({ messages: err });
+        throw err;
       }
     );
 
@@ -33,7 +33,7 @@ exports.handler = async (event, context, cb) => {
     const activeCampaigns = allCampaignData.length
       ? allCampaignData.filter(
           (c) =>
-            moment().isBefore(moment(c.campaignDetails.registrationClosed)) &&
+            c.status !== "deleted" && moment().isBefore(moment(c.campaignDetails.registrationClosed)) &&
             moment().isAfter(moment(c.campaignDetails.registrationOpen))
         )
       : [];

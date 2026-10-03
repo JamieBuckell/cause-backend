@@ -1,102 +1,25 @@
-const Responses = require("../common/API_Responses");
-const Dynamo = require("../common/Dynamo");
-const Hashing = require("../common/Hashing");
-const Functions = require("../common/Functions");
+const Responses = require('../common/API_Responses');
+const Dynamo = require('../common/Dynamo');
+const Functions = require('../common/Functions');
 
-const { nanoid } = require("nanoid");
-const moment = require("moment-timezone");
-
-const validations = [
-  {
-    key: "name",
-    required: true,
-    errorMsg: "Please enter a valid campaign name",
-  },
-  {
-    key: "reference",
-    required: true,
-    errorMsg: "Please enter a valid campaign reference",
-  },
-];
-
-exports.handler = async (event, context, cb) => {
+exports.handler = async event => {
   try {
-    if (!Functions.hasPermission(event, "Admin")) {
-      return Responses._401({
-        messages: {
-          unauthorized: "You are not authorized to view this section",
-        },
-      });
-    }
-    const parsed = event.reference ? event : JSON.parse(event.body);
-
-    const escapeRegEx = new RegExp(/(<([^>]+)>)/gi);
-    const mainTableName = process.env.MAIN_DYNAMO_TABLE;
-
-    if (!parsed) {
-      return Responses._400({
-        message: "Failed to read submitted data: " + JSON.stringify(parsed),
-      });
-    }
-
-    const valid = await Functions.validateSubmission(parsed, validations);
-    if (Object.keys(valid).length > 0) {
-      return Responses._400({ messages: valid });
-    }
-
-    // use replace for extra layer of security
-    const validCampaignName = parsed.name.toString().replace(escapeRegEx, "");
-    const validCampaignReference = parsed.reference
-      .toString()
-      .replace(escapeRegEx, "");
-
-    const campaignSK = `A`;
-    const campaignGSI2PK = "campaign";
-    const campaignGSI2SK = `SK#${campaignSK}`;
-
-    const timezone = process.env.TIMEZONE;
-    const dateFormat = process.env.DATE_FORMAT;
-    const timeStamp = moment(new Date().getTime())
-      .tz(timezone)
-      .format(dateFormat);
-
-    const campaignData = {
-      PK: validCampaignReference,
-      SK: campaignSK,
-      campaignDetails: {
-        campaignEnd: parsed?.dates?.campaignEnd ?? "",
-        campaignStart: parsed?.dates?.campaignStart ?? "",
-        nominationsClosed: parsed?.dates?.nominationsClosed ?? "",
-        nominationsOpen: parsed?.dates?.nominationsOpen ?? "",
-        registrationClosed: parsed?.dates?.registrationClosed ?? "",
-        registrationOpen: parsed?.dates?.registrationOpen ?? "",
-      },
-      campaignName: validCampaignName,
-      GSI2PK: campaignGSI2PK,
-      GSI2SK: campaignGSI2SK,
-      type: "campaign",
-      status: "active",
-    };
-
-    const newRequest = await Dynamo.write(campaignData, mainTableName).catch(
-      (err) => {
-        console.log("error in dynamo write", err);
-        return Responses._400({ messages: err });
-      }
-    );
-
-    if (!newRequest) {
-      return Responses._400({ message: "Failed to write db by ID" });
-    }
-
-    return Responses._200({
-      messages: { success: "Creation successful" },
-      campaign: campaignData,
-    });
-  } catch (e) {
-    console.log(`An unexpected error occurred ${e}`);
-    return Responses._400({
-      messages: { unexpected: "An unexpected error occurred" },
-    });
+    if (!Functions.hasPermission(event, 'Admin')) return Responses._401({ messages: { unauthorized: 'Admin access is required' } });
+    const parsed = event.key ? event : JSON.parse(event.body);
+    const errors = await Functions.validateSubmission(parsed, ['key', 'subject', 'pageContent'].map(key => ({ key, required: true, errorMsg: `${key} is required` })));
+    if (Object.keys(errors).length) return Responses._400({ messages: errors });
+    const key = String(parsed.key).trim();
+    const table = process.env.EMAIL_TEMPLATES_TABLE;
+    const existing = await Dynamo.query({
+      KeyConditionExpression: '#pk = :pk',
+      ExpressionAttributeNames: { '#pk': 'PK' }, ExpressionAttributeValues: { ':pk': key },
+    }, table);
+    if (existing.length) return Responses._400({ messages: { duplicate: 'Template key already exists' } });
+    const template = { PK: key, SK: `SK#${key}`, subject: String(parsed.subject), pageTitle: String(parsed.pageTitle ?? ''), description: String(parsed.description ?? ''), pageContent: String(parsed.pageContent), status: 'active' };
+    await Dynamo.write(template, table);
+    return Responses._200({ messages: { success: 'Template created successfully' }, emailTemplate: template });
+  } catch (error) {
+    console.log('Template creation failed', error);
+    return Responses._400({ messages: { unexpected: 'An unexpected error occurred' } });
   }
 };

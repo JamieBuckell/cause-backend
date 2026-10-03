@@ -16,18 +16,20 @@ const ageListBase = [
 ];
 
 async function get_page(url) {
-  return new Promise((resolve) => {
-    let data = "";
-
-    https.get(url, (res) => {
-      res.on("data", (chunk) => {
-        data += chunk;
-      });
-
-      res.on("end", () => {
-        resolve(data);
-      });
+  return new Promise((resolve, reject) => {
+    const request = https.get(url, (res) => {
+      if (res.statusCode !== 200) {
+        res.resume();
+        reject(new Error(`PDF download failed: ${res.statusCode}`));
+        return;
+      }
+      const chunks = [];
+      res.on("data", chunk => chunks.push(Buffer.from(chunk)));
+      res.on("end", () => resolve(Buffer.concat(chunks)));
+      res.on("error", reject);
     });
+    request.on("error", reject);
+    request.setTimeout(30000, () => request.destroy(new Error("PDF download timed out")));
   });
 }
 
@@ -37,6 +39,9 @@ exports.handler = async (event, context, cb) => {
       for (const r of event?.Records) {
         console.log(`Running message: ${r.body}`);
 
+        if (!r?.messageAttributes?.donorDetails || !r?.messageAttributes?.donorFamiliesData) {
+          throw new Error("Invalid pledge detail message");
+        }
         if (r?.messageAttributes?.donorDetails) {
           const pdfPages = [];
 
@@ -168,7 +173,7 @@ exports.handler = async (event, context, cb) => {
 
               const binaryPdf = Buffer.from(pdfRespone);
 
-              rawEmailJsonParameters.pdfAttachment = binaryPdf;
+              rawEmailJsonParameters.pdfAttachment = binaryPdf.toString("base64");
             }
           }
 
@@ -205,7 +210,7 @@ exports.handler = async (event, context, cb) => {
             await Notifications.sendRawEmail(rawEmailJsonParameters);
             console.log("rawEmailJsonParameters", rawEmailJsonParameters);
           } else {
-            console.log("Error with the response", rawEmailJsonParameters);
+            throw new Error("PDF attachment was not generated");
           }
         }
       }
@@ -220,10 +225,6 @@ exports.handler = async (event, context, cb) => {
     }
   } catch (e) {
     console.log(`An unexpected error occurred ${e}`);
-    return Responses._400({
-      messages: {
-        unexpected: "An unexpected error occurred. Please try again later",
-      },
-    });
+    throw e;
   }
 };

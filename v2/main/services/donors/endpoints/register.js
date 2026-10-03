@@ -46,7 +46,7 @@ exports.handler = async (event, context, cb) => {
 
     const emailVerificationHash = `${envHashPrefix}${context.awsRequestId}`;
 
-    const campaignId = parsed.campaign ?? Functions.defaultCampaign();
+    const campaignId = Functions.requireCampaign(parsed.campaign);
 
     console.log("Get the campaign!", {
       PK: campaignId,
@@ -60,7 +60,7 @@ exports.handler = async (event, context, cb) => {
       mainTableName
     ).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     if (!currentCampaign.PK) {
@@ -153,7 +153,7 @@ exports.handler = async (event, context, cb) => {
     console.log(`Donor Registration: ${validEmail}`);
 
     const queryData = {
-      KeyConditionExpression: "#pk= :pk And begins_with(#sk, :sk)",
+      KeyConditionExpression: "#pk= :pk AND #sk= :sk",
       ExpressionAttributeValues: {
         ":pk": currentCampaign.PK,
         ":sk": donorSK,
@@ -166,7 +166,7 @@ exports.handler = async (event, context, cb) => {
     const existingDonor = await Dynamo.query(queryData, mainTableName).catch(
       (err) => {
         console.log("error in dynamo query", err);
-        return Responses._400({ messages: err });
+        throw err;
       }
     );
 
@@ -221,7 +221,7 @@ exports.handler = async (event, context, cb) => {
     const donorRequest = await Dynamo.write(donorData, mainTableName).catch(
       (err) => {
         console.log("error in dynamo write", err);
-        return Responses._400({ messages: err });
+        throw err;
       }
     );
 
@@ -249,7 +249,7 @@ exports.handler = async (event, context, cb) => {
       subscriberTableName
     ).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     let subscriptionData = {
@@ -284,7 +284,7 @@ exports.handler = async (event, context, cb) => {
       subscriberTableName
     ).catch((err) => {
       console.log("error in dynamo write", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     if (!subscriberRequest) {

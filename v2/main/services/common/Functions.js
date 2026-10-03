@@ -1,4 +1,5 @@
 const Dynamo = require("./Dynamo");
+const crypto = require("crypto");
 var AWS = require("aws-sdk");
 AWS.config.region = "eu-west-2";
 var lambda = new AWS.Lambda();
@@ -13,15 +14,18 @@ const ageListBase = [
 ];
 
 const Functions = {
-  defaultCampaign() {
-    return "CH24"; //Todo: make this dynamic!
+  requireCampaign(campaignId) {
+    if (typeof campaignId !== "string" || !campaignId.trim() || campaignId === "undefined") {
+      throw new Error("Campaign ID is required");
+    }
+    return campaignId.trim();
   },
   timer(ms) {
     return new Promise((res) => setTimeout(res, ms));
   },
   hasPermission(event, permission) {
     if (event?.requestContext?.authorizer) {
-      if (event.requestContext.authorizer?.claims["cognito:groups"]) {
+      if (event.requestContext.authorizer?.claims?.["cognito:groups"]) {
         const allGroups =
           event.requestContext.authorizer.claims["cognito:groups"].split(",");
         return allGroups.find((p) => p === permission);
@@ -173,25 +177,18 @@ const Functions = {
     return rtnHTML;
   },
   async checkValue(keys, obj) {
-    let returnValue = "";
-    let checkObj = { ...obj };
-    let i = 0;
+    let value = obj;
     for (const key of keys) {
-      i++;
-      if (checkObj[key]) {
-        checkObj = checkObj[key];
-        returnValue = checkObj;
-      } else {
-        returnValue = null;
-      }
+      if (value == null || !Object.prototype.hasOwnProperty.call(Object(value), key)) return null;
+      value = value[key];
     }
-    return returnValue;
+    return value;
   },
   async validateSubmission(submission, validations) {
     const standards = {
       email: {
         pattern: new RegExp(
-          /^([a-z\d\-\.\+]{1,50})@([a-z\d\-]{1,50})\.([a-z]{2,8})(\.[a-z]{2,8})?$/i
+          /^[^\s@<>]+@(?:[a-z\d](?:[a-z\d-]*[a-z\d])?\.)+[a-z]{2,}$/i
         ),
         errorMsg: "Please enter a valid email address",
       },
@@ -209,14 +206,14 @@ const Functions = {
         !(
           !v.required &&
           (validationSubmission == undefined ||
-            validationSubmission == "" ||
+            (typeof validationSubmission === "string" && validationSubmission.trim() === "") ||
             validationSubmission == null)
         )
       ) {
         if (
           v.required &&
           (validationSubmission == undefined ||
-            validationSubmission == "" ||
+            (typeof validationSubmission === "string" && validationSubmission.trim() === "") ||
             validationSubmission == null)
         ) {
           errors[v.key] = v.errorMsg;
@@ -248,7 +245,7 @@ const Functions = {
     // While there remain elements to shuffle...
     while (currentIndex != 0) {
       // Pick a remaining element...
-      randomIndex = Math.floor(Math.random() * currentIndex);
+      randomIndex = crypto.randomInt(currentIndex);
       currentIndex--;
 
       // And swap it with the current element.
@@ -261,7 +258,7 @@ const Functions = {
     return array;
   },
   getRandomChar(str) {
-    return str.charAt(Math.floor(Math.random() * str.length));
+    return str.charAt(crypto.randomInt(str.length));
   },
   generateP(options) {
     const groups = options?.groups ?? [
@@ -276,10 +273,10 @@ const Functions = {
 
     const str = groups.join("");
 
-    for (let i = pass.length; i <= length; i++) {
+    for (let i = pass.length; i < length; i++) {
       pass += this.getRandomChar(str);
     }
-    return this.shuffle(pass);
+    return this.shuffle([...pass]).join("");
   },
   createDetailPreview(template, params) {
     switch (template) {
@@ -482,11 +479,12 @@ const Functions = {
       commsTemplateTableName
     ).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
-    if (dbTemplate) {
-      const templateObject = dbTemplate[0];
+    if (dbTemplate?.length && dbTemplate.every(row => row.status === "deleted")) throw new Error("Email template has been deleted");
+    if (dbTemplate?.some(row => row.status !== "deleted")) {
+      const templateObject = { ...dbTemplate.find(row => row.status !== "deleted") };
       templateObject.pageContent = this.replaceEmailPlaceholders(
         templateObject.pageContent,
         params
@@ -1166,38 +1164,13 @@ const Functions = {
     return rawEmailJsonParameters;
   },
   async doBatchImport(batchData, batchTableName, chunkSize = 25) {
-    if (batchData && batchData.length) {
-      console.log(
-        "batches to import, total:",
-        batchData.length,
-        "Batches:",
-        batchData.length / chunkSize
-      );
-      for (let i = 0; i < batchData.length; i += chunkSize) {
-        const chunk = batchData.slice(i, i + chunkSize);
-
-        console.log("Batch", i, "/", batchData.length);
-
-        await Dynamo.batchWrite(chunk, batchTableName).catch(async (err) => {
-          if (
-            err.includes(
-              "ProvisionedThroughputExceededException - Waiting 5 seconds"
-            )
-          ) {
-            console.log("ProvisionedThroughputExceededException", Waiting);
-            await this.timer(5000);
-            await this.doBatchImport(batchData, batchTableName, chunkSize);
-          } else {
-            console.log("error in dynamo write", err);
-            return Responses._400({ messages: err });
-          }
-        });
-        // Have a 1 second break each time
-        await this.timer(1000);
-      }
-      console.log("Batch Import Fin.");
+    if (!Array.isArray(batchData) || !Number.isInteger(chunkSize) || chunkSize < 1 || chunkSize > 25) {
+      throw new Error("Invalid batch or chunk size");
     }
-    return false;
+    for (let i = 0; i < batchData.length; i += chunkSize) {
+      await Dynamo.batchWrite(batchData.slice(i, i + chunkSize), batchTableName);
+    }
+    return true;
   },
 };
 

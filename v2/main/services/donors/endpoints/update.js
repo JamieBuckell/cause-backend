@@ -64,13 +64,13 @@ exports.handler = async (event, context, cb) => {
     };
     var hamperData = await Dynamo.scan(hamperQueryData).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     console.log(hamperData.length);
     if (hamperData && hamperData[0]) {
       hamperData = hamperData.find(
-        (h) => h.type === "family" && h.GSI2SK === `SK#${parsed.hamperId}`
+        (h) => h.type === "family" && h.status !== "deleted" && h.GSI2SK === `SK#${parsed.hamperId}`
       );
     }
     if (hamperData?.SK) {
@@ -91,11 +91,14 @@ exports.handler = async (event, context, cb) => {
       var donorData = await Dynamo.query(donorQueryData, mainTableName).catch(
         (err) => {
           console.log("error in dynamo query", err);
-          return Responses._400({ messages: err });
+          throw err;
         }
       );
 
+      donorData = donorData.filter(d => d.PK === parsed.campaignId && d.type === "donor" && d.status !== "deleted");
       if (donorData && donorData[0]) {
+        const targetRequest = donorData[0].familyDetails?.request?.find(r => r.requestId === parsed.requestId);
+        if (!targetRequest) return Responses._400({ messages: { error: "Donor request not found" } });
         donorData = donorData[0];
         console.log("donorData", donorData);
 
@@ -113,7 +116,7 @@ exports.handler = async (event, context, cb) => {
           donorData.familyDetails.request[requestIndex].allocation = [];
         }
 
-        donorData.familyDetails.request[requestIndex].allocation.push({
+        if (!donorData.familyDetails.request[requestIndex].allocation.some(a => a.hamperId === parsed.hamperId)) donorData.familyDetails.request[requestIndex].allocation.push({
           hamperId: parsed.hamperId,
           members: hamperData?.members ?? [],
         });
@@ -121,7 +124,7 @@ exports.handler = async (event, context, cb) => {
         console.log("donorData", donorData);
         await Dynamo.write(donorData, mainTableName).catch((err) => {
           console.log("error in dynamo write", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
 
         return Responses._200({

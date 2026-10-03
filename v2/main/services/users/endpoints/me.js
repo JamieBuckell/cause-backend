@@ -31,9 +31,9 @@ exports.handler = async (event, context, cb) => {
         ":sk": `EMAIL#${userEmail}`,
       },
     };
-    nominatorData = await Dynamo.scan(params).catch((err) => {
+    const nominatorData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
     if (nominatorData.length) {
       const nominator = nominatorData[0];
@@ -53,7 +53,7 @@ exports.handler = async (event, context, cb) => {
         };
         let allCampaignData = await Dynamo.scan(campaignParams).catch((err) => {
           console.log("error in dynamo query", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
 
         const organisationData = allCampaignData.find(
@@ -84,7 +84,7 @@ exports.handler = async (event, context, cb) => {
         nominator.nominatorDetails["welcomeSent"] = true;
         await Dynamo.write(nominator, mainTableName).catch((err) => {
           console.log("error in dynamo write", err);
-          return Responses._400({ messages: err });
+          throw err;
         });
       }
     }

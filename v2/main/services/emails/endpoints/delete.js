@@ -1,71 +1,22 @@
-const Responses = require("../common/API_Responses");
-const Dynamo = require("../common/Dynamo");
-const Hashing = require("../common/Hashing");
-const Functions = require("../common/Functions");
+const Responses = require('../common/API_Responses');
+const Dynamo = require('../common/Dynamo');
+const Functions = require('../common/Functions');
 
-const moment = require("moment-timezone");
-
-exports.handler = async (event, context, cb) => {
+exports.handler = async event => {
   try {
-    if (!Functions.hasPermission(event, "Admin")) {
-      return Responses._401({
-        messages: {
-          unauthorized: "You are not authorized to view this section",
-        },
-      });
-    }
-    const { campaignId } = event.pathParameters;
-
-    const timezone = process.env.TIMEZONE;
-    const mainTableName = process.env.MAIN_DYNAMO_TABLE;
-
-    const params = {
-      TableName: mainTableName,
-      FilterExpression: "#pk = :pk AND #sk = :sk AND #type = :type",
-      ExpressionAttributeNames: {
-        "#pk": "PK",
-        "#sk": "SK",
-        "#type": "type",
-      },
-      ExpressionAttributeValues: {
-        ":pk": campaignId,
-        ":sk": "A",
-        ":type": "campaign",
-      },
-    };
-    let campaignData = await Dynamo.scan(params).catch((err) => {
-      console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
-    });
-    campaignData = campaignData[0] ?? {};
-
-    if (!campaignData.PK) {
-      return Responses._400({
-        messages: { unexpected: "Campaign not found" },
-      });
-    }
-    const timeStamp = moment(new Date().getTime())
-      .tz(timezone)
-      .format("YYYYMMDDHHmmss");
-
-    const updateData = {
-      ...campaignData,
-    };
-    updateData.status = "deleted";
-    updateData.deletedOn = timeStamp;
-
-    await Dynamo.write(updateData, mainTableName).catch((err) => {
-      console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
-    });
-
-    return Responses._200({
-      messages: { success: "Campaigns deleted successfully" },
-    });
-  } catch (e) {
-    console.log(`An unexpected error occurred ${e}`);
-    return Responses._400({
-      messages: { unexpected: "An unexpected error occurred" },
-    });
+    if (!Functions.hasPermission(event, 'Admin')) return Responses._401({ messages: { unauthorized: 'Admin access is required' } });
+    const key = event.pathParameters?.key;
+    if (!key) return Responses._400({ messages: { key: 'Template key is required' } });
+    const table = process.env.EMAIL_TEMPLATES_TABLE;
+    const templates = await Dynamo.query({
+      KeyConditionExpression: '#pk = :pk',
+      ExpressionAttributeNames: { '#pk': 'PK' }, ExpressionAttributeValues: { ':pk': key },
+    }, table);
+    if (!templates.length) return Responses._400({ messages: { error: 'Template not found' } });
+    for (const template of templates) await Dynamo.write({ ...template, status: 'deleted' }, table);
+    return Responses._200({ messages: { success: 'Template deleted successfully' } });
+  } catch (error) {
+    console.log('Template deletion failed', error);
+    return Responses._400({ messages: { unexpected: 'An unexpected error occurred' } });
   }
 };

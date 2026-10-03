@@ -40,16 +40,31 @@ exports.handler = async (event, context, cb) => {
     };
     let familyData = await Dynamo.scan(familyParams).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     if (familyData.length) {
       const familyToDelete = familyData[0];
 
+      if (familyToDelete.type !== "family") {
+        return Responses._400({ messages: { error: "Family not found" } });
+      }
+      if (!Functions.hasPermission(event, "Admin")) {
+        const actors = await Dynamo.query({
+          KeyConditionExpression: "#pk = :pk AND #sk = :sk",
+          ExpressionAttributeNames: { "#pk": "PK", "#sk": "SK" },
+          ExpressionAttributeValues: { ":pk": familyToDelete.PK, ":sk": `EMAIL#${userEmail}` },
+        }, mainTableName);
+        const actor = actors.find(row => row.status !== "deleted" && ["nominator", "team-lead"].includes(row.type));
+        if (!actor?.GSI3PK || actor.GSI3PK !== familyToDelete.GSI3PK ||
+            (!Functions.hasPermission(event, "TeamLead") && actor.GSI2PK !== familyToDelete.GSI3SK)) {
+          return Responses._401({ messages: { unauthorized: "You cannot delete this family" } });
+        }
+      }
       familyToDelete.status = "deleted";
       await Dynamo.write(familyToDelete, mainTableName).catch((err) => {
         console.log("error in dynamo write (deleted)", err);
-        return Responses._400({ messages: err });
+        throw err;
       });
 
       return Responses._200({

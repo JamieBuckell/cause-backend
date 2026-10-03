@@ -62,7 +62,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allCampaignData = await Dynamo.scan(campaignParams).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const donorData = allCampaignData.find(
@@ -73,7 +73,7 @@ exports.handler = async (event, context, cb) => {
     }
 
     const donorFamiliesData = allCampaignData.filter(
-      (f) => f.allocatedTo === parsed.donorId && f.type === "family"
+      (f) => f.allocatedTo === parsed.donorId && f.type === "family" && f.status !== "deleted"
     );
 
     let hamperCount = 0;
@@ -138,7 +138,7 @@ exports.handler = async (event, context, cb) => {
 
     let response = {
       statusCode: 200,
-      isBase64Encoded: true,
+      isBase64Encoded: false,
     };
     switch (downloadType) {
       case "pdf":
@@ -173,17 +173,10 @@ exports.handler = async (event, context, cb) => {
       case "csv":
         response.headers = { "Content-type": "text/csv" };
         response.body = csvContent;
-        return cb(null, response);
-        break;
+        return response;
     }
 
-    if (donorFamiliesData.length >= 5) {
-      rawEmailJsonParameters.csvAttachment = csvContent;
-      rawEmailJsonParameters.csvAttachmentFilename =
-        "your-allocation-families.csv";
-    }
-
-    return Responses._200({ messages: { success: "Email Sending Complete" } });
+    return Responses._400({ messages: { error: "Unsupported download type" } });
   } catch (e) {
     console.log(`An unexpected error occurred ${e}`);
     return Responses._400({

@@ -38,7 +38,7 @@ exports.handler = async (event, context, cb) => {
 
     const userEmail = event.requestContext.authorizer.claims.email;
 
-    const userPoolId = process.env.USER_POOL_V2;
+    const userPoolId = process.env.USER_POOL;
     const mainTableName = process.env.MAIN_DYNAMO_TABLE;
     const appURL = process.env.APP_URL;
 
@@ -56,13 +56,12 @@ exports.handler = async (event, context, cb) => {
     };
     let allCampaignData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
     console.log("got allCampaignData", allCampaignData.length);
 
     if (
-      Functions.hasPermission(event, "TeamLead") ||
-      Functions.hasPermission(event, "Nominator")
+      !Functions.hasPermission(event, "Admin")
     ) {
       console.log("Not an admin");
       const userNominatorData = allCampaignData.find(
@@ -85,9 +84,10 @@ exports.handler = async (event, context, cb) => {
         );
 
         if (
-          !nominatorQuery.GSI2PK ||
+          !Functions.hasPermission(event, "TeamLead") ||
+          !nominatorQuery?.GSI2PK ||
           nominatorQuery.GSI2PK != requestId ||
-          nominatorQuery.GSI3PK != userNominatorData.GSI2PK
+          nominatorQuery.GSI3PK != userNominatorData.GSI3PK
         ) {
           console.log(
             "Unauth...",
@@ -111,6 +111,7 @@ exports.handler = async (event, context, cb) => {
     }
 
     if (
+      (Functions.hasPermission(event, "Admin") || Functions.hasPermission(event, "TeamLead")) &&
       parsed?.status &&
       parsed.status != nominatorData.status &&
       parsed.status === "authorised"
@@ -137,7 +138,13 @@ exports.handler = async (event, context, cb) => {
     const updateData = {
       ...nominatorData,
     };
-    updateData.nominatorDetails = { ...updateData.nominatorDetails, ...parsed };
+    const editable = {};
+    for (const key of ["firstName", "lastName", "email", "telephone"]) {
+      if (parsed[key] !== undefined) editable[key] = parsed[key];
+    }
+    if (editable.email !== undefined) editable.email = String(editable.email).trim().toLowerCase();
+    updateData.nominatorDetails = { ...updateData.nominatorDetails, ...editable };
+    updateData.nominatorDetails.originalEmail = nominatorData.nominatorDetails.email;
     console.log("Initial updateData", updateData);
 
     if (updateData?.nominatorDetails?.originalEmail) {
@@ -173,7 +180,7 @@ exports.handler = async (event, context, cb) => {
               break;
             default:
               console.log(`Cognito User Check Error! - ${e}`);
-              break;
+              throw e;
           }
         }
 
@@ -204,7 +211,7 @@ exports.handler = async (event, context, cb) => {
               break;
             default:
               console.log(`Cognito User Check Error! - ${e}`);
-              break;
+              throw e;
           }
         }
 
@@ -288,13 +295,17 @@ exports.handler = async (event, context, cb) => {
       delete updateData.nominatorDetails.fullName;
     }
 
+    const oldKey = { PK: nominatorData.PK, SK: nominatorData.SK };
+    updateData.SK = `EMAIL#${updateData.nominatorDetails.email}`;
+    updateData.GSI2SK = `SK#${updateData.nominatorDetails.email}`;
     console.log("Final updateData", updateData);
     console.log("Update nominator data");
     await Dynamo.write(updateData, mainTableName).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
+    if (oldKey.SK !== updateData.SK) await Dynamo.delete(oldKey, mainTableName);
     return Responses._200({ success: true, nominator: updateData });
 
     /* */

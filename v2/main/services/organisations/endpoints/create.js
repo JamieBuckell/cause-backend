@@ -41,7 +41,6 @@ exports.handler = async (event, context, cb) => {
     const parsed = event.reference ? event : JSON.parse(event.body);
 
     const escapeRegEx = new RegExp(/(<([^>]+)>)/gi);
-    const campaignId = parsed.campaignId.toString().replace(escapeRegEx, "");
     const mainTableName = process.env.MAIN_DYNAMO_TABLE;
 
     if (!parsed) {
@@ -54,6 +53,8 @@ exports.handler = async (event, context, cb) => {
     if (Object.keys(valid).length > 0) {
       return Responses._400({ messages: valid });
     }
+
+    const campaignId = parsed.campaignId.toString().replace(escapeRegEx, "");
 
     //Check the campaign is legit...
     const params = {
@@ -70,7 +71,7 @@ exports.handler = async (event, context, cb) => {
     };
     const activeCampaigns = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     if (!activeCampaigns.length) {
@@ -121,7 +122,7 @@ exports.handler = async (event, context, cb) => {
       mainTableName
     ).catch((err) => {
       console.log("error in dynamo write", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     if (!newRequest) {

@@ -14,7 +14,7 @@
     "stripe": "^8.199.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node ../tests/run.js"
   },
   "author": "Jamie Buckell",
   "license": "ISC"

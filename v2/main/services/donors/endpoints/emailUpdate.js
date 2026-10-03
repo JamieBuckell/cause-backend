@@ -62,7 +62,7 @@ exports.handler = async (event, context, cb) => {
     const escapeRegEx = new RegExp(/(<([^>]+)>)/i);
     const validUpdatedEmail = parsed.updatedEmail
       .toString()
-      .replace(escapeRegEx, "");
+      .replace(escapeRegEx, "").trim().toLowerCase();
 
     const params = {
       TableName: mainTableName,
@@ -78,7 +78,7 @@ exports.handler = async (event, context, cb) => {
     };
     let allDonorData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
     console.log(allDonorData, params);
 
@@ -86,7 +86,7 @@ exports.handler = async (event, context, cb) => {
       (d) => d.GSI3PK === validUpdatedEmail
     );
 
-    if (emailCheckRes && emailCheckRes.length) {
+    if (emailCheckRes && emailCheckRes.GSI2PK !== parsed.donorId) {
       return Responses._400({
         messages: { error: "Email address already exists!" },
       });
@@ -101,9 +101,13 @@ exports.handler = async (event, context, cb) => {
 
     console.log(donorData);
 
-    const ogDonor = { ...donorData };
+    if (donorData.GSI3PK === validUpdatedEmail) {
+      return Responses._200({ messages: { success: "Email unchanged" } });
+    }
+    const ogDonor = JSON.parse(JSON.stringify(donorData));
 
-    donorData.SK = donorData.GSI2SK = `EMAIL#${validUpdatedEmail}`;
+    donorData.SK = `EMAIL#D#${validUpdatedEmail}`;
+    donorData.GSI2SK = `EMAIL#D#${validUpdatedEmail}`;
     donorData.GSI3PK = validUpdatedEmail;
     donorData.emailVerification.bounced = false;
     donorData.emailVerification.bouncedDetail = "";
@@ -113,7 +117,7 @@ exports.handler = async (event, context, cb) => {
     }
     await Dynamo.write(donorData, mainTableName).catch((err) => {
       console.log("error in dynamo write", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     // Because we're changing the SK, it's going to create a new record, so let's now SOFT delete the old one!
@@ -121,7 +125,7 @@ exports.handler = async (event, context, cb) => {
     ogDonor.status = "deleted";
     await Dynamo.write(ogDonor, mainTableName).catch((err) => {
       console.log("error in dynamo write", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const donorHash = Hashing.hash(
@@ -130,6 +134,7 @@ exports.handler = async (event, context, cb) => {
     ).hashedpassword;
     if (parsed.sendEmail) {
       const emailTemplate = {
+        campaignId,
         websiteURL,
         appURL,
         emailAddress: donorData.GSI3PK,

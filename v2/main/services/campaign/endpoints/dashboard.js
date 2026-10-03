@@ -40,13 +40,13 @@ exports.handler = async (event, context, cb) => {
     };
     let allCampaignData = await Dynamo.scan(params).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     const subscriberParams = { TableName: subscribersTableName };
     const allSubscribers = await Dynamo.scan(subscriberParams).catch((err) => {
       console.log("error in dynamo query", err);
-      return Responses._400({ messages: err });
+      throw err;
     });
 
     return Responses._200({
@@ -84,7 +84,7 @@ exports.handler = async (event, context, cb) => {
         .reduce((accumulator, d) => {
           return (
             accumulator +
-            d.familyDetails.request.reduce((subAccumulator, r) => {
+            (d.familyDetails?.request ?? []).reduce((subAccumulator, r) => {
               return subAccumulator + parseInt(r?.numberOfFamilies ?? 0);
             }, 0)
           );
@@ -99,7 +99,7 @@ exports.handler = async (event, context, cb) => {
         .reduce((accumulator, d) => {
           return (
             accumulator +
-            d.familyDetails.request.reduce((subAccumulator, r) => {
+            (d.familyDetails?.request ?? []).reduce((subAccumulator, r) => {
               return subAccumulator + parseInt(r?.numberOfFamilies ?? 0);
             }, 0)
           );
