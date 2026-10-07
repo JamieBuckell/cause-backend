@@ -9,7 +9,7 @@ For nominators, `excludeTeamLeads: false` includes both nominators and team lead
 
 ## Delivery ledger
 
-Each recipient has a conditional DynamoDB delivery claim. Normalised address plus mailing identity identifies delivery; unsent-only resends share that identity, while explicitly sending another copy uses a new identity. Concurrent workers cannot both claim it. Completed sends are recorded atomically with the existing `RECIPIENT` audit record. `SENT` means SES accepted the message; it does not mean inbox delivery.
+The communications table and its indexes use on-demand capacity so bulk delivery claims and transactional completion writes are not constrained by the former one-write-per-second provisioned limit. Each recipient has a conditional DynamoDB delivery claim. Normalised address plus mailing identity identifies delivery; unsent-only resends share that identity, while explicitly sending another copy uses a new identity. Concurrent workers cannot both claim it. Completed sends are recorded atomically with the existing `RECIPIENT` audit record. `SENT` means SES accepted the message; it does not mean inbox delivery.
 
 The SES SDK is configured with `maxRetries: 0`. Known throttling failures can retry. Permanent SES rejection is marked `FAILED`. Network timeouts, lost send acknowledgements, a crash after claiming a recipient, or failure to record an accepted send are held for review and are not automatically sent again. There is no reliable exactly-once API across SES and DynamoDB: this deliberately prioritises avoiding duplicate emails over blindly retrying uncertain delivery.
 

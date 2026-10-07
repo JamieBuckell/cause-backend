@@ -3,9 +3,6 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: ${self:custom.environment.COMMS_DYNAMO_TABLE}
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
       AttributeDefinitions:
         - AttributeName: PK
           AttributeType: S
@@ -37,9 +34,6 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1
-            WriteCapacityUnits: 1
         - IndexName: GSI2
           KeySchema:
             - AttributeName: GSI2PK
@@ -48,9 +42,6 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1
-            WriteCapacityUnits: 1
         - IndexName: GSI3
           KeySchema:
             - AttributeName: GSI3PK
@@ -59,7 +50,4 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1
-            WriteCapacityUnits: 1
-      BillingMode: PROVISIONED
+      BillingMode: PAY_PER_REQUEST
