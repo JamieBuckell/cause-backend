@@ -55,11 +55,11 @@ test('repair refuses stale links to other donors, duplicate links and insufficie
 test('preview does not write or send mail and changes invalidate its fingerprint', async()=>{
  const f=setup('donors/reconnectAllocations',{rows:[clone(donor),clone(owned)]});
  const r=await f.invoke(jamieEvent(repairBody));assert.equal(r.statusCode,200);
- assert.ok(f.calls.every(c=>c.name==='Dynamo.query'));
+ assert.ok(f.calls.every(c=>c.name==='DocumentClient.query'));
  const api=f.loadCommon('DonorAllocations');const p1=api.planRepair(donor,[owned]);
  const changed={...clone(owned),members:[]};assert.notEqual(api.planRepair(donor,[changed]).fingerprint,p1.fingerprint);
  const stale=await f.invoke(jamieEvent({...repairBody,action:'repair',fingerprint:'wrong'}));assert.equal(stale.statusCode,400);
- assert.ok(f.calls.every(c=>c.name==='Dynamo.query'));
+ assert.ok(f.calls.every(c=>c.name==='DocumentClient.query'));
 });
 test('repair requires Jamie, administrator group and verified email on the backend', async()=>{
  for(const claims of [

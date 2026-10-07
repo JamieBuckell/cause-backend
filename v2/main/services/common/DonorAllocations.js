@@ -1,6 +1,5 @@
 const crypto = require("crypto");
 const AWS = require("aws-sdk");
-const Dynamo = require("./Dynamo");
 const db = new AWS.DynamoDB.DocumentClient({ region: process.env.AWS_ACCOUNT_REGION || "eu-west-2" });
 const table = () => process.env.MAIN_DYNAMO_TABLE;
 const copy = value => JSON.parse(JSON.stringify(value));
@@ -10,14 +9,24 @@ const isJamie = event => {
   return claims.email === "email@jamiebuckell.co.uk" && String(claims.email_verified) === "true" &&
     (claims["cognito:groups"] || "").split(",").includes("Admin");
 };
+async function query(params) {
+  const items = [];
+  let cursor;
+  do {
+    const page = await db.query({ ...params, TableName: table(), ExclusiveStartKey: cursor }).promise();
+    items.push(...(page.Items || []));
+    cursor = page.LastEvaluatedKey;
+  } while (cursor && Object.keys(cursor).length);
+  return items;
+}
 async function read(campaignId, donorId) {
   if (typeof campaignId !== "string" || !campaignId.trim() || typeof donorId !== "string" || !donorId.trim()) throw new Error("Campaign and donor are required.");
-  const rows = await Dynamo.query({ KeyConditionExpression: "PK = :pk AND begins_with(SK, :sk)",
-    ExpressionAttributeValues: { ":pk": campaignId, ":sk": "EMAIL#" }, ConsistentRead: true }, table());
+  const rows = await query({ KeyConditionExpression: "PK = :pk AND begins_with(SK, :sk)",
+    ExpressionAttributeValues: { ":pk": campaignId, ":sk": "EMAIL#" }, ConsistentRead: true });
   const matches = rows.filter(d => d.type === "donor" && d.GSI2PK === donorId && d.status !== "deleted");
   if (matches.length !== 1) throw new Error("Donor could not be found uniquely in this campaign.");
-  const families = (await Dynamo.query({ KeyConditionExpression: "PK = :pk AND begins_with(SK, :sk)",
-    ExpressionAttributeValues: { ":pk": campaignId, ":sk": "REF#" }, ConsistentRead: true }, table()))
+  const families = (await query({ KeyConditionExpression: "PK = :pk AND begins_with(SK, :sk)",
+    ExpressionAttributeValues: { ":pk": campaignId, ":sk": "REF#" }, ConsistentRead: true }))
     .filter(f => f.type === "family" && f.status !== "deleted" && f.allocatedTo === donorId)
     .sort((a, b) => a.SK.localeCompare(b.SK));
   return { donor: matches[0], families };

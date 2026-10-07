@@ -54,7 +54,7 @@ function setup(endpoint, options = {}) {
   }
   AWS.DynamoDB = { DocumentClient: function() {
     return new Proxy({}, { get(_, method) {
-      return (...args) => ({ promise: () => call(`DocumentClient.${String(method)}`, args, {}) });
+      return (...args) => ({ promise: () => call(`DocumentClient.${String(method)}`, args, method === 'query' ? { Items: options.rows ?? [] } : {}) });
     } });
   } };
   function load(file) {
