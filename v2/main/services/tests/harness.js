@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
-const moment = require(require.resolve('moment-timezone', { paths: [path.join(root, 'campaign'), path.join(root, 'comms')] }));
+const moment = require(require.resolve('moment-timezone', { paths: [path.join(root, 'campaign'), path.join(root, 'comms'), path.join(root, 'donors')] }));
 const clone = value => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
 
 // All service boundaries are in-memory. Unexpected dependencies fail closed;

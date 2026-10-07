@@ -3,7 +3,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const crypto = require('node:crypto');
 const root = path.resolve(__dirname, '..');
-const moment = require(require.resolve('moment-timezone', { paths: [path.join(root, 'campaign'), path.join(root, 'comms')] }));
+const moment = require(require.resolve('moment-timezone', { paths: [path.join(root, 'campaign'), path.join(root, 'comms'), path.join(root, 'donors')] }));
 const clone = value => value === undefined ? value : JSON.parse(JSON.stringify(value));
 const conditional = () => Object.assign(new Error('Condition failed'), { code: 'ConditionalCheckFailedException' });
 function mailingFixture({ contacts = [], previous = [], originalOptions = {}, subscribers = [] } = {}) {
