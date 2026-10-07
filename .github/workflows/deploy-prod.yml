@@ -15,7 +15,24 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  email-events:
+    if: github.ref == 'refs/heads/main'
+    name: Prepare email event collection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::988218197909:role/cause-backend-github-actions
+          aws-region: eu-west-1
+      - name: Deploy isolated SES event infrastructure
+        run: >-
+          aws cloudformation deploy --template-file infrastructure/email-events.yml
+          --stack-name cause-portal-email-events-live
+          --parameter-overrides Stage=live
+          --no-fail-on-empty-changeset
   deploy:
+    needs: email-events
     if: github.ref == 'refs/heads/main'
     name: Deploy ${{ matrix.service }}
     runs-on: ubuntu-latest
@@ -62,7 +79,7 @@ jobs:
         run: npm ci --prefix "v2/main/services/${{ matrix.service }}" --no-audit --no-fund
 
       - name: Test backend and email retry safety
-        if: matrix.service == 'comms'
+        if: matrix.service == 'comms' || matrix.service == 'donors'
         run: node v2/main/services/tests/run.js
 
       - name: Test email verification

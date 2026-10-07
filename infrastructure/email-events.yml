@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Isolated SES issue events for the CAUSE portal (deploy in eu-west-1)
+Parameters:
+  Stage:
+    Type: String
+    AllowedValues: [dev, live]
+Resources:
+  EmailEventsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub cause-portal-email-events-${Stage}
+  EmailEventsTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics: [!Ref EmailEventsTopic]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ses.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref EmailEventsTopic
+            Condition:
+              StringEquals:
+                AWS:SourceAccount: !Ref AWS::AccountId
+              ArnEquals:
+                AWS:SourceArn: !Sub arn:aws:ses:${AWS::Region}:${AWS::AccountId}:configuration-set/cause-portal-${Stage}
+  EmailConfigurationSet:
+    Type: AWS::SES::ConfigurationSet
+    Properties:
+      Name: !Sub cause-portal-${Stage}
+  EmailEventsDestination:
+    Type: AWS::SES::ConfigurationSetEventDestination
+    DependsOn: EmailEventsTopicPolicy
+    Properties:
+      ConfigurationSetName: !Ref EmailConfigurationSet
+      EventDestination:
+        Name: portal-issues
+        Enabled: true
+        MatchingEventTypes: [BOUNCE, COMPLAINT, REJECT, RENDERING_FAILURE, DELIVERY_DELAY]
+        SnsDestination:
+          TopicARN: !Ref EmailEventsTopic

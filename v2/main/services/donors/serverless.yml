@@ -30,6 +30,7 @@ provider:
         - arn:aws:ses:eu-west-1:988218197909:identity/jamiebuckell.co.uk
         - arn:aws:ses:eu-west-1:988218197909:identity/cause-foundation.org.uk
         - arn:aws:ses:eu-west-1:988218197909:configuration-set/cause-failure-configuration
+        - arn:aws:ses:eu-west-1:988218197909:configuration-set/cause-portal-${sls:stage}
     - Effect: Allow
       Action:
         - dynamodb:DescribeTable
@@ -38,6 +39,7 @@ provider:
         - dynamodb:GetItem
         - dynamodb:PutItem
         - dynamodb:UpdateItem
+        - dynamodb:ConditionCheckItem
         - dynamodb:DeleteItem
         - dynamodb:BatchWriteItem
       Resource:
@@ -108,6 +110,19 @@ package:
     - "endpoints/**"
     - "node_modules/**"
 functions:
+  reconnectAllocations:
+    handler: endpoints/reconnectAllocations.handler
+    timeout: 30
+    events:
+      - http:
+          method: post
+          path: reconnect-allocations
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.environment.USER_POOL_ARN}
   register:
     handler: endpoints/register.handler
     events:
@@ -162,6 +177,7 @@ functions:
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
   updatePledge:
     handler: endpoints/updatePledge.handler
+    timeout: 30
     events:
       - http:
           method: post
