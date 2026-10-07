@@ -108,10 +108,28 @@ package:
 functions:
   processEmail:
     handler: endpoints/process.handler
+    timeout: 30
     events:
       - http:
           method: post
           path: process
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.environment.USER_POOL_ARN}
+    layers:
+      - arn:aws:lambda:eu-west-2:988218197909:layer:crypto:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
+      - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
+  previewEmail:
+    handler: endpoints/preview.handler
+    timeout: 30
+    events:
+      - http:
+          method: post
+          path: preview
           cors: true
           integration: lambda-proxy
           authorizer:
@@ -130,6 +148,7 @@ functions:
       - sqs:
           batchSize: 50
           maximumBatchingWindow: 1
+          functionResponseType: ReportBatchItemFailures
           arn:
             Fn::GetAtt:
               - MailProcessorQueue
@@ -143,6 +162,7 @@ functions:
     events:
       - sqs:
           batchSize: 10
+          functionResponseType: ReportBatchItemFailures
           arn:
             Fn::GetAtt:
               - MailerQueue
@@ -166,6 +186,7 @@ functions:
       - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
   sent:
     handler: endpoints/sent.handler
+    timeout: 30
     events:
       - http:
           method: get

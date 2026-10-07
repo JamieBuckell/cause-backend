@@ -8,7 +8,7 @@ const { setup, event, root } = require('./harness');
 // compatibility handlers, must have an entry. Adding a handler requires tests.
 const protectedEndpoints = {
   campaign: ['create', 'dashboard', 'delete', 'getById', 'list', 'update'],
-  comms: ['process', 'sent'],
+  comms: ['process', 'preview', 'sent'],
   donors: ['delete', 'downloadFile', 'emailUpdate', 'hide', 'resendVerification', 'update', 'updatePledge'],
   emails: ['create', 'delete', 'list', 'update'],
   families: ['allocate', 'create', 'delete', 'emailAssignment', 'list', 'split', 'update'],
@@ -86,7 +86,14 @@ for (const endpoint of jobs) {
 }
 for (const endpoint of queues) test(`${endpoint}: invalid queue records fail for retry without side effects`, async () => {
   const f = setup(endpoint);
-  await assert.rejects(f.invoke({ Records: [{ messageAttributes: {} }] }));
+  const input = { Records: [{ messageId: 'invalid', messageAttributes: {} }] };
+  if (['comms/generate', 'comms/mailer'].includes(endpoint)) {
+    const result = await f.invoke(input);
+    assert.equal(result.batchItemFailures.length, 1);
+    assert.equal(result.batchItemFailures[0].itemIdentifier, 'invalid');
+  } else {
+    await assert.rejects(f.invoke(input));
+  }
   assert.equal(f.calls.length, 0);
 });
 test('feedback/transfer: disabled migration cannot touch data', async () => {

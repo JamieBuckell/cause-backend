@@ -60,6 +60,10 @@ jobs:
         # Replace incomplete node_modules directories still tracked in Git.
         run: npm ci --prefix "v2/main/services/${{ matrix.service }}" --no-audit --no-fund
 
+      - name: Test backend and email retry safety
+        if: matrix.service == 'comms'
+        run: node v2/main/services/tests/run.js
+
       - name: Test email verification
         if: matrix.service == 'subscription'
         run: node --test v2/main/services/subscription/test/verification.test.js

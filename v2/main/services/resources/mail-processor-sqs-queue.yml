@@ -3,4 +3,12 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: ${self:custom.environment.MAIL_PROCESSOR_QUEUE}
-      VisibilityTimeout: 60
+      VisibilityTimeout: 360
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt: [MailProcessorDeadLetterQueue, Arn]
+        maxReceiveCount: 5
+  MailProcessorDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600

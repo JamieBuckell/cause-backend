@@ -3,6 +3,15 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: ${self:custom.environment.MAILER_QUEUE}
-      VisibilityTimeout: 300
+      VisibilityTimeout: 720
       FifoQueue: true
       ContentBasedDeduplication: true
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt: [MailerDeadLetterQueue, Arn]
+        maxReceiveCount: 5
+  MailerDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600
+      FifoQueue: true
