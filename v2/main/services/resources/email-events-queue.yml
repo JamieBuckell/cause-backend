@@ -1,0 +1,38 @@
+Resources:
+  EmailEventsDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600
+  EmailEventsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: cause-portal-email-events-${sls:stage}
+      VisibilityTimeout: 180
+      MessageRetentionPeriod: 1209600
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt EmailEventsDeadLetterQueue.Arn
+        maxReceiveCount: 5
+  EmailEventsQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues: [!Ref EmailEventsQueue]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sns.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt EmailEventsQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: arn:aws:sns:eu-west-1:${self:custom.environment.AWS_ACCOUNT_ID}:cause-portal-email-events-${sls:stage}
+  EmailEventsSubscription:
+    Type: AWS::SNS::Subscription
+    DependsOn: EmailEventsQueuePolicy
+    Properties:
+      Protocol: sqs
+      Region: eu-west-1
+      TopicArn: arn:aws:sns:eu-west-1:${self:custom.environment.AWS_ACCOUNT_ID}:cause-portal-email-events-${sls:stage}
+      Endpoint: !GetAtt EmailEventsQueue.Arn
+      RawMessageDelivery: true

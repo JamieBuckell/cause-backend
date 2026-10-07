@@ -30,6 +30,7 @@ provider:
         - arn:aws:ses:eu-west-1:988218197909:identity/jamiebuckell.co.uk
         - arn:aws:ses:eu-west-1:988218197909:identity/cause-foundation.org.uk
         - arn:aws:ses:eu-west-1:988218197909:configuration-set/cause-failure-configuration
+        - arn:aws:ses:eu-west-1:988218197909:configuration-set/cause-portal-${sls:stage}
     - Effect: Allow
       Action:
         - dynamodb:DescribeTable

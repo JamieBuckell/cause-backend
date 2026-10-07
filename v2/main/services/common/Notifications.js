@@ -1,4 +1,5 @@
 const AWS = require("aws-sdk");
+const tracking = require("./MailTracking");
 AWS.config.update({ region: "eu-west-1" });
 const SES = new AWS.SES();
 // Outputs timezone offset in format ZZ
@@ -92,6 +93,7 @@ const Notifications = {
 
     // set email parameters
     const emailParams = {
+      ...tracking(),
       Source: data?.fromAddress ?? process.env.FROM_ADDRESS,
       ReplyToAddresses: [data?.fromAddress ?? process.env.FROM_ADDRESS],
       Destination: {
@@ -130,6 +132,7 @@ const Notifications = {
 
     // set email parameters
     const emailParams = {
+      ...tracking(),
       Source: process.env.FROM_ADDRESS,
       ReplyToAddresses: [process.env.FROM_ADDRESS],
       Destination: {
@@ -202,7 +205,7 @@ const Notifications = {
         "Content-Transfer-Encoding: base64", `Content-Disposition: attachment; filename="${name}"`, "", encodeText(data.csvAttachment));
     }
     raw.push(`--${boundary}--`, "");
-    return SES.sendRawEmail({ Source: process.env.FROM_ADDRESS, RawMessage: { Data: raw.join("\r\n") } }).promise();
+    return SES.sendRawEmail({ ...tracking(), Source: process.env.FROM_ADDRESS, RawMessage: { Data: raw.join("\r\n") } }).promise();
   },
   sendTransactionalEmailSync: (data) => {
     let ToAddresses = [process.env.INTERNAL_ADDRESS];
@@ -225,6 +228,7 @@ const Notifications = {
 
     // set email parameters
     const emailParams = {
+      ...tracking(),
       Source: process.env.FROM_ADDRESS,
       ReplyToAddresses: [process.env.FROM_ADDRESS],
       Destination: {

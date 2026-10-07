@@ -10,7 +10,7 @@ function notifications() {
   const module = { exports: {} };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../common/Notifications.js'), 'utf8'), {
     module, Buffer, console: { log() {} }, process: { env: { FROM_ADDRESS: 'sender@example.org', INTERNAL_ADDRESS: 'bcc@example.org' } },
-    require: name => name === 'crypto' ? require('node:crypto') : {
+    require: name => name === "./MailTracking" ? () => ({}) : name === 'crypto' ? require('node:crypto') : {
       config: { update() {} }, SES: function() { this.sendRawEmail = params => ({ promise: async () => { raw = params.RawMessage.Data; return {}; } }); },
     },
   });

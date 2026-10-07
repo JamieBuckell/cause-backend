@@ -2,6 +2,7 @@ const AWS = require("aws-sdk");
 const crypto = require("crypto");
 const moment = require("moment-timezone");
 const Store = require("./MailStore");
+const tracking = require("./MailTracking");
 const { normalize, hash } = require("./MailRecipients");
 const Hashing = require("./Hashing");
 // SES has no idempotency key. SDK retries after an ambiguous network failure
@@ -66,7 +67,7 @@ async function deliver(record) {
     const unsubscribeLink = mail.type === "subscriber" && recipient.SK
       ? `${process.env.APP_URL}/subscription/unsubscribe/${encodeURIComponent(email)}/${encodeURIComponent(Hashing.hash(recipient.SK, process.env.HASHING_SALT).hashedpassword)}` : "";
     const fromAddress = `${mail.sendFrom}@cause-foundation.org.uk`;
-    result = await ses.sendTemplatedEmail({ Source: fromAddress, ReplyToAddresses: [fromAddress],
+    result = await ses.sendTemplatedEmail({ ...tracking(), Tags: [{ Name: "runId", Value: run.SK }], Source: fromAddress, ReplyToAddresses: [fromAddress],
       Destination: { ToAddresses: [email] }, Template: unsubscribeLink ? "CauseFSubscriber" : "CauseFStandard",
       TemplateData: JSON.stringify({ fromAddress, subject: mail.subject, pageTitle: mail.title,
         pageContent: mail.content, unsubscribeLink, type: mail.type }),

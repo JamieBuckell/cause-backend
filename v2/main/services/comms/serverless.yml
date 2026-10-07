@@ -30,6 +30,7 @@ provider:
         - arn:aws:ses:eu-west-1:988218197909:identity/jamiebuckell.co.uk
         - arn:aws:ses:eu-west-1:988218197909:identity/cause-foundation.org.uk
         - arn:aws:ses:eu-west-1:988218197909:configuration-set/cause-failure-configuration
+        - arn:aws:ses:eu-west-1:988218197909:configuration-set/cause-portal-${sls:stage}
     - Effect: Allow
       Action:
         - sqs:sendmessage
@@ -63,6 +64,7 @@ provider:
         - dynamodb:DescribeTable
         - dynamodb:Query
         - dynamodb:Scan
+        - dynamodb:BatchGetItem
         - dynamodb:GetItem
         - dynamodb:PutItem
         - dynamodb:UpdateItem
@@ -106,6 +108,40 @@ package:
     - "endpoints/**"
     - "node_modules/**"
 functions:
+  issues:
+    handler: endpoints/issues.handler
+    timeout: 30
+    events:
+      - http:
+          method: get
+          path: issues
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.environment.USER_POOL_ARN}
+  reviewIssue:
+    handler: endpoints/reviewIssue.handler
+    timeout: 30
+    events:
+      - http:
+          method: post
+          path: issues/review
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.environment.USER_POOL_ARN}
+  emailEvents:
+    handler: endpoints/emailEvents.handler
+    timeout: 30
+    events:
+      - sqs:
+          batchSize: 10
+          functionResponseType: ReportBatchItemFailures
+          arn: !GetAtt EmailEventsQueue.Arn
   processEmail:
     handler: endpoints/process.handler
     timeout: 30
@@ -216,6 +252,7 @@ functions:
     layers:
       - arn:aws:lambda:eu-west-2:988218197909:layer:nanoid:2
 resources:
+  - ${file(../resources/email-events-queue.yml)}
   - ${file(../resources/portal-comms-data-store.yml)}
   - ${file(../resources/mail-processor-sqs-queue.yml)}
   - ${file(../resources/mailer-sqs-queue.yml)}

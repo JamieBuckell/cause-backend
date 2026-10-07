@@ -8,7 +8,7 @@ const { setup, event, root } = require('./harness');
 // compatibility handlers, must have an entry. Adding a handler requires tests.
 const protectedEndpoints = {
   campaign: ['create', 'dashboard', 'delete', 'getById', 'list', 'update'],
-  comms: ['process', 'preview', 'sent'],
+  comms: ['process', 'preview', 'sent', 'issues', 'reviewIssue'],
   donors: ['delete', 'downloadFile', 'emailUpdate', 'hide', 'resendVerification', 'update', 'updatePledge'],
   emails: ['create', 'delete', 'list', 'update'],
   families: ['allocate', 'create', 'delete', 'emailAssignment', 'list', 'split', 'update'],
@@ -33,7 +33,7 @@ const publicLookup = {
   'users/resetPasswordCommit': { emailAddress: 'person@example.org', verificationHash: 'invalid' },
 };
 const jobs = ['comms/recipientFix', 'comms/reconfigureEmails', ...['addFamilyRequestIds','deletedFamilies','donorAllocations','donors','families','fixDonorCognitoIDs','fixFamilySKs','fixFamilyUnitCounts','fixSKs','nominators','organisations','removeDeletedFamilies','subscribersFix'].map(n => `dataMigration/${n}`)];
-const queues = ['comms/complete', 'comms/generate', 'comms/mailer', 'donors/sendPledgeDetail', 'users/doFixReferences'];
+const queues = ['comms/emailEvents', 'comms/complete', 'comms/generate', 'comms/mailer', 'donors/sendPledgeDetail', 'users/doFixReferences'];
 const retired = ['comms/email','comms/notifications','comms/updateMailsSent','emails/getById','families/update.BK','feedback/feedbackGenerate.hamperspecific','dataMigration/fixDonorSKs','comms/reconfigureRecipients'];
 const inventory = [...Object.entries(protectedEndpoints).flatMap(([s, names]) => names.map(n => `${s}/${n}`)), ...publicBody, ...Object.keys(publicLookup), ...jobs, ...queues, ...retired, 'feedback/transfer'];
 
@@ -87,7 +87,7 @@ for (const endpoint of jobs) {
 for (const endpoint of queues) test(`${endpoint}: invalid queue records fail for retry without side effects`, async () => {
   const f = setup(endpoint);
   const input = { Records: [{ messageId: 'invalid', messageAttributes: {} }] };
-  if (['comms/generate', 'comms/mailer'].includes(endpoint)) {
+  if (['comms/generate', 'comms/mailer', 'comms/emailEvents'].includes(endpoint)) {
     const result = await f.invoke(input);
     assert.equal(result.batchItemFailures.length, 1);
     assert.equal(result.batchItemFailures[0].itemIdentifier, 'invalid');

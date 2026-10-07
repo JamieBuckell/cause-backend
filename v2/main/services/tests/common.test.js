@@ -13,7 +13,7 @@ function database(method, responses) {
   } }) };
   const module = { exports: {} };
   vm.runInNewContext(fs.readFileSync(path.join(root, 'common/Dynamo.js'), 'utf8'), {
-    module, require: name => name === "crypto" ? require("node:crypto") : ({ config: { update() {} }, DynamoDB: { DocumentClient: function() { return client; } } }),
+    module, require: name => name === "./MailTracking" ? () => ({}) : name === "crypto" ? require("node:crypto") : ({ config: { update() {} }, DynamoDB: { DocumentClient: function() { return client; } } }),
     setTimeout: fn => fn(), console: { log() {} },
   });
   return { db: module.exports, calls };
@@ -87,7 +87,7 @@ test('raw email CSV is base64 encoded and delayed mail resolves/rejects', async 
   const module = { exports: {} };
   vm.runInNewContext(fs.readFileSync(path.join(root, 'common/Notifications.js'), 'utf8'), {
     module, Buffer, process: { env: { FROM_ADDRESS: 'sender@example.org', INTERNAL_ADDRESS: 'internal@example.org' } },
-    console: { log() {} }, setTimeout: fn => fn(), require: name => name === "crypto" ? require("node:crypto") : ({ config: { update() {} }, SES: function() {
+    console: { log() {} }, setTimeout: fn => fn(), require: name => name === "./MailTracking" ? () => ({}) : name === "crypto" ? require("node:crypto") : ({ config: { update() {} }, SES: function() {
       this.sendRawEmail = params => ({ promise: async () => { calls.push(params); return {}; } });
       this.sendTemplatedEmail = () => ({ promise: async () => ({ MessageId: 'sent' }) });
     } }),
