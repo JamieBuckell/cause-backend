@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
-const moment = require('../campaign/node_modules/moment-timezone');
+const moment = require(require.resolve('moment-timezone', { paths: [path.join(root, 'campaign'), path.join(root, 'comms')] }));
 const clone = value => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
 
 // All service boundaries are in-memory. Unexpected dependencies fail closed;
@@ -40,7 +40,7 @@ function setup(endpoint, options = {}) {
       name === 'getEmailTemplate' ? '{{pageTitle}}{{pageContent}}' : { MessageId: 'message' });
   }
   const AWS = { config: { update() {} } };
-  for (const service of ['CognitoIdentityServiceProvider', 'SQS', 'Lambda', 'S3']) {
+  for (const service of ['CognitoIdentityServiceProvider', 'SQS', 'Lambda', 'S3', 'SES']) {
     AWS[service] = function() {
       return new Proxy({}, { get(_, method) {
         return (...args) => ({ promise: () => call(`${service}.${String(method)}`, args,
@@ -52,6 +52,11 @@ function setup(endpoint, options = {}) {
       } });
     };
   }
+  AWS.DynamoDB = { DocumentClient: function() {
+    return new Proxy({}, { get(_, method) {
+      return (...args) => ({ promise: () => call(`DocumentClient.${String(method)}`, args, {}) });
+    } });
+  } };
   function load(file) {
     if (cache.has(file)) return cache.get(file).exports;
     const module = { exports: {} }; cache.set(file, module);

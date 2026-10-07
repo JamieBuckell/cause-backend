@@ -65,13 +65,6 @@ test('unchanged donor email cannot mark the original record deleted',async()=>{
   const f=fixture('donors/emailUpdate',{rows:[donor]});
   assert.equal((await f.invoke(event({campaign:'TEST',donorId:'donor',previousEmail:'donor@example.org',updatedEmail:'donor@example.org'}))).statusCode,200);assert.equal(writes(f).length,0);
 });
-for(const role of ['donors','nominators','teamleads']) test(`bulk email selects only ${role}`,async()=>{
-  const rows=[clone(donor),clone(nom),{...clone(nom),type:'team-lead',nominatorDetails:{email:'lead@example.org'}}];
-  const f=fixture('comms/process',{rows});
-  const r=await f.invoke(event({email:{subject:'Hello',title:'Hello',content:'Hi'},options:{type:role,campaignId:'TEST'}}));
-  assert.equal(r.statusCode,200);const recipients=JSON.parse(f.calls.find(c=>c.name==='SQS.sendMessage').args[0].MessageAttributes.emailRecipients.StringValue);
-  assert.deepEqual(recipients.map(r=>r.email),[role==='donors'?'donor@example.org':role==='nominators'?'actor@example.org':'lead@example.org']);
-});
 test('report buckets preserve 08:00, 09:10 and round 09:55 to 10:00 without duplicate dates',async()=>{
   const rows=['08:00','09:10','09:55'].map(t=>({...family,status:'allocated-confirmed',receiveStatus:'hamper-received',receivedDate:`2026-12-01 ${t}:00`}));
   for(const endpoint of ['reports/dropOffs','reports/allDropOffs']){

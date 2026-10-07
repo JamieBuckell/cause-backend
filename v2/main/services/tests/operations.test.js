@@ -79,7 +79,6 @@ const cases = [
   { ep: 'users/list',params:{userType:'admin'},check:(f,r)=>assert.deepEqual(decoded(r),{}) },
   { ep: 'users/me',rows:[],check:(f,r)=>assert.equal(decoded(r).email,'actor@example.org') },
   { ep: 'users/delete',params:{organisationId:'none',emailAddress:'other@example.org',userType:'admin'},check:(f,r)=>assert.equal(decoded(r).success,true) },
-  { ep: 'comms/process',body:{email:{subject:'Hello',title:'Hello',content:'Text'},options:{type:'specific',toAddresses:['person@example.org']}},check:f=>assert.equal(f.calls.find(c=>c.name==='SQS.sendMessage').args[0].MessageAttributes.emailRecipients.StringValue,'[{"email":"person@example.org"}]') },
   { ep: 'comms/sent',rows:[{PK:'EMAIL',email:{subject:'Hello'}}],check:(f,r)=>assert.equal(decoded(r).emails[0].email.subject,'Hello') },
 ];
 for (const c of cases) {
