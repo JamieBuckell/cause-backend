@@ -77,7 +77,7 @@ jobs:
         run: npm ci --prefix "v2/main/services/${{ matrix.service }}" --no-audit --no-fund
 
       - name: Test backend and email retry safety
-        if: matrix.service == 'comms'
+        if: matrix.service == 'comms' || matrix.service == 'donors'
         run: node v2/main/services/tests/run.js
 
       - name: Test email verification

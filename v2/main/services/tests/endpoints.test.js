@@ -9,7 +9,7 @@ const { setup, event, root } = require('./harness');
 const protectedEndpoints = {
   campaign: ['create', 'dashboard', 'delete', 'getById', 'list', 'update'],
   comms: ['process', 'preview', 'sent', 'issues', 'reviewIssue'],
-  donors: ['delete', 'downloadFile', 'emailUpdate', 'hide', 'resendVerification', 'update', 'updatePledge'],
+  donors: ['delete', 'downloadFile', 'emailUpdate', 'hide', 'resendVerification', 'update', 'updatePledge', 'reconnectAllocations'],
   emails: ['create', 'delete', 'list', 'update'],
   families: ['allocate', 'create', 'delete', 'emailAssignment', 'list', 'split', 'update'],
   feedback: ['getHamper', 'getVolunteer'],

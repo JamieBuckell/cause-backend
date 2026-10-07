@@ -109,6 +109,19 @@ package:
     - "endpoints/**"
     - "node_modules/**"
 functions:
+  reconnectAllocations:
+    handler: endpoints/reconnectAllocations.handler
+    timeout: 30
+    events:
+      - http:
+          method: post
+          path: reconnect-allocations
+          cors: true
+          integration: lambda-proxy
+          authorizer:
+            name: PrivateAuthorizerV2
+            type: COGNITO_USER_POOLS
+            arn: ${self:custom.environment.USER_POOL_ARN}
   register:
     handler: endpoints/register.handler
     events:
@@ -163,6 +176,7 @@ functions:
       - arn:aws:lambda:eu-west-2:988218197909:layer:moment:1
   updatePledge:
     handler: endpoints/updatePledge.handler
+    timeout: 30
     events:
       - http:
           method: post

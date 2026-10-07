@@ -1,125 +1,28 @@
 const Responses = require("../common/API_Responses");
-const Dynamo = require("../common/Dynamo");
-const Hashing = require("../common/Hashing");
 const Functions = require("../common/Functions");
 const Notifications = require("../common/Notifications");
-
-const validations = [
-  {
-    key: "donorId",
-    required: true,
-    errorMsg: "Donor is required",
-  },
-  {
-    key: "campaignData",
-    required: true,
-    errorMsg: "Campaign data is required",
-  },
-  {
-    key: "campaignId",
-    required: true,
-    errorMsg: "Campaign is required",
-  },
-];
-
-exports.handler = async (event, context, cb) => {
+const Allocations = require("../common/DonorAllocations");
+exports.handler = async event => {
+  if (!Functions.hasPermission(event, "Admin")) return Responses._401({ messages: { unauthorized: "Administrator access is required." } });
   try {
-    if (!Functions.hasPermission(event, "Admin")) {
-      return Responses._401({
-        messages: {
-          unauthorized: "You are not authorized to view this section",
-        },
-      });
+    const input = JSON.parse(event.body || "{}");
+    const submitted = typeof input.campaignData === "string" ? JSON.parse(input.campaignData) : input.campaignData;
+    const { donor, families } = await Allocations.read(input.campaignId, input.donorId);
+    const requests = Allocations.mergePledges(donor, families, submitted);
+    const updated = await Allocations.commit(donor, requests, event.requestContext.authorizer.claims.email || event.requestContext.authorizer.claims.sub, "edit-pledge");
+    let notificationWarning;
+    if (input.sendEmail === true && updated.GSI3PK && requests.length) {
+      try {
+        const template = await Functions.getEmailTemplate("pledgeUpdated", { familyData: requests, familyCount: requests.reduce((sum, r) => sum + Number(r.numberOfFamilies), 0) });
+        await Notifications.sendTransactionalEmail({ ToAddresses: [updated.GSI3PK], ...template });
+      } catch (error) {
+        console.error("Pledge saved but notification failed", error.code || error.message);
+        notificationWarning = "Pledge saved, but the confirmation email result could not be confirmed. Check before sending another copy.";
+      }
     }
-
-    const requestId = context.awsRequestId; // Change this so that we are generating our own ID
-
-    const envSalt = process.env.HASHING_SALT;
-    const websiteURL = process.env.WEBSITE_URL;
-    const mainTableName = process.env.MAIN_DYNAMO_TABLE;
-
-    const parsed = event.donorId ? event : JSON.parse(event.body);
-    console.log("parsed", parsed);
-
-    const valid = await Functions.validateSubmission(parsed, validations);
-    if (Object.keys(valid).length > 0) {
-      return Responses._400({ messages: valid });
-    }
-
-    const params = {
-      TableName: mainTableName,
-      FilterExpression: "#pk = :pk and #type = :type",
-      ExpressionAttributeNames: {
-        "#pk": "PK",
-        "#type": "type",
-      },
-      ExpressionAttributeValues: {
-        ":pk": parsed.campaignId,
-        ":type": "donor",
-      },
-    };
-    let allDonorData = await Dynamo.scan(params).catch((err) => {
-      console.log("error in dynamo query", err);
-      throw err;
-    });
-
-    const updateData = allDonorData.find((d) => d.GSI2PK === parsed.donorId);
-    const previousData = updateData ? JSON.parse(JSON.stringify(updateData)) : {};
-
-    if (!updateData?.PK) {
-      return Responses._400({ messages: { error: "Donor not found" } });
-    }
-
-    const escapeRegEx = new RegExp(/(<([^>]+)>)/i);
-
-    const historicData = {
-      donorDetails: previousData?.donorDetails ?? {},
-      familyDetails: previousData?.familyDetails ?? {},
-      dateAdded: previousData.dateAdded,
-    };
-    const existingHistory = Array.isArray(previousData.history) ? previousData.history : [];
-    updateData.history = [historicData, ...existingHistory];
-    updateData.totalChanges = previousData?.totalChanges
-      ? previousData?.totalChanges + 1
-      : 1;
-
-    updateData.familyDetails.request = JSON.parse(parsed.campaignData);
-
-    console.log(updateData.familyDetails.request, updateData);
-    /* */
-    await Dynamo.write(updateData, mainTableName).catch((err) => {
-      console.log("error in dynamo write", err);
-      throw err;
-    });
-    /* */
-
-    const familyCount = 1;
-
-    if (
-      parsed?.sendEmail &&
-      updateData?.GSI3PK &&
-      updateData.familyDetails.request.length
-    ) {
-      const emailTemplate = {
-        familyData: updateData.familyDetails.request,
-        familyCount: familyCount,
-      };
-      const emailTemplateParams = await Functions.getEmailTemplate(
-        "pledgeUpdated",
-        emailTemplate
-      );
-      const jsonParameters = {
-        ToAddresses: [updateData.GSI3PK],
-        ...emailTemplateParams,
-      };
-      await Notifications.sendTransactionalEmail(jsonParameters);
-    }
-
-    return Responses._200({ success: "Pledge successfully updated" });
-  } catch (e) {
-    console.log(`An unexpected error occurred ${e}`);
-    return Responses._400({
-      messages: { unexpected: "An unexpected error occurred" },
-    });
+    return Responses._200({ success: "Pledge successfully updated", donor: updated, ...(notificationWarning ? { notificationWarning } : {}) });
+  } catch (error) {
+    console.error("Pledge update failed", error.code || error.message);
+    return Responses._400({ messages: { error: error.code ? "Could not save the pledge. Refresh and try again." : error.message } });
   }
 };
