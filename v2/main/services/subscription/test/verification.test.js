@@ -10,21 +10,21 @@ const source = readFileSync(
 );
 
 // Run the real handler with isolated database/email dependencies; no AWS calls.
-function setup(email, { hasDonor = true } = {}) {
+function setup(email, { hasDonor = true, groups = "", closed = false, alreadyVerified = false } = {}) {
   const writes = [];
   const emails = [];
   const lookups = [];
   const subscriber = { PK: email, SK: "H#test-id", verified: false };
   const donor = {
     PK: "TEST", SK: `EMAIL#D#${email}`, GSI3PK: email,
-    familyDetails: { request: [] }, donorDetails: {},
+    familyDetails: { request: [] }, donorDetails: {}, emailVerification: { verified: alreadyVerified },
   };
   const response = statusCode => data => ({ statusCode, body: JSON.stringify(data) });
   const dependencies = {
-    "../common/API_Responses": { _200: response(200), _400: response(400) },
+    "../common/API_Responses": { _200: response(200), _400: response(400), _401: response(401) },
     "../common/Hashing": Hashing,
     "../common/Dynamo": {
-      get: async () => ({ PK: "TEST", campaignDetails: { registrationClosed: "2999-01-01" } }),
+      get: async () => ({ PK: "TEST", campaignDetails: { registrationClosed: closed ? "2000-01-01" : "2999-01-01" } }),
       query: async (query, table) => {
         lookups.push({ query, table });
         const values = query.ExpressionAttributeValues;
@@ -34,7 +34,7 @@ function setup(email, { hasDonor = true } = {}) {
       write: async (item, table) => { writes.push({ item, table }); },
     },
     "../common/Functions": {
-      hasPermission: () => false,
+      hasPermission: (event, group) => (event.requestContext?.authorizer?.claims?.["cognito:groups"] || "").split(",").includes(group),
       defaultCampaign: () => "TEST",
       getEmailTemplate: async () => ({}),
     },
@@ -58,6 +58,10 @@ function setup(email, { hasDonor = true } = {}) {
   vm.runInNewContext(source, context);
   return {
     writes, emails, lookups,
+    manual: (campaignId = "TEST") => context.exports.manualHandler({
+      pathParameters: { emailAddress: email }, queryStringParameters: { campaignId },
+      requestContext: { authorizer: { claims: { "cognito:groups": groups, email: "admin@example.com" } } },
+    }),
     invoke: (emailAddress, v = Hashing.hash("test-id", "test-salt").hashedpassword) =>
       context.exports.handler({
         pathParameters: { emailAddress }, queryStringParameters: { v, campaignId: "TEST" },
@@ -102,4 +106,50 @@ test("decoding does not bypass subscriber token validation", async () => {
   assert.equal(fixture.lookups[0].query.ExpressionAttributeValues[":pk"], "donor@example.com");
   assert.equal(fixture.writes.length, 0);
   assert.equal(fixture.emails.length, 0);
+});
+
+for (const groups of ["", "Donor", "Nominator"]) test(`manual verification rejects non-admin group '${groups}' before reading or writing`, async () => {
+  const f = setup("donor@example.com", { groups });
+  assert.equal((await f.manual()).statusCode, 401);
+  assert.equal(f.lookups.length, 0);
+  assert.equal(f.writes.length, 0);
+  assert.equal(f.emails.length, 0);
+});
+for (const closed of [false, true]) test(`admin verifies the exact donor without a token (closed campaign=${closed})`, async () => {
+  const f = setup("donor@example.com", { groups: "Admin,Other", closed });
+  assert.equal((await f.manual()).statusCode, 200);
+  assert.equal(f.writes.length, 1);
+  assert.equal(f.writes[0].table, "main");
+  assert.equal(f.writes[0].item.emailVerification.verifiedBy, "admin@example.com");
+  assert.equal(f.writes[0].item.emailVerification.method, "admin");
+  assert.equal(f.emails.length, 1);
+});
+test("admin verification requires a campaign and never reports success for a missing donor", async () => {
+  const f = setup("donor@example.com", { groups: "Admin", hasDonor: false });
+  assert.equal((await f.manual("")).statusCode, 400);
+  assert.equal(f.lookups.length, 0);
+  assert.equal((await f.manual()).statusCode, 400);
+  assert.equal(f.writes.length, 0);
+  assert.equal(f.emails.length, 0);
+});
+test("repeated admin verification does not write or send another email", async () => {
+  const f = setup("donor@example.com", { groups: "Admin", alreadyVerified: true });
+  assert.equal((await f.manual()).statusCode, 200);
+  assert.equal(f.writes.length, 0);
+  assert.equal(f.emails.length, 0);
+});
+test("public verification still rejects an empty token before reading", async () => {
+  const f = setup("donor@example.com");
+  assert.equal((await f.invoke("donor@example.com", "")).statusCode, 400);
+  assert.equal(f.lookups.length, 0);
+});
+test("manual POST has Cognito authorization while public GET remains public", () => {
+  const config = readFileSync(path.join(__dirname, "../serverless.yml"), "utf8");
+  const manual = config.split("  manualVerification:\n")[1].split("  verification:\n")[0];
+  assert.match(manual, /method: post/);
+  assert.match(manual, /type: COGNITO_USER_POOLS/);
+  assert.match(manual, /handler: endpoints\/verification.manualHandler/);
+  const publicRoute = config.split("  verification:\n")[1].split("  list:\n")[0];
+  assert.match(publicRoute, /method: get/);
+  assert.doesNotMatch(publicRoute, /authorizer:/);
 });

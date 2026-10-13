@@ -15,13 +15,13 @@ exports.handler = async event => {
     const salt = process.env.HASHING_SALT;
     const prefix = process.env.HASHING_PREFIX;
     const table = process.env.SUBSCRIBERS_TABLE;
-    const subscribers = await Dynamo.query({
+    const subscribers = admin ? [] : await Dynamo.query({
       KeyConditionExpression: '#pk= :pk AND begins_with(#sk, :sk)',
       ExpressionAttributeNames: { '#pk': 'PK', '#sk': 'SK' },
       ExpressionAttributeValues: { ':pk': emailAddress, ':sk': prefix },
     }, table);
     const subscriber = subscribers[0];
-    const subscriberAuthorized = !!subscriber && (admin || Hashing.compare(subscriber.SK.slice(prefix.length), { salt, hashedpassword: v }));
+    const subscriberAuthorized = !admin && !!subscriber && Hashing.compare(subscriber.SK.slice(prefix.length), { salt, hashedpassword: v });
     let verified = false;
     const timestamp = moment().tz(process.env.TIMEZONE).format(process.env.DATE_FORMAT);
     if (subscriberAuthorized) {
@@ -44,7 +44,7 @@ exports.handler = async event => {
     if (campaignId && campaignId !== 'undefined') {
       const mainTable = process.env.MAIN_DYNAMO_TABLE;
       const campaign = await Dynamo.get({ PK: campaignId, SK: 'A' }, mainTable);
-      if (campaign.status !== 'deleted' && new Date() <= new Date(campaign.campaignDetails?.registrationClosed)) {
+      if (campaign.status !== 'deleted' && (admin || new Date() <= new Date(campaign.campaignDetails?.registrationClosed))) {
         const donors = await Dynamo.query({
           KeyConditionExpression: '#pk= :pk AND #sk= :sk',
           ExpressionAttributeNames: { '#pk': 'PK', '#sk': 'SK' },
@@ -57,7 +57,8 @@ exports.handler = async event => {
           if (!authorized) continue;
           verified = true;
           if (donor.emailVerification?.verified) continue;
-          donor.emailVerification = { ...donor.emailVerification, verified: true, dateVerified: timestamp };
+          donor.emailVerification = { ...donor.emailVerification, verified: true, dateVerified: timestamp,
+            ...(admin ? { verifiedBy: event.requestContext.authorizer.claims.email, method: 'admin' } : {}) };
           await Dynamo.write(donor, mainTable);
           const template = await Functions.getEmailTemplate('donorVerified', {
             familyData: donor.familyDetails.request, donorData: { ...donor.donorDetails, email: emailAddress },
@@ -73,4 +74,15 @@ exports.handler = async event => {
     console.log('Verification failed', error);
     return Responses._400({ messages: { unexpected: 'An unexpected error occurred. Please try again later' } });
   }
+};
+
+// Public email links remain token-based. Only this Cognito-protected POST may
+// verify a donor on an administrator's behalf; it does not change subscriptions.
+exports.manualHandler = async event => {
+  if (!Functions.hasPermission(event, 'Admin')) return Responses._401({ messages: { error: 'Administrator access is required.' } });
+  const campaignId = event.queryStringParameters?.campaignId;
+  if (typeof campaignId !== 'string' || !campaignId.trim() || campaignId === 'undefined') {
+    return Responses._400({ messages: { error: 'A campaign is required for manual donor verification.' } });
+  }
+  return exports.handler(event);
 };
