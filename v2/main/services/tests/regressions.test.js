@@ -49,9 +49,11 @@ test('allocation cannot select a donor from another campaign',async()=>{
 });
 test('removing a missing allocation does not remove the final unrelated hamper',async()=>{
   const d=clone(donor);d.familyDetails.request[0].allocation=[{hamperId:'OTHER'}];
-  const f=fixture('families/allocate',{handlers:{'Dynamo.scan':async()=>[{...clone(family),allocatedTo:'donor'}],'Dynamo.query':async()=>[d]}});
+  const assigned = {...clone(family),allocatedTo:'donor'};
+  const other = {...clone(assigned),SK:'REF#other',GSI2PK:'other',GSI2SK:'SK#OTHER',members:[]};
+  const f=fixture('families/allocate',{handlers:{'DocumentClient.query':async p=>({Items:p.ExpressionAttributeValues[':sk']==='EMAIL#'?[d]:[assigned,other]})}});
   const input=event({campaignId:'TEST',donorId:'donor',hamperId:'ABJD-001',requestId:'request'});input.path='/families/allocate/remove';
-  assert.equal((await f.invoke(input)).statusCode,200);assert.equal(writes(f)[1].args[0].familyDetails.request[0].allocation[0].hamperId,'OTHER');
+  assert.equal((await f.invoke(input)).statusCode,200);assert.equal(f.calls.find(c=>c.name==='DocumentClient.transactWrite').args[0].TransactItems[1].Update.ExpressionAttributeValues[':next'].request[0].allocation[0].hamperId,'OTHER');
 });
 test('failed family unallocation prevents donor deletion',async()=>{
   const f=fixture('donors/delete',{fail:'Dynamo.batchWrite',handlers:{'Dynamo.scan':async()=>[clone(donor)],'Dynamo.query':async()=>[{...clone(family),allocatedTo:'donor'}]}});

@@ -15,3 +15,11 @@ The donor update is conditional on the stored pledge snapshot, changes only pled
 The frontend edits a detached copy and replaces its local donor data with the successful server response. A failed save leaves the existing local data intact. A confirmation-email failure after saving returns a warning with the saved record instead of inviting a repeated save/send.
 
 Deploy the backend donor service before the frontend. Tests are included in the backend suite and frontend `tests/*.test.cjs`. No database migration is required.
+
+## Normal platform unallocation after references change
+
+Deploy the **families service** (including its IAM update for `dynamodb:ConditionCheckItem`) before the frontend. No migration is required. The unallocation endpoint remains compatible with older clients supplying a current hamper reference and no permanent family ID.
+
+The frontend sends the permanent family ID and adopts the donor returned by the server. Unallocation does not require the browser to find a matching pledge request. The backend consistently reads the selected campaign's donor and owned families, resolves the permanent ID, and removes the exact allocation link. If references have changed, it removes a stale link only when the saved member snapshot uniquely identifies that family among the donor's links and assignments. Ambiguous or conflicting links return a review error without writes. Disconnected assignments with no stale links can also be released.
+
+Family release, donor link removal and audit creation use one conditional transaction. Snapshot-based matching also guards the other family snapshots used to establish uniqueness. Pledge counts and unrelated links are preserved; no email is sent. This handles Kelly Knowles's renumbered Hartlepool allocations through the normal Unallocate action. It does not prevent the underlying reference-renumbering process from creating stale links.

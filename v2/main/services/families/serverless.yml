@@ -38,6 +38,7 @@ provider:
         - dynamodb:Scan
         - dynamodb:GetItem
         - dynamodb:PutItem
+        - dynamodb:ConditionCheckItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
         - dynamodb:BatchWriteItem
