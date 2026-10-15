@@ -44,9 +44,20 @@ exports.handler = async (event, context, cb) => {
     const parsed = event.campaignId ? event : JSON.parse(event.body);
     console.log("Submitted Data", parsed);
 
-    const valid = await Functions.validateSubmission(parsed, validations);
+    const valid = await Functions.validateSubmission(parsed, remove
+      ? validations.filter(v => v.key !== "requestId") : validations);
     if (Object.keys(valid).length > 0) {
       return Responses._400({ messages: valid });
+    }
+
+    if (remove) {
+      try {
+        const result = await require("../common/UnallocateFamily").unallocate(parsed,
+          event?.requestContext?.authorizer?.claims?.email || "");
+        return Responses._200({ messages: { success: "Family unallocated successfully" }, ...result });
+      } catch (error) {
+        return Responses._400({ messages: { error: error.message } });
+      }
     }
 
     console.log(
