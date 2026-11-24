@@ -41,11 +41,19 @@ exports.handler = async (event, context, cb) => {
     };
     const nominatorData = await Dynamo.scan(params);
 
-    if (nominatorData[0]?.nominatorDetails?.cognitoId) {
-      if (nominatorData[0]?.emailVerification?.resetPasswordHash) {
-        const nominator = nominatorData[0];
+    if (!nominatorData.some(user => user?.nominatorDetails?.cognitoId)) {
+      const resetData = await Dynamo.scan({
+        ...params,
+        ExpressionAttributeValues: { ":sk": `PASSWORD_RESET#${emailAddress}` },
+      });
+      nominatorData.push(...resetData.filter(user => user.type === "password-reset"));
+    }
+    const account = nominatorData.find(user => user?.nominatorDetails?.cognitoId);
+    if (account) {
+      if (account?.emailVerification?.resetPasswordHash) {
+        const nominator = account;
 
-        const hashCompare = Hashing.compare(nominator.GSI2PK, {
+        const hashCompare = Hashing.compare(nominator.resetUserId ?? nominator.GSI2PK, {
           salt: envSalt + nominator.emailVerification.resetPasswordHash,
           hashedpassword: verificationHash,
         });
@@ -54,7 +62,7 @@ exports.handler = async (event, context, cb) => {
           const temporaryPassword = Functions.generateP({ length: 8 });
           const cognitoParams = {
             UserPoolId: userPoolId,
-            Username: nominator.nominatorDetails.email,
+            Username: nominator.nominatorDetails.cognitoId,
             Password: temporaryPassword,
             Permanent: false,
           };
@@ -85,14 +93,14 @@ exports.handler = async (event, context, cb) => {
         }
       } else {
         console.log(
-          `No password reset hash: ${nominatorData[0]?.emailVerification?.resetPasswordHash}`
+          `No password reset hash: ${account?.emailVerification?.resetPasswordHash}`
         );
         return Responses._400({
           messages: { error: "Your password reset link has expired" },
         });
       }
     } else {
-      console.log(`Nominator not found: ${JSON.stringify(nominatorData)}`);
+      console.log("Password reset account not found");
       return Responses._400({
         messages: { unexpected: "An unexpected error occurred" },
       });

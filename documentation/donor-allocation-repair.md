@@ -23,3 +23,19 @@ Deploy the **families service** (including its IAM update for `dynamodb:Conditio
 The frontend sends the permanent family ID and adopts the donor returned by the server. Unallocation does not require the browser to find a matching pledge request. The backend consistently reads the selected campaign's donor and owned families, resolves the permanent ID, and removes the exact allocation link. If references have changed, it removes a stale link only when the saved member snapshot uniquely identifies that family among the donor's links and assignments. Ambiguous or conflicting links return a review error without writes. Disconnected assignments with no stale links can also be released.
 
 Family release, donor link removal and audit creation use one conditional transaction. Snapshot-based matching also guards the other family snapshots used to establish uniqueness. Pledge counts and unrelated links are preserved; no email is sent. This handles Kelly Knowles's renumbered Hartlepool allocations through the normal Unallocate action. It does not prevent the underlying reference-renumbering process from creating stale links.
+
+## Deleting assigned families
+
+Family deletion now uses a conditional transaction to mark the family deleted,
+remove its pledge allocation link, and write a deletion audit record. Pledge
+counts, other allocation links, family history and donor history are preserved.
+No email is sent. The same unique reference/member-snapshot matching used by
+unallocation handles renumbered links; ambiguous or duplicate links block deletion
+without writes. Missing or ambiguous donor records also require review.
+Unallocated families use a conditional status update and audit record, guarding
+against a concurrent allocation. Already-deleted families are a no-op; historical
+stale links still require a separate reviewed repair.
+
+Deploy the families service with the new `common/DeleteFamily.js` module. Its
+existing DynamoDB UpdateItem, PutItem and ConditionCheckItem permissions cover
+the transaction. Regression coverage is in `tests/deleteFamily.test.js`.
