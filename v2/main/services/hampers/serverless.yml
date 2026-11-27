@@ -66,6 +66,13 @@ package:
     - "endpoints/**"
     - "node_modules/**"
 functions:
+  currentCampaign:
+    handler: endpoints/currentCampaign.handler
+    events:
+      - http:
+          method: get
+          path: current-campaign
+          cors: true
   check:
     handler: endpoints/check.handler
     events:

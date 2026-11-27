@@ -1,14 +1,9 @@
 const Responses = require("../common/API_Responses");
 const Dynamo = require("../common/Dynamo");
-const Hashing = require("../common/Hashing");
+const Scanner = require("../common/HamperScanner");
 const Functions = require("../common/Functions");
 
 const validations = [
-  {
-    key: "campaignId",
-    required: true,
-    errorMsg: "Campaign ID is required",
-  },
   {
     key: "hamperId",
     required: true,
@@ -27,34 +22,22 @@ exports.handler = async (event, context, cb) => {
       return Responses._400({ messages: valid });
     }
 
-    const campaignQueryData = {
-      TableName: mainTableName,
-      FilterExpression: "#pk= :pk AND begins_with(#sk, :sk)",
-      ExpressionAttributeValues: {
-        ":pk": parsed.campaignId,
-        ":sk": "REF#",
-      },
-      ExpressionAttributeNames: {
-        "#pk": "PK",
-        "#sk": "SK",
-      },
-    };
-    var campaignData = await Dynamo.scan(campaignQueryData).catch((err) => {
-      console.log("error in dynamo query", err);
-      throw err;
-    });
-
-    let hamperId = parsed.hamperId;
-    if (hamperId.indexOf("-") === -1) {
-      const insertPos = hamperId.length - 3;
-      hamperId =
-        hamperId.substring(0, insertPos) + "-" + hamperId.substring(insertPos);
+    const campaign = await Scanner.currentCampaign(mainTableName);
+    // New scanner clients pin their displayed campaign. Reject a rollover
+    // rather than recording receipt against a campaign the volunteer never saw.
+    if (parsed.expectedCampaignId && parsed.expectedCampaignId !== campaign.campaignId) {
+      throw Scanner.scannerError("The current campaign has changed. Please reload the scanner.");
     }
-
+    const hamperId = Scanner.normalizeHamperId(parsed.hamperId);
+    const hamper = await Scanner.findHamper(mainTableName, campaign.campaignId, hamperId);
+    if (!hamper) {
+      console.log("Hamper not found", { ...campaign, hamperId });
+      return Responses._200({ success: false, ...campaign, messages: { error: "Hamper ID not found" } });
+    }
     const donorQueryData = {
       KeyConditionExpression: "#pk= :pk And begins_with(#sk, :sk)",
       ExpressionAttributeValues: {
-        ":pk": parsed.campaignId,
+        ":pk": campaign.campaignId,
         ":sk": `EMAIL#D#`,
       },
       ExpressionAttributeNames: {
@@ -80,12 +63,10 @@ exports.handler = async (event, context, cb) => {
       campaignDonorsMapped.map((d) => [d.donorId, d])
     );
 
-    const hamper = campaignData.find(
-      (h) => h.GSI2SK === `SK#${hamperId}` && h.status != "deleted"
-    );
     if (hamper && hamper?.PK) {
       const returnRes = {
         success: true,
+        ...campaign,
         hamperId,
         bagsReceived: hamper?.bagsReceived ? hamper.bagsReceived : 0,
         donor: hamper?.allocatedTo ? allDonorPledges[hamper.allocatedTo] : {},
@@ -102,15 +83,11 @@ exports.handler = async (event, context, cb) => {
         };
       }
       return Responses._200(returnRes);
-    } else {
-      console.log("hamperId", hamperId);
-      console.log("campaignId", parsed.campaignId);
-      return Responses._200({ messages: { error: "Hamper ID not found" } });
     }
   } catch (e) {
     console.log(`An unexpected error occurred ${e}`);
     return Responses._400({
-      messages: { unexpected: "An unexpected error occurred" },
+      success: false, messages: { unexpected: e.scannerMessage || "An unexpected error occurred. Please try again." },
     });
   }
 };
