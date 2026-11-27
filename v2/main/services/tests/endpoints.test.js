@@ -22,6 +22,7 @@ const protectedEndpoints = {
 };
 const publicBody = ['donors/register', 'donors/changePledge', 'feedback/generatePdf', 'feedback/hamper', 'feedback/hamperCheck', 'feedback/volunteer', 'hampers/check', 'hampers/markDirect', 'hampers/markDirectBulk', 'hampers/receive', 'nominators/create', 'subscription/subscribe'];
 const publicLookup = {
+  'hampers/currentCampaign': {},
   'campaign/verify': {}, 'donors/confirmPledge': { emailAddress: 'person@example.org' },
   'hampers/overview': { hamperRef: 'AB-001' }, 'hampers/screen': { campaignId: 'TEST' },
   'organisations/getByHash': { organisationId: 'org', hash: 'invalid' },

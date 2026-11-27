@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { setup, event, clone } = require('./harness');
 const Hashing = require('../common/Hashing');
 const token = data => Hashing.hash(data, 'test-salt').hashedpassword;
-const campaign = { PK: 'TEST', SK: 'A', type: 'campaign', campaignName: 'Test', status: 'active', campaignDetails: { registrationOpen: '2000-01-01', registrationClosed: '2999-01-01', nominationsClosed: '2999-01-01' } };
+const campaign = { PK: 'TEST', SK: 'A', type: 'campaign', campaignName: 'Test', status: 'active', campaignDetails: { campaignStart: '2000-01-01', campaignEnd: '2999-01-01', registrationOpen: '2000-01-01', registrationClosed: '2999-01-01', nominationsClosed: '2999-01-01' } };
 const org = { PK: 'TEST', SK: 'AB', GSI2PK: 'org', type: 'organisation', hash: { data: 'org-data', salt: 'org-salt' }, organisation: { name: 'School' } };
 const nom = { PK: 'TEST', SK: 'EMAIL#actor@example.org', GSI2PK: 'nom', GSI3PK: 'org', type: 'nominator', nominatorDetails: { firstName: 'Jane', lastName: 'Doe', email: 'actor@example.org', reference: 'JD', telephone: '01234567890', cognitoId: 'id' }, emailVerification: {} };
 const family = { PK: 'TEST', SK: 'REF#family', GSI2PK: 'family', GSI2SK: 'SK#ABJD-001', GSI3PK: 'org', GSI3SK: 'nom', type: 'family', status: 'unallocated', allocatedTo: 'unallocated', members: [{ who: 'Adult', age: 30, ageType: 'years' }], totalUnit: 1 };
@@ -33,8 +33,8 @@ const cases = [
   { ep: 'emails/update',body:{key:'welcome',subject:'New subject',pageContent:'Hello'},rows:[template],check:f=>{assert.equal(writes(f)[0].args[0].pageTitle,'');assert.equal(writes(f)[0].args[1],'templates');} },
   { ep: 'emails/delete',params:{key:'welcome'},rows:[template],check:f=>{assert.equal(writes(f)[0].args[0].status,'deleted');assert.equal(writes(f)[0].args[1],'templates');} },
   { ep: 'emails/list',rows:[template,{...template,status:'deleted'}],check:(f,r)=>assert.equal(decoded(r).length,1) },
-  { ep: 'hampers/check',body:{campaignId:'TEST',hamperId:'ABJD001'},handlers:{'Dynamo.scan':async()=>[clone(family)],'Dynamo.query':async()=>[]},check:(f,r)=>assert.equal(decoded(r).hamperId,'ABJD-001') },
-  { ep: 'hampers/receive',body:{campaignId:'TEST',hamperId:'ABJD-001',noBags:'2'},rows:[family],check:f=>{assert.equal(writes(f)[0].args[0].bagsReceived,2);assert.equal(writes(f)[0].args[0].receiveStatus,'hamper-received');} },
+  { ep: 'hampers/check',body:{campaignId:'TEST',hamperId:'ABJD001'},handlers:{'Dynamo.query':async p=>p.IndexName==='GSI2'?[clone(campaign)]:p.ExpressionAttributeValues[':sk']==='REF#'?[clone(family)]:[]},check:(f,r)=>assert.equal(decoded(r).hamperId,'ABJD-001') },
+  { ep: 'hampers/receive',body:{campaignId:'TEST',hamperId:'ABJD-001',noBags:'2'},handlers:{'Dynamo.query':async p=>p.IndexName==='GSI2'?[clone(campaign)]:[clone(family)]},check:f=>{assert.equal(writes(f)[0].args[0].bagsReceived,2);assert.equal(writes(f)[0].args[0].receiveStatus,'hamper-received');} },
   { ep: 'hampers/markDirect',body:{campaignId:'TEST',hamperId:'ABJD-001'},rows:[family],check:f=>assert.equal(writes(f)[0].args[0].receiveStatus,'direct-hamper') },
   { ep: 'hampers/markDirectBulk',body:{campaignId:'TEST',hamperIds:['ABJD-001','MISSING']},rows:[family],check:(f,r)=>{assert.equal(batches(f).length,1);assert.equal(decoded(r).errors[0].MISSING,'Hamper ID not found');} },
   { ep: 'hampers/screen',params:{campaignId:'TEST'},rows:[{...family,status:'allocated-confirmed',receiveStatus:'hamper-received',bagsReceived:2},{...family,status:'deleted',bagsReceived:4}],check:(f,r)=>assert.equal(decoded(r).bagsDropped,2) },
