@@ -59,3 +59,16 @@ test('receipt never reports success when persistence fails', async () => {
   assert.equal(result.statusCode, 400);
   assert.equal(JSON.parse(result.body).success, false);
 });
+
+for (const endpoint of ['check', 'receive']) {
+  for (const hamperId of ['HC10DC-004B', ' hc10dc004b\n']) {
+    test(`${endpoint} finds a suffixed hamper from ${JSON.stringify(hamperId)}`, async () => {
+      const f = fixture(endpoint, [campaign], [{ ...family, GSI2SK: 'SK#HC10DC-004B' }]);
+      const result = await f.invoke(event({ hamperId, noBags: 2 }));
+      const data = JSON.parse(result.body);
+      assert.equal(data.success, true, result.body);
+      assert.equal(data.hamperId, 'HC10DC-004B');
+      if (endpoint === 'receive') assert.equal(f.calls.find(c => c.name === 'Dynamo.write').args[0].GSI2SK, 'SK#HC10DC-004B');
+    });
+  }
+}

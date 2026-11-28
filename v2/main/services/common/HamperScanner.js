@@ -30,8 +30,8 @@ async function currentCampaign(TableName, now = Date.now()) {
 function normalizeHamperId(value) {
   if (typeof value !== "string") throw scannerError("Please enter a valid Hamper ID");
   let id = value.trim().toUpperCase();
-  if (!id.includes("-") && id.length > 3) id = id.slice(0, -3) + "-" + id.slice(-3);
-  if (!/^[A-Z0-9]+-[0-9]{3}$/.test(id)) throw scannerError("Please enter a valid Hamper ID");
+  if (!id.includes("-")) id = id.replace(/([0-9]{3}[A-Z]*)$/, "-$1");
+  if (!/^[A-Z0-9]+-[0-9]{3}[A-Z]*$/.test(id)) throw scannerError("Please enter a valid Hamper ID");
   return id;
 }
 
